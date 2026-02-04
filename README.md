@@ -1,1 +1,1 @@
-# LIFT-UP-Project-Similarity-Analysis
+# LIFT UP Project Similarity Analysis
