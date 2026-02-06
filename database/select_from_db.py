@@ -15,6 +15,10 @@ DB_PARAMS = {
 }
 
 def fetch_all_columns():
+
+    """
+    Örnek olması amacıyla, veri tabanındaki ilk 5 kaydı getiren fonksiyon
+    """
     conn = None
     try:
         conn = psycopg2.connect(**DB_PARAMS)
