@@ -73,6 +73,9 @@ Sistemi çalıştırmadan önce aşağıdakilerin kurulu olması gerekir:
 
 ## Adım Adım Çalıştırma
 
+> **⚠️ ÖNEMLİ:** Backend ve frontend birer terminal sürecidir. Terminal kapanırsa veya bilgisayar kapatılırsa sunucular da kapanır. Sistemi her kullanmak istediğinizde aşağıdaki adımları (Adım 2 ve Adım 3) tekrar çalıştırmanız gerekir. İki terminal de açık kaldığı sürece sistem çalışmaya devam eder.
+
+
 ### Adım 1 — Veritabanını Hazırla
 
 PostgreSQL'de `liftup_db` veritabanının oluşturulmuş ve proje verilerinin yüklenmiş olması gerekir. Veritabanı bağlantı bilgileri `backend/.env` dosyasında tanımlıdır:
