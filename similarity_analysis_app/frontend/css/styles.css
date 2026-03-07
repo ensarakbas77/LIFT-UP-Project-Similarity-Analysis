@@ -547,7 +547,7 @@ button {
 }
 
 .results-section__container {
-    max-width: var(--container-max);
+    max-width: 960px;
     margin: 0 auto;
     padding: 0 var(--space-6);
 }
@@ -643,8 +643,8 @@ button {
 
 /* ─── Project Cards ────────────────────────────────────────── */
 .results__cards {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-4);
 }
 
@@ -1060,8 +1060,12 @@ button {
         flex-wrap: wrap;
     }
 
-    .project-card__similarity-bar {
-        width: 100px;
+    .results__cards {
+        grid-template-columns: 1fr;
+    }
+
+    .results-section__container {
+        max-width: 100%;
     }
 }
 
