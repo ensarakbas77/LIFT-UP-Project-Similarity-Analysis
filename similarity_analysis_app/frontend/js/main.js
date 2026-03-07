@@ -24,6 +24,7 @@ const DOM = {
     titleInput: document.getElementById("project-title"),
     abstractInput: document.getElementById("project-abstract"),
     keywordsInput: document.getElementById("project-keywords"),
+    topkInput: document.getElementById("project-topk"),
     submitBtn: document.getElementById("submit-btn"),
     submitContent: document.getElementById("submit-content"),
     submitLoading: document.getElementById("submit-loading"),
@@ -37,6 +38,7 @@ const DOM = {
     titleError: document.getElementById("title-error"),
     abstractError: document.getElementById("abstract-error"),
     keywordsError: document.getElementById("keywords-error"),
+    topkError: document.getElementById("topk-error"),
 
     // Sections
     formSection: document.getElementById("form-section"),
@@ -265,6 +267,7 @@ async function handleSubmit(e) {
             title: DOM.titleInput.value.trim(),
             abstract: DOM.abstractInput.value.trim(),
             keywords: DOM.keywordsInput.value.trim(),
+            top_k: parseInt(DOM.topkInput.value, 10) || 5,
         };
 
         const response = await fetch(ENDPOINTS.analyze, {
@@ -301,6 +304,7 @@ function setLoadingState(isLoading) {
     DOM.titleInput.disabled = isLoading;
     DOM.abstractInput.disabled = isLoading;
     DOM.keywordsInput.disabled = isLoading;
+    DOM.topkInput.disabled = isLoading;
 }
 
 
@@ -379,7 +383,7 @@ function renderProjectCards(projects) {
  * @returns {HTMLElement}
  */
 function createProjectCard(project, index) {
-    const { project_id, title, abstract, similarity } = project;
+    const { project_id, title, abstract, similarity, year } = project;
     const percentage = Math.round(similarity * 100);
     const level = getLevel(similarity);
     const cardId = `project-card-${project_id}`;
@@ -411,7 +415,10 @@ function createProjectCard(project, index) {
         ` : ""}
 
         <div class="project-card__footer">
-            <span class="project-card__id">Proje #${project_id}</span>
+            <div class="project-card__meta">
+                <span class="project-card__id">Proje #${project_id}</span>
+                ${year ? `<span class="project-card__year">📅 ${year}</span>` : ""}
+            </div>
             <div class="project-card__similarity-bar">
                 <div class="project-card__similarity-fill ${level}" style="width: 0%;" data-width="${percentage}%"></div>
             </div>
@@ -510,6 +517,7 @@ function resetToForm() {
     DOM.titleCount.textContent = "0";
     DOM.abstractCount.textContent = "0";
     DOM.keywordsCount.textContent = "0";
+    DOM.topkInput.value = "5";
 
     // Clear errors
     clearFieldError("title");

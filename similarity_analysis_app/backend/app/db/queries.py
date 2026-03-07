@@ -26,7 +26,8 @@ def find_similar_projects(query_vector: list[float], top_k: int = 5) -> list[dic
 
         sql = """
             SELECT id, title_tr, abstract_tr,
-                   1 - (embedding <=> %s::vector) AS similarity
+                   1 - (embedding <=> %s::vector) AS similarity,
+                   year
             FROM projects
             ORDER BY embedding <=> %s::vector
             LIMIT %s;
@@ -42,6 +43,7 @@ def find_similar_projects(query_vector: list[float], top_k: int = 5) -> list[dic
                 "title": row[1],
                 "abstract": row[2],
                 "similarity": round(float(row[3]), 4),
+                "year": row[4],
             })
 
         cur.close()

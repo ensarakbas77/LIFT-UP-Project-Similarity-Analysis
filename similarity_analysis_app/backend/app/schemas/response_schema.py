@@ -2,6 +2,8 @@
 Response şemaları — API'den dönen yanıt yapıları.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +19,7 @@ class SimilarProject(BaseModel):
         le=1.0,
         description="Cosine similarity skoru (0-1 arası)",
     )
+    year: Optional[str] = Field(None, description="Projenin yılı")
 
 
 class AnalyzeResponse(BaseModel):

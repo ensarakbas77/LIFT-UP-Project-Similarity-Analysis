@@ -2,6 +2,8 @@
 Request şemaları — API'ye gelen istek yapıları.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -13,6 +15,7 @@ class AnalyzeRequest(BaseModel):
         title: Proje basligi.
         abstract: Proje ozeti.
         keywords: Anahtar kelimeler.
+        top_k: Dondurilecek benzer proje sayisi.
     """
 
     title: str = Field(
@@ -35,4 +38,11 @@ class AnalyzeRequest(BaseModel):
         max_length=1000,
         description="Anahtar kelimeler",
         examples=["bire-bir hava muharebesi, kural tabanli yontem, temel hava muharebe manevralari."],
+    )
+    top_k: Optional[int] = Field(
+        None,
+        ge=1,
+        le=50,
+        description="Dondurilecek benzer proje sayisi (varsayilan: 5)",
+        examples=[5, 10, 20],
     )

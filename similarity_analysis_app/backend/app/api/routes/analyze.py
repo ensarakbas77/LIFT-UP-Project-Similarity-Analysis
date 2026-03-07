@@ -41,6 +41,7 @@ def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
             title=request.title,
             abstract=request.abstract,
             keywords=request.keywords,
+            top_k=request.top_k,
         )
         return result
 

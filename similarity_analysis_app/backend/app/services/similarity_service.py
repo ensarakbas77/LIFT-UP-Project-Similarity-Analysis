@@ -66,6 +66,7 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
             title=r["title"],
             abstract=r["abstract"] or "",
             similarity=r["similarity"],
+            year=r["year"],
         )
         for r in raw_results
     ]

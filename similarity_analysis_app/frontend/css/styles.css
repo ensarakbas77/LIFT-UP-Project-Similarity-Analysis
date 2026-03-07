@@ -763,10 +763,45 @@ button {
     justify-content: space-between;
 }
 
+.project-card__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
 .project-card__id {
     font-size: var(--font-size-xs);
     color: var(--neutral-400);
     font-weight: 500;
+}
+
+.project-card__year {
+    font-size: var(--font-size-xs);
+    color: var(--primary-600);
+    font-weight: 600;
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-md);
+}
+
+/* Number input spinner */
+.form__input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.form__input[type="number"]::-webkit-outer-spin-button,
+.form__input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+/* Hint text for form counter */
+.form__counter--hint {
+    font-style: italic;
+    color: var(--neutral-400);
 }
 
 .project-card__similarity-bar {
