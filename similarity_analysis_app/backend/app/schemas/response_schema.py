@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 class SimilarProject(BaseModel):
     """Benzer proje bilgisi."""
 
-    project_id: int = Field(..., description="Projenin veritabanı ID'si")
     title: str = Field(..., description="Proje başlığı")
     abstract: str = Field(..., description="Proje özeti")
     similarity: float = Field(
@@ -20,6 +19,10 @@ class SimilarProject(BaseModel):
         description="Cosine similarity skoru (0-1 arası)",
     )
     year: Optional[str] = Field(None, description="Projenin yılı")
+    classification: str = Field(
+        ...,
+        description="Bireysel benzerlik sınıflandırması: 'critical', 'high', 'medium', 'low' veya 'irrelevant'",
+    )
 
 
 class AnalyzeResponse(BaseModel):
@@ -27,8 +30,8 @@ class AnalyzeResponse(BaseModel):
     POST /analyze endpoint'i için yanıt gövdesi.
 
     Attributes:
-        similar_projects: En benzer projelerin listesi.
-        classification: Genel benzerlik sınıflandırması (high / medium / low).
+        similar_projects: En benzer projelerin listesi (her biri kendi sınıflandırmasıyla).
+        classification: Genel benzerlik sınıflandırması (en yüksek skora göre).
     """
 
     similar_projects: list[SimilarProject] = Field(
@@ -36,7 +39,7 @@ class AnalyzeResponse(BaseModel):
     )
     classification: str = Field(
         ...,
-        description="Benzerlik sınıflandırması: 'high', 'medium' veya 'low'",
+        description="Genel benzerlik sınıflandırması: 'critical', 'high', 'medium', 'low' veya 'irrelevant'",
     )
 
 

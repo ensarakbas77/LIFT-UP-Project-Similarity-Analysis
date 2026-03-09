@@ -4,7 +4,7 @@ Service Katmanı — Benzerlik Analizi.
 Bu modül tüm iş mantığını barındırır:
   1. Embedding üretimi
   2. Veritabanı similarity sorgusu
-  3. Eşik değerine göre sınıflandırma
+  3. Eşik değerine göre sınıflandırma (5 seviye)
   4. Yanıt formatlama
 """
 
@@ -16,19 +16,25 @@ from app.schemas.response_schema import AnalyzeResponse, SimilarProject
 
 def classify_similarity(score: float) -> str:
     """
-    En yüksek benzerlik skoruna göre sınıflandırma yapar.
+    Benzerlik skoruna göre 5 seviyeli sınıflandırma yapar.
 
-    Eşik Değerleri (varsayılan):
-      - >= 0.75 → "high"   (yüksek benzerlik)
-      - >= 0.50 → "medium" (orta benzerlik)
-      - <  0.50 → "low"    (düşük benzerlik)
+    Eşik Değerleri:
+      - >= 0.90 → "critical"    (Çok Yüksek — Potansiyel Mükerrer Kayıt)
+      - >= 0.70 → "high"        (Yüksek — Yakın Tematik Bağlantı)
+      - >= 0.50 → "medium"      (Orta — Disiplin Paralelliği)
+      - >= 0.25 → "low"         (Düşük — Uzak Tematik İlişki)
+      - <  0.25 → "irrelevant"  (Alakasız — İlişki Yok)
     """
-    if score >= settings.HIGH_THRESHOLD:
+    if score >= settings.CRITICAL_THRESHOLD:
+        return "critical"
+    elif score >= settings.HIGH_THRESHOLD:
         return "high"
     elif score >= settings.MEDIUM_THRESHOLD:
         return "medium"
-    else:
+    elif score >= settings.LOW_THRESHOLD:
         return "low"
+    else:
+        return "irrelevant"
 
 
 def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None = None) -> AnalyzeResponse:
@@ -38,8 +44,9 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
     Akis:
       1. title + abstract + keywords → combined_text → embedding uret
       2. embedding ile DB'de similarity sorgusu yap
-      3. En yuksek skora gore siniflandir
-      4. AnalyzeResponse formatinda dondur
+      3. Her proje icin bireysel siniflandirma yap
+      4. En yuksek skora gore genel siniflandirma belirle
+      5. AnalyzeResponse formatinda dondur
 
     Args:
         title: Proje basligi.
@@ -59,19 +66,19 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
     # 2. Veritabanı sorgusu — en benzer projeler
     raw_results = find_similar_projects(query_vector, top_k=top_k)
 
-    # 3. Sonuçları şemaya dönüştür
+    # 3. Sonuçları şemaya dönüştür — her projeye bireysel sınıflandırma ekle
     similar_projects = [
         SimilarProject(
-            project_id=r["project_id"],
             title=r["title"],
             abstract=r["abstract"] or "",
             similarity=r["similarity"],
             year=r["year"],
+            classification=classify_similarity(r["similarity"]),
         )
         for r in raw_results
     ]
 
-    # 4. Sınıflandırma — en yüksek skora göre
+    # 4. Genel sınıflandırma — en yüksek skora göre
     max_score = similar_projects[0].similarity if similar_projects else 0.0
     classification = classify_similarity(max_score)
 

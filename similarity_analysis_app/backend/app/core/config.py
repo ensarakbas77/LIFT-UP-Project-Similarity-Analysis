@@ -25,9 +25,11 @@ class Settings:
         "MODEL_NAME", "paraphrase-multilingual-MiniLM-L12-v2"
     )
 
-    # Benzerlik Eşik Değerleri
-    HIGH_THRESHOLD: float = float(os.getenv("HIGH_THRESHOLD", "0.75"))
+    # Benzerlik Eşik Değerleri (5 Seviye)
+    CRITICAL_THRESHOLD: float = float(os.getenv("CRITICAL_THRESHOLD", "0.90"))
+    HIGH_THRESHOLD: float = float(os.getenv("HIGH_THRESHOLD", "0.70"))
     MEDIUM_THRESHOLD: float = float(os.getenv("MEDIUM_THRESHOLD", "0.50"))
+    LOW_THRESHOLD: float = float(os.getenv("LOW_THRESHOLD", "0.25"))
 
     # Varsayılan top-k sonuç sayısı
     DEFAULT_TOP_K: int = int(os.getenv("DEFAULT_TOP_K", "5"))
