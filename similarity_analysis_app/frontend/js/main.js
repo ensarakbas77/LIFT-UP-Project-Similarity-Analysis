@@ -47,10 +47,10 @@ const DOM = {
     errorSection: document.getElementById("error-section"),
 
     // Results
-    classificationBanner: document.getElementById("classification-banner"),
-    classificationIcon: document.getElementById("classification-icon"),
-    classificationTitle: document.getElementById("classification-title"),
-    classificationDescription: document.getElementById("classification-description"),
+    querySummary: document.getElementById("query-summary"),
+    queryTitle: document.getElementById("query-title"),
+    queryAbstract: document.getElementById("query-abstract"),
+    queryKeywords: document.getElementById("query-keywords"),
     resultsCards: document.getElementById("results-cards"),
     resultsCount: document.getElementById("results-count"),
 
@@ -67,25 +67,47 @@ const DOM = {
     statusLabel: document.getElementById("status-label"),
 };
 
-// ─── Classification Config ────────────────────────────────────
+// ─── Classification Config (5 Seviye) ─────────────────────────
 const CLASSIFICATION = {
+    critical: {
+        icon: "🔴",
+        title: "Çok Yüksek Benzerlik — Potansiyel Mükerrer Kayıt",
+        description: "Projenin özgünlüğü ciddi risk altındadır. Manuel teknik inceleme zorunludur.",
+        className: "critical",
+        label: "Çok Yüksek Benzerlik",
+        labelShort: "Kritik",
+    },
     high: {
-        icon: "🟢",
-        title: "Yüksek Benzerlik Tespit Edildi",
-        description: "Girdiğiniz proje, veritabanındaki mevcut projelerle yüksek düzeyde benzerlik göstermektedir. Projenizi farklılaştırmak için özgün yaklaşımlar eklemenizi öneririz.",
+        icon: "🟠",
+        title: "Yüksek Benzerlik — Yakın Tematik Bağlantı",
+        description: "Aynı alt uzmanlık alanında ve benzer metodolojide çalışma. İnceleme önerilir.",
         className: "high",
+        label: "Yüksek Benzerlik",
+        labelShort: "Yüksek",
     },
     medium: {
         icon: "🟡",
-        title: "Orta Düzey Benzerlik Tespit Edildi",
-        description: "Girdiğiniz proje, mevcut projelerle orta düzeyde benzerlik göstermektedir. Konunuz mevcut çalışmalarla ilişkili, ancak farklılıklar da mevcut.",
+        title: "Orta Düzey Benzerlik — Disiplin Paralelliği",
+        description: "Aynı ana disiplin (Havacılık, Yazılım vb.) fakat farklı problem odakları.",
         className: "medium",
+        label: "Orta Benzerlik",
+        labelShort: "Orta",
     },
     low: {
-        icon: "🔴",
-        title: "Düşük Benzerlik — Özgün Proje",
-        description: "Girdiğiniz proje, mevcut projelerle düşük düzeyde benzerlik göstermektedir. Projeniz yüksek özgünlük potansiyeline sahip görünmektedir.",
+        icon: "🟢",
+        title: "Düşük Benzerlik — Uzak Tematik İlişki",
+        description: "Sadece yüzeysel kavramsal benzerlikler veya genel mühendislik terimleri.",
         className: "low",
+        label: "Düşük Benzerlik",
+        labelShort: "Düşük",
+    },
+    irrelevant: {
+        icon: "⚪",
+        title: "Alakasız — İlişki Yok",
+        description: "Farklı disiplinler veya bağlamsal olarak tamamen ayrı içerikler.",
+        className: "irrelevant",
+        label: "Alakasız",
+        labelShort: "Alakasız",
     },
 };
 
@@ -325,8 +347,8 @@ function renderResults(data) {
     DOM.errorSection.style.display = "none";
     DOM.resultsSection.style.display = "block";
 
-    // Render classification banner
-    renderClassification(classification);
+    // Render query summary (user's input)
+    renderQuerySummary();
 
     // Render project cards
     renderProjectCards(similar_projects);
@@ -339,19 +361,12 @@ function renderResults(data) {
 }
 
 /**
- * Sınıflandırma banner'ını render eder.
- * @param {string} classification - "high" | "medium" | "low"
+ * Kullanıcının girdiği sorgu bilgilerini sonuç sayfasının üstünde gösterir.
  */
-function renderClassification(classification) {
-    const config = CLASSIFICATION[classification] || CLASSIFICATION.low;
-
-    // Reset classes
-    DOM.classificationBanner.className = "results__classification";
-    DOM.classificationBanner.classList.add(config.className);
-
-    DOM.classificationIcon.textContent = config.icon;
-    DOM.classificationTitle.textContent = config.title;
-    DOM.classificationDescription.textContent = config.description;
+function renderQuerySummary() {
+    DOM.queryTitle.textContent = DOM.titleInput.value.trim();
+    DOM.queryAbstract.textContent = DOM.abstractInput.value.trim();
+    DOM.queryKeywords.textContent = DOM.keywordsInput.value.trim();
 }
 
 /**
@@ -383,12 +398,13 @@ function renderProjectCards(projects) {
  * @returns {HTMLElement}
  */
 function createProjectCard(project, index) {
-    const { project_id, title, abstract, similarity, year } = project;
+    const { title, abstract, similarity, year, classification } = project;
     const percentage = Math.round(similarity * 100);
-    const level = getLevel(similarity);
-    const cardId = `project-card-${project_id}`;
-    const abstractId = `abstract-${project_id}`;
-    const toggleId = `toggle-${project_id}`;
+    const level = classification || getLevel(similarity);
+    const classConfig = CLASSIFICATION[level] || CLASSIFICATION.irrelevant;
+    const cardId = `project-card-${index}`;
+    const abstractId = `abstract-${index}`;
+    const toggleId = `toggle-${index}`;
 
     const card = document.createElement("div");
     card.className = `project-card ${level}`;
@@ -404,6 +420,11 @@ function createProjectCard(project, index) {
             </span>
         </div>
 
+        <div class="project-card__level-badge ${level}">
+            <span class="project-card__level-icon">${classConfig.icon}</span>
+            <span class="project-card__level-text">${classConfig.label}</span>
+        </div>
+
         ${abstract ? `
             <p class="project-card__abstract" id="${abstractId}">${escapeHtml(abstract)}</p>
             <button type="button" class="project-card__toggle" id="${toggleId}" data-target="${abstractId}">
@@ -416,7 +437,6 @@ function createProjectCard(project, index) {
 
         <div class="project-card__footer">
             <div class="project-card__meta">
-                <span class="project-card__id">Proje #${project_id}</span>
                 ${year ? `<span class="project-card__year">📅 ${year}</span>` : ""}
             </div>
             <div class="project-card__similarity-bar">
@@ -432,7 +452,6 @@ function createProjectCard(project, index) {
             const abstractEl = card.querySelector(`#${abstractId}`);
             const isExpanded = abstractEl.classList.toggle("expanded");
             toggleBtn.classList.toggle("expanded", isExpanded);
-            toggleBtn.querySelector("button, span") ; // noop
             // Update text based on state
             const textNode = toggleBtn.childNodes[0];
             if (textNode) {
@@ -455,14 +474,16 @@ function createProjectCard(project, index) {
 }
 
 /**
- * Benzerlik skoruna göre seviye döndürür.
+ * Benzerlik skoruna göre seviye döndürür (fallback — backend classification yoksa).
  * @param {number} score - 0-1 arası similarity skoru
- * @returns {string} "high" | "medium" | "low"
+ * @returns {string} "critical" | "high" | "medium" | "low" | "irrelevant"
  */
 function getLevel(score) {
-    if (score >= 0.75) return "high";
+    if (score >= 0.90) return "critical";
+    if (score >= 0.70) return "high";
     if (score >= 0.50) return "medium";
-    return "low";
+    if (score >= 0.25) return "low";
+    return "irrelevant";
 }
 
 

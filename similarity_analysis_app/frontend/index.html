@@ -167,12 +167,29 @@
         <section class="results-section" id="results-section" style="display: none;">
             <div class="results-section__container">
 
-                <!-- Classification Banner -->
-                <div class="results__classification" id="classification-banner">
-                    <div class="classification__icon" id="classification-icon"></div>
-                    <div class="classification__content">
-                        <h3 class="classification__title" id="classification-title"></h3>
-                        <p class="classification__description" id="classification-description"></p>
+                <!-- Query Summary -->
+                <div class="query-summary" id="query-summary">
+                    <h3 class="query-summary__heading">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        Analiz Edilen Proje
+                    </h3>
+                    <div class="query-summary__fields">
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">📌 Başlık</span>
+                            <p class="query-summary__value" id="query-title"></p>
+                        </div>
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">📝 Özet</span>
+                            <p class="query-summary__value query-summary__value--abstract" id="query-abstract"></p>
+                        </div>
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">🏷️ Anahtar Kelimeler</span>
+                            <p class="query-summary__value" id="query-keywords"></p>
+                        </div>
                     </div>
                 </div>
 
