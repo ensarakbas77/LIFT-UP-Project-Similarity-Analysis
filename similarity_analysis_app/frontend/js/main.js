@@ -41,8 +41,8 @@ const DOM = {
     topkError: document.getElementById("topk-error"),
 
     // Sections
-    formSection: document.getElementById("form-section"),
-    heroSection: document.getElementById("hero-section"),
+    formSection: document.getElementById("content-section"),
+    heroSection: document.getElementById("content-section"),
     resultsSection: document.getElementById("results-section"),
     errorSection: document.getElementById("error-section"),
 
