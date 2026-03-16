@@ -31,7 +31,7 @@ Kullanıcının girdiği proje fikrini, TUSAŞ LIFT UP programı kapsamındaki m
 - 🔍 **Semantik Benzerlik Analizi** — SBERT dil modeli ile metin tabanlı vektörel karşılaştırma
 - 🧠 **Çok Dilli Model** — `paraphrase-multilingual-MiniLM-L12-v2` modeli ile Türkçe metin desteği
 - 🗄️ **pgvector Entegrasyonu** — PostgreSQL üzerinde yüksek performanslı vektör benzerlik sorgusu
-- 📊 **Otomatik Sınıflandırma** — Benzerlik skoruna göre üç seviyeli renk kodlu sınıflandırma
+- 📊 **Otomatik Sınıflandırma** — Benzerlik skoruna göre beş seviyeli renk kodlu sınıflandırma
 - 🎨 **Modern Arayüz** — Glassmorphism efektli, responsive ve animasyonlu SPA tasarım
 - ❤️ **Sağlık Kontrolü** — Backend bağlantı durumunu canlı izleyen sistem göstergesi
 - 📓 **Deney Notebookları** — BERTurk, DistilBERT, SBERT model karşılaştırma notebookları
@@ -74,7 +74,7 @@ Kullanıcının girdiği proje fikrini, TUSAŞ LIFT UP programı kapsamındaki m
 
 | Seviye | Koşul | Renk |
 |:---|:---|:---|
-| 🔴 **Çok Yüksek (Kritik)** | >= %90 | Kırmızı |
+| 🔴 **Çok Yüksek** | >= %90 | Kırmızı |
 | 🟠 **Yüksek** | >= %70 | Turuncu |
 | 🟡 **Orta** | >= %50 | Sarı |
 | 🟢 **Düşük** | >= %25 | Yeşil |
