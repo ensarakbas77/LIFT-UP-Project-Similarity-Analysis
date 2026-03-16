@@ -118,7 +118,7 @@
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Layout */
-    --container-max: 720px;
+    --container-max: 1180px;
     --header-height: 64px;
 }
 
@@ -279,78 +279,207 @@ button {
 
 
 /* ═══════════════════════════════════════════════════════════════
-   HERO SECTION
+   CONTENT GRID (Two-Column: Brand + Form)
    ═══════════════════════════════════════════════════════════════ */
-.hero {
-    padding: var(--space-12) 0 var(--space-8);
-    text-align: center;
+.content-grid {
+    padding: var(--space-10) 0 var(--space-8);
+    animation: fadeIn 0.5s ease-out;
 }
 
-.hero__container {
+.content-grid__container {
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--space-6);
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: var(--space-8);
+    align-items: stretch;
 }
 
-.hero__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-full);
-    background: var(--primary-50);
-    border: 1px solid var(--primary-200);
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: var(--primary-700);
-    margin-bottom: var(--space-6);
-    animation: fadeInUp 0.6s ease-out;
-}
 
-.hero__badge-icon {
-    font-size: var(--font-size-sm);
-}
-
-.hero__title {
-    font-size: var(--font-size-3xl);
-    font-weight: 800;
-    color: var(--neutral-900);
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-    margin-bottom: var(--space-4);
+/* ─── Brand Panel (Left Side) ─────────────────────────────── */
+.brand-panel {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--tusas-navy) 0%, #162250 45%, #0d1b3e 100%);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-10) var(--space-8);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-shadow: var(--shadow-xl), 0 0 60px rgba(31, 45, 90, 0.20);
     animation: fadeInUp 0.6s ease-out 0.1s both;
 }
 
-.hero__title-highlight {
+/* Decorative geometric shapes */
+.brand-panel__decor {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.brand-panel__decor--1 {
+    width: 260px;
+    height: 260px;
+    top: -80px;
+    right: -60px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.10) 0%, transparent 70%);
+}
+
+.brand-panel__decor--2 {
+    width: 180px;
+    height: 180px;
+    bottom: -40px;
+    left: -40px;
+    background: radial-gradient(circle, rgba(227, 6, 19, 0.08) 0%, transparent 70%);
+}
+
+/* Logo */
+.brand-panel__logo-wrap {
+    position: relative;
+    z-index: 1;
+    margin-bottom: var(--space-8);
+    width: 100%;
+    animation: fadeInUp 0.5s ease-out 0.2s both;
+}
+
+.brand-panel__logo {
+    width: 100%;
+    height: auto;
     display: block;
-    background: linear-gradient(135deg, var(--tusas-navy), var(--tusas-blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
-.hero__description {
+/* Text Content */
+.brand-panel__text {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+.brand-panel__heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+    animation: fadeInUp 0.5s ease-out 0.25s both;
+}
+
+.brand-panel__heading-lift {
+    font-family: 'Orbitron', 'Inter', sans-serif;
+    font-size: var(--font-size-4xl);
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.brand-panel__heading-sub {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.60);
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+/* Divider */
+.brand-panel__divider {
+    width: 48px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #38bdf8, rgba(56, 189, 248, 0.2));
+    margin-bottom: var(--space-5);
+    animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.brand-panel__desc {
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.75;
+    max-width: 340px;
+    animation: fadeInUp 0.5s ease-out 0.35s both;
+}
+
+/* Tech badge at bottom */
+.brand-panel__tech {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    padding-top: var(--space-8);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.40);
+    letter-spacing: 0.02em;
+    animation: fadeInUp 0.5s ease-out 0.4s both;
+}
+
+.brand-panel__tech-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+    flex-shrink: 0;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+
+/* ─── Form Panel (Right Side) ─────────────────────────────── */
+.form-panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-lg);
+    transition: box-shadow var(--transition-base);
+    animation: fadeInUp 0.5s ease-out 0.25s both;
+}
+
+.form-panel:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.form-panel__header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--neutral-100);
+}
+
+.form-panel__header > svg {
+    flex-shrink: 0;
+    color: var(--primary-500);
+    margin-top: 2px;
+}
+
+.form-panel__title {
     font-size: var(--font-size-lg);
-    color: var(--neutral-500);
-    max-width: 540px;
-    margin: 0 auto;
-    line-height: 1.7;
-    animation: fadeInUp 0.6s ease-out 0.2s both;
+    font-weight: 700;
+    color: var(--primary-600);
+    margin-bottom: 2px;
 }
 
-
-/* ═══════════════════════════════════════════════════════════════
-   FORM SECTION
-   ═══════════════════════════════════════════════════════════════ */
-.form-section {
-    padding: 0 0 var(--space-8);
-    animation: fadeInUp 0.6s ease-out 0.3s both;
+.form-panel__subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--neutral-400);
+    font-weight: 400;
 }
 
-.form-section__container {
-    max-width: var(--container-max);
-    margin: 0 auto;
-    padding: 0 var(--space-6);
+/* Strip default .form card styles inside panel (panel already provides them) */
+.form-panel .form {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+.form-panel .form:hover {
+    box-shadow: none;
 }
 
 .form {
@@ -1125,18 +1254,37 @@ button {
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 
+/* Large Tablet */
+@media (max-width: 1024px) {
+    .content-grid__container {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-panel {
+        padding: var(--space-8) var(--space-6);
+    }
+
+    .brand-panel__heading-lift {
+        font-size: var(--font-size-3xl);
+    }
+}
+
 /* Tablet */
 @media (max-width: 768px) {
     :root {
         --container-max: 100%;
     }
 
-    .hero__title {
+    .brand-panel {
+        padding: var(--space-6) var(--space-5);
+    }
+
+    .brand-panel__heading-lift {
         font-size: var(--font-size-2xl);
     }
 
-    .hero__description {
-        font-size: var(--font-size-base);
+    .form-panel {
+        padding: var(--space-6);
     }
 
     .form {
@@ -1160,19 +1308,29 @@ button {
 
 /* Mobile */
 @media (max-width: 480px) {
-    .hero {
-        padding: var(--space-8) 0 var(--space-6);
+    .content-grid {
+        padding: var(--space-6) 0 var(--space-6);
     }
 
-    .hero__title {
+    .brand-panel {
+        padding: var(--space-5) var(--space-4);
+        border-radius: var(--radius-xl);
+    }
+
+    .brand-panel__heading-lift {
         font-size: var(--font-size-xl);
+        letter-spacing: 1px;
     }
 
-    .hero__badge {
-        font-size: 0.7rem;
+    .brand-panel__heading-sub {
+        font-size: var(--font-size-sm);
     }
 
-    .form {
+    .brand-panel__logo-wrap {
+        margin-bottom: var(--space-5);
+    }
+
+    .form-panel {
         padding: var(--space-5);
         border-radius: var(--radius-lg);
     }

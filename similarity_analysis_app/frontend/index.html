@@ -59,107 +59,136 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <main class="main" id="main-content">
 
-        <!-- ─── Hero Section ─────────────────────────────────── -->
-        <section class="hero" id="hero-section">
-            <div class="hero__container">
-                <div class="hero__badge">
-                    <span class="hero__badge-icon">🔬</span>
-                    <span class="hero__badge-text">SBERT + pgvector Tabanlı Semantik Analiz</span>
+        <!-- ─── Two Column Content: Brand Panel + Form ────────── -->
+        <section class="content-grid" id="content-section">
+            <div class="content-grid__container">
+
+                <!-- LEFT: Branded Info Panel -->
+                <aside class="brand-panel" id="brand-panel">
+                    <!-- Decorative shapes -->
+                    <div class="brand-panel__decor brand-panel__decor--1"></div>
+                    <div class="brand-panel__decor brand-panel__decor--2"></div>
+
+                    <!-- Logo -->
+                    <div class="brand-panel__logo-wrap">
+                        <img src="assets/logo.png" alt="Turkish Aerospace" class="brand-panel__logo">
+                    </div>
+
+                    <!-- Program Title -->
+                    <div class="brand-panel__text">
+                        <h2 class="brand-panel__heading">
+                            <span class="brand-panel__heading-lift">TUSAŞ LIFT UP</span>
+                            <span class="brand-panel__heading-sub">Sanayi Odaklı Lisans Bitirme Projeleri Programı</span>
+                        </h2>
+                        <div class="brand-panel__divider"></div>
+                        <p class="brand-panel__desc">
+                            Proje başlığı, özeti ve anahtar kelimelerinizi girin — yapay zeka destekli
+                            sistemimiz mevcut projelerle semantik benzerlik analizi yapsın.
+                        </p>
+                    </div>
+
+                    <!-- Tech badge at bottom -->
+                    <div class="brand-panel__tech">
+                        <span class="brand-panel__tech-dot"></span>
+                        Yapay Zeka Tabanlı Anlamsal Analiz Sistemi
+                    </div>
+                </aside>
+
+                <!-- RIGHT: Analysis Form (untouched form markup) -->
+                <div class="form-panel" id="form-section">
+                    <div class="form-panel__header">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        <div>
+                            <h3 class="form-panel__title">Proje Analiz Formu</h3>
+                            <p class="form-panel__subtitle">Analiz etmek istediğiniz projenin bilgilerini girin</p>
+                        </div>
+                    </div>
+                    <form class="form" id="analyze-form" novalidate>
+                        <!-- Proje Başlığı -->
+                        <div class="form__group" id="group-title">
+                            <label class="form__label" for="project-title">
+                                <span class="form__label-icon">📌</span>
+                                Proje Başlığı
+                                <span class="form__label-required">*</span>
+                            </label>
+                            <input type="text" class="form__input" id="project-title" name="title"
+                                placeholder="Ör: Hava Muharebesinde Otonom Savunma Algoritmasının Geliştirilmesi"
+                                minlength="3" maxlength="500" required autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="title-error"></span>
+                                <span class="form__counter"><span id="title-count">0</span>/500</span>
+                            </div>
+                        </div>
+
+                        <!-- Proje Özeti -->
+                        <div class="form__group" id="group-abstract">
+                            <label class="form__label" for="project-abstract">
+                                <span class="form__label-icon">📝</span>
+                                Proje Özeti
+                                <span class="form__label-required">*</span>
+                            </label>
+                            <textarea class="form__textarea" id="project-abstract" name="abstract"
+                                placeholder="Projenizin ayrıntılı özetini buraya yazın..." minlength="10"
+                                maxlength="5000" required rows="6"></textarea>
+                            <div class="form__meta">
+                                <span class="form__error" id="abstract-error"></span>
+                                <span class="form__counter"><span id="abstract-count">0</span>/5000</span>
+                            </div>
+                        </div>
+
+                        <!-- Anahtar Kelimeler -->
+                        <div class="form__group" id="group-keywords">
+                            <label class="form__label" for="project-keywords">
+                                <span class="form__label-icon">🏷️</span>
+                                Anahtar Kelimeler
+                                <span class="form__label-required">*</span>
+                            </label>
+                            <input type="text" class="form__input" id="project-keywords" name="keywords"
+                                placeholder="Ör: bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları"
+                                minlength="3" maxlength="1000" required autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="keywords-error"></span>
+                                <span class="form__counter"><span id="keywords-count">0</span>/1000</span>
+                            </div>
+                        </div>
+
+                        <!-- Sonuç Sayısı (top_k) -->
+                        <div class="form__group" id="group-topk">
+                            <label class="form__label" for="project-topk">
+                                <span class="form__label-icon">📊</span>
+                                Sonuç Sayısı
+                            </label>
+                            <input type="number" class="form__input" id="project-topk" name="top_k"
+                                placeholder="Kaç benzer proje listelensin?" min="1" max="50" autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="topk-error"></span>
+                                <span class="form__counter form__counter--hint">1 – 50 arası bir değer girin</span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="form__submit" id="submit-btn">
+                            <span class="form__submit-content" id="submit-content">
+                                <svg class="form__submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.35-4.35" />
+                                </svg>
+                                Analiz Et
+                            </span>
+                            <span class="form__submit-loading" id="submit-loading">
+                                <span class="spinner"></span>
+                                Analiz Ediliyor...
+                            </span>
+                        </button>
+                    </form>
                 </div>
-                <h2 class="hero__title">
-                    Projenizi Analiz Edin,
-                    <span class="hero__title-highlight">Benzerlikleri Keşfedin</span>
-                </h2>
-                <p class="hero__description">
-                    Proje başlığı, özeti ve anahtar kelimelerinizi girin — yapay zeka destekli sistemimiz mevcut
-                    projelerle semantik benzerlik analizi yapsın.
-                </p>
-            </div>
-        </section>
 
-        <!-- ─── Analysis Form Section ────────────────────────── -->
-        <section class="form-section" id="form-section">
-            <div class="form-section__container">
-                <form class="form" id="analyze-form" novalidate>
-                    <!-- Proje Başlığı -->
-                    <div class="form__group" id="group-title">
-                        <label class="form__label" for="project-title">
-                            <span class="form__label-icon">📌</span>
-                            Proje Başlığı
-                            <span class="form__label-required">*</span>
-                        </label>
-                        <input type="text" class="form__input" id="project-title" name="title"
-                            placeholder="Ör: Hava Muharebesinde Otonom Savunma Algoritmasının Geliştirilmesi"
-                            minlength="3" maxlength="500" required autocomplete="off">
-                        <div class="form__meta">
-                            <span class="form__error" id="title-error"></span>
-                            <span class="form__counter"><span id="title-count">0</span>/500</span>
-                        </div>
-                    </div>
-
-                    <!-- Proje Özeti -->
-                    <div class="form__group" id="group-abstract">
-                        <label class="form__label" for="project-abstract">
-                            <span class="form__label-icon">📝</span>
-                            Proje Özeti
-                            <span class="form__label-required">*</span>
-                        </label>
-                        <textarea class="form__textarea" id="project-abstract" name="abstract"
-                            placeholder="Projenizin ayrıntılı özetini buraya yazın..." minlength="10" maxlength="5000"
-                            required rows="6"></textarea>
-                        <div class="form__meta">
-                            <span class="form__error" id="abstract-error"></span>
-                            <span class="form__counter"><span id="abstract-count">0</span>/5000</span>
-                        </div>
-                    </div>
-
-                    <!-- Anahtar Kelimeler -->
-                    <div class="form__group" id="group-keywords">
-                        <label class="form__label" for="project-keywords">
-                            <span class="form__label-icon">🏷️</span>
-                            Anahtar Kelimeler
-                            <span class="form__label-required">*</span>
-                        </label>
-                        <input type="text" class="form__input" id="project-keywords" name="keywords"
-                            placeholder="Ör: bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları"
-                            minlength="3" maxlength="1000" required autocomplete="off">
-                        <div class="form__meta">
-                            <span class="form__error" id="keywords-error"></span>
-                            <span class="form__counter"><span id="keywords-count">0</span>/1000</span>
-                        </div>
-                    </div>
-
-                    <!-- Sonuç Sayısı (top_k) -->
-                    <div class="form__group" id="group-topk">
-                        <label class="form__label" for="project-topk">
-                            <span class="form__label-icon">📊</span>
-                            Sonuç Sayısı
-                        </label>
-                        <input type="number" class="form__input" id="project-topk" name="top_k"
-                            placeholder="Kaç benzer proje listelensin?" min="1" max="50"
-                            autocomplete="off">
-                        <div class="form__meta">
-                            <span class="form__error" id="topk-error"></span>
-                            <span class="form__counter form__counter--hint">1 – 50 arası bir değer girin</span>
-                        </div>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" class="form__submit" id="submit-btn">
-                        <span class="form__submit-content" id="submit-content">
-                            <svg class="form__submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.35-4.35" />
-                            </svg>
-                            Analiz Et
-                        </span>
-                        <span class="form__submit-loading" id="submit-loading">
-                            <span class="spinner"></span>
-                            Analiz Ediliyor...
-                        </span>
-                    </button>
-                </form>
             </div>
         </section>
 
