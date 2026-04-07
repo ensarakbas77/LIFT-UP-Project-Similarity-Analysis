@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Veri Çıkarıcı — LIFT UP Admin</title>
+    <meta name="description" content="LIFT UP bildiri kitabı PDF'inden makale verilerini otomatik çıkarma aracı.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/shared/style.css">
+    <link rel="stylesheet" href="/static/shared/dashboard.css">
+</head>
+<body>
+
+    <!-- Sidebar Overlay (sadece mobil) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar — varsayılan AÇIK, collapsed ile kapanır -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-drawer-header">
+            <a href="/" class="sidebar-drawer-brand">
+                <i class="fas fa-fighter-jet"></i>
+                <div class="sidebar-drawer-brand-text">
+                    <span class="brand-main">TUSAŞ</span>
+                    <span class="brand-sub">LIFT UP Admin</span>
+                </div>
+            </a>
+        </div>
+        <nav class="sidebar-drawer-nav">
+            <div class="sidebar-nav-label">Genel</div>
+            <a href="/" class="sidebar-nav-link">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a>
+            <div class="sidebar-nav-label">Araçlar</div>
+            <a href="/pdf-extract" class="sidebar-nav-link active-link">
+                <i class="fas fa-file-pdf"></i><span>PDF Veri Çıkarıcı</span>
+            </a>
+            <a href="/data-management" class="sidebar-nav-link">
+                <i class="fas fa-database"></i><span>Veri Yönetimi</span>
+            </a>
+            <a href="/reports" class="sidebar-nav-link">
+                <i class="fas fa-chart-bar"></i><span>Raporlar</span>
+            </a>
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/docs" target="_blank" class="sidebar-nav-link">
+                <i class="fas fa-book"></i><span>API Dokümantasyonu</span>
+            </a>
+        </nav>
+        <div class="sidebar-drawer-footer">
+            <div class="sidebar-status">
+                <span class="sidebar-status-dot"></span>
+                <span class="sidebar-status-text">Kontrol ediliyor...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Push Content Wrapper — sidebar ile birlikte hareket eder -->
+    <div class="sidebar-push-content" id="pushContent">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark bg-gradient shadow-sm">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="sidebar-toggle-btn" id="openSidebar" title="Menüyü Aç/Kapat">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a class="navbar-brand d-flex align-items-center mb-0" href="/">
+                        <i class="fas fa-fighter-jet me-2 fa-lg"></i>
+                        <div>
+                            TUSAŞ
+                            <span class="d-block fs-6 fw-light" style="font-family:'Inter';letter-spacing:0;">
+                                LIFT UP Sanayi Odaklı Lisans Bitirme Projeleri Programı
+                            </span>
+                        </div>
+                    </a>
+                </div>
+                <span class="navbar-clock" id="navClock"></span>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container my-5">
+
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">Akademik Makale Ayrıştırma Aracı</h1>
+                <p class="lead text-muted">
+                    Akademik makalelerde yer alan
+                    <span style="color:var(--tusas-blue);font-weight:600;">Başlık, Özet ve Anahtar Kelime</span>
+                    alanlarını otomatik ayrıştırın.
+                </p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0 rounded-4">
+                        <div class="card-body p-5">
+
+                            <form id="uploadForm" enctype="multipart/form-data">
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fas fa-cloud-upload-alt me-2 text-primary"></i>PDF Dosyası Seçin
+                                    </label>
+                                    <div class="upload-area" id="uploadArea">
+                                        <input type="file" class="form-control d-none" id="pdfFile" name="pdfFile" accept=".pdf" required>
+                                        <div class="upload-content text-center" id="uploadContent">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                            <p class="mb-2 fw-semibold">Dosyayı sürükleyin veya tıklayın</p>
+                                            <p class="text-muted small">Maksimum dosya boyutu: 200MB</p>
+                                        </div>
+                                        <div class="file-info d-none" id="fileInfo">
+                                            <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                            <p class="mb-0 fw-semibold" id="fileName"></p>
+                                            <p class="text-muted small" id="fileSize"></p>
+                                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeFile">
+                                                <i class="fas fa-times me-1"></i> Kaldır
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="year" class="form-label fw-semibold">
+                                        <i class="fas fa-calendar me-2 text-primary"></i>Yıl Bilgisi
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="year" name="year"
+                                        value="2021-2022" placeholder="Örn: 2021-2022" required>
+                                    <div class="form-text"><i class="fas fa-info-circle me-1"></i>Bu bilgi CSV dosyasına yazılacaktır.</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3" id="submitBtn">
+                                    <i class="fas fa-cogs me-2"></i>VERİ ÇIKARMA İŞLEMİNİ BAŞLAT
+                                </button>
+                            </form>
+
+                            <div class="mt-4 d-none" id="progressSection">
+                                <div class="progress" style="height:30px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width:100%">
+                                        <span class="fw-semibold"><i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...</span>
+                                    </div>
+                                </div>
+                                <p class="text-center text-muted mt-3 mb-0" id="progressText">PDF dosyanız işleniyor, lütfen bekleyin...</p>
+                            </div>
+
+                            <div class="mt-4 d-none" id="resultSection">
+                                <div class="alert alert-success shadow-sm border-0 rounded-3" role="alert">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                                        <div><h5 class="mb-1">İşlem Başarılı!</h5><p class="mb-0" id="resultMessage"></p></div>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-info btn-lg" id="analyzeBtn"><i class="fas fa-chart-bar me-2"></i>Analiz Sonuçlarını Gör</button>
+                                        <button class="btn btn-success btn-lg" id="downloadBtn"><i class="fas fa-download me-2"></i>CSV Dosyasını İndir</button>
+                                        <button class="btn btn-outline-secondary" id="resetBtn"><i class="fas fa-redo me-2"></i>Yeni İşlem Başlat</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-none" id="analysisSection">
+                                <div class="card border-0 shadow-sm rounded-3">
+                                    <div class="card-header bg-gradient-info text-white">
+                                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>CSV Analiz Sonuçları</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row mb-4">
+                                            <div class="col-md-3">
+                                                <div class="stat-box text-center p-3 bg-primary-light rounded-3">
+                                                    <i class="fas fa-file-alt fa-2x text-primary mb-2"></i>
+                                                    <h3 class="mb-0 fw-bold" id="statTotalArticles">-</h3>
+                                                    <p class="text-muted small mb-0">Toplam Makale</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="stat-box text-center p-3 bg-success-light rounded-3">
+                                                    <i class="fas fa-columns fa-2x text-success mb-2"></i>
+                                                    <h3 class="mb-0 fw-bold" id="statTotalColumns">-</h3>
+                                                    <p class="text-muted small mb-0">Toplam Sütun</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="stat-box text-center p-3 bg-warning-light rounded-3">
+                                                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                                                    <h3 class="mb-0 fw-bold" id="statMissingValues">-</h3>
+                                                    <p class="text-muted small mb-0">Eksik Değer</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="stat-box text-center p-3 bg-info-light rounded-3">
+                                                    <i class="fas fa-database fa-2x text-info mb-2"></i>
+                                                    <h3 class="mb-0 fw-bold" id="statFileSize">-</h3>
+                                                    <p class="text-muted small mb-0">Dosya Boyutu</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <h6 class="fw-semibold mb-3"><i class="fas fa-language me-2 text-primary"></i>Dil Bazlı Tamamlanma Oranları</h6>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span class="small fw-semibold">🇹🇷 Türkçe</span>
+                                                        <span class="small fw-semibold" id="trPercentage">-</span>
+                                                    </div>
+                                                    <div class="progress" style="height:25px;">
+                                                        <div class="progress-bar bg-danger" id="trProgressBar" role="progressbar" style="width:0%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <span class="small fw-semibold">🇬🇧 İngilizce</span>
+                                                        <span class="small fw-semibold" id="enPercentage">-</span>
+                                                    </div>
+                                                    <div class="progress" style="height:25px;">
+                                                        <div class="progress-bar bg-primary" id="enProgressBar" role="progressbar" style="width:0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6 class="fw-semibold mb-3"><i class="fas fa-table me-2 text-primary"></i>İlk 5 Makale Verisi</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-bordered" id="dataPreviewTable">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Sayfa</th><th>Yıl</th><th>Başlık (TR)</th><th>Başlık (EN)</th>
+                                                            <th>Özet (TR)</th><th>Özet (EN)</th><th>Anahtar (TR)</th><th>Anahtar (EN)</th><th>Durum</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="dataPreviewBody"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 d-none" id="missingDetailsSection">
+                                            <h6 class="fw-semibold mb-3"><i class="fas fa-info-circle me-2 text-warning"></i>Eksik Değer Detayları</h6>
+                                            <div class="alert alert-warning" id="missingDetailsList"></div>
+                                        </div>
+                                        <div class="d-flex gap-2 mt-3">
+                                            <button class="btn btn-success" id="downloadBtnFromAnalysis"><i class="fas fa-download me-2"></i>CSV İndir</button>
+                                            <button class="btn btn-outline-secondary" id="closeAnalysisBtn"><i class="fas fa-times me-2"></i>Kapat</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-none" id="errorSection">
+                                <div class="alert alert-danger shadow-sm border-0 rounded-3" role="alert">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                                        <div class="flex-grow-1">
+                                            <h5 class="mb-2">Hata Oluştu</h5>
+                                            <p class="mb-0" id="errorMessage"></p>
+                                            <button class="btn btn-outline-danger mt-3" id="retryBtn"><i class="fas fa-redo me-2"></i>Tekrar Dene</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="info-card text-center p-4">
+                                <i class="fas fa-heading fa-2x text-primary mb-3"></i>
+                                <h6 class="fw-semibold">Başlık Çıkarma</h6>
+                                <p class="text-muted small mb-0">Doküman içerisindeki makale başlıkları tespit edilir.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card text-center p-4">
+                                <i class="fas fa-align-left fa-2x text-success mb-3"></i>
+                                <h6 class="fw-semibold">Özet Çıkarma</h6>
+                                <p class="text-muted small mb-0">Makalenin özet bölümü metin içeriğinden ayrıştırılır.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card text-center p-4">
+                                <i class="fas fa-tags fa-2x text-warning mb-3"></i>
+                                <h6 class="fw-semibold">Anahtar Kelimeler</h6>
+                                <p class="text-muted small mb-0">Makalenin anahtar kelimeleri özet bölümünden belirlenir.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer py-4 text-center">
+            <div class="container">
+                <p class="mb-1 text-white fw-bold">TUSAŞ - Türk Havacılık ve Uzay Sanayii A.Ş.</p>
+                <p class="small mb-0 opacity-50">&copy; 2026 TUSAŞ - LIFT UP Prestige Ekibi, Tüm Hakları Saklıdır.</p>
+            </div>
+        </footer>
+
+    </div><!-- /sidebar-push-content -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/shared/dashboard.js"></script>
+    <script src="/static/pdf-extract/pdf-extract.js"></script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFT UP — Admin Paneli</title>
+    <meta name="description" content="TUSAŞ LIFT UP Admin Paneli — Veri yönetimi ve analiz araçları.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/shared/style.css">
+    <link rel="stylesheet" href="/static/shared/dashboard.css">
+</head>
+
+<body>
+
+    <!-- ── Sidebar Overlay (sadece mobil) ──────────── -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ── Sidebar Drawer (varsayılan AÇIK) ────────── -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-drawer-header">
+            <a href="/" class="sidebar-drawer-brand">
+                <i class="fas fa-fighter-jet"></i>
+                <div class="sidebar-drawer-brand-text">
+                    <span class="brand-main">TUSAŞ</span>
+                    <span class="brand-sub">LIFT UP Admin</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar-drawer-nav">
+            <div class="sidebar-nav-label">Genel</div>
+            <a href="/" class="sidebar-nav-link active-link">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a>
+
+            <div class="sidebar-nav-label">Araçlar</div>
+            <a href="/pdf-extract" class="sidebar-nav-link">
+                <i class="fas fa-file-pdf"></i><span>PDF Veri Çıkarıcı</span>
+            </a>
+            <a href="/data-management" class="sidebar-nav-link">
+                <i class="fas fa-database"></i><span>Veri Yönetimi</span>
+            </a>
+            <a href="/reports" class="sidebar-nav-link">
+                <i class="fas fa-chart-bar"></i><span>Raporlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/docs" target="_blank" class="sidebar-nav-link">
+                <i class="fas fa-book"></i><span>API Dokümantasyonu</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-drawer-footer">
+            <div class="sidebar-status">
+                <span class="sidebar-status-dot"></span>
+                <span class="sidebar-status-text">Kontrol ediliyor...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Push Content Wrapper (sidebar ile birlikte hareket eder) ── -->
+    <div class="sidebar-push-content" id="pushContent">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark bg-gradient shadow-sm">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="sidebar-toggle-btn" id="openSidebar" title="Menüyü Aç/Kapat">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a class="navbar-brand d-flex align-items-center mb-0" href="/">
+                        <i class="fas fa-fighter-jet me-2 fa-lg"></i>
+                        <div>
+                            TUSAŞ
+                            <span class="d-block fs-6 fw-light" style="font-family:'Inter';letter-spacing:0;">
+                                LIFT UP Sanayi Odaklı Lisans Bitirme Projeleri Programı
+                            </span>
+                        </div>
+                    </a>
+                </div>
+                <span class="navbar-clock" id="navClock"></span>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid px-4 my-5">
+
+            <!-- Hero Banner -->
+            <div class="dashboard-hero d-flex align-items-center justify-content-between mb-4">
+                <div class="position-relative" style="z-index:1;">
+                    <p class="hero-greeting mb-1" id="greeting">Merhaba!</p>
+                    <h1 class="hero-title">LIFT UP Admin Paneline<br>Hoş Geldiniz</h1>
+                    <p class="hero-desc mb-0">
+                        PDF veri çıkarma, veritabanı yönetimi ve analiz araçlarına buradan erişebilirsiniz.
+                    </p>
+                </div>
+                <div class="hero-icon-wrap d-none d-md-flex">
+                    <i class="fas fa-rocket hero-icon"></i>
+                    <div class="hero-ring hero-ring-1"><span></span></div>
+                    <div class="hero-ring hero-ring-2"><span></span></div>
+                </div>
+            </div>
+
+            <!-- Stat Row -->
+            <div class="row g-3 mb-5">
+                <div class="col-6 col-xl-3">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon" style="background:rgba(0,163,224,.1);color:var(--tusas-blue)">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <div class="admin-stat-value">666</div>
+                            <div class="admin-stat-label">Toplam Proje</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon" style="background:rgba(16,185,129,.1);color:#10b981">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <div class="admin-stat-value">384</div>
+                            <div class="admin-stat-label">Embedding Boyutu</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon" style="background:rgba(245,158,11,.1);color:#f59e0b">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div>
+                            <div class="admin-stat-value">4</div>
+                            <div class="admin-stat-label">Dönem (Yıl)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon" style="background:rgba(31,45,90,.1);color:var(--tusas-navy)">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div>
+                            <div class="admin-stat-value" id="apiStatus" style="font-size:1rem;">–</div>
+                            <div class="admin-stat-label">API Durumu</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool Cards -->
+            <div class="section-heading"><i class="fas fa-th-large"></i> Admin Araçları</div>
+            <div class="row g-4 mb-5">
+                <div class="col-md-6 col-xl-4">
+                    <a href="/pdf-extract" class="admin-tool-card" style="--card-accent:#E30613;">
+                        <span class="tool-status-badge tool-status-active">Aktif</span>
+                        <div class="tool-card-icon-wrap" style="background:rgba(227,6,19,.1);color:#E30613;">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3 class="admin-tool-card-title">PDF Veri Çıkarıcı</h3>
+                        <p class="admin-tool-card-desc">
+                            LIFT UP bildiri kitabı PDF'inden başlık, özet ve anahtar kelimeleri otomatik çıkarır, CSV olarak kaydeder.
+                        </p>
+                        <div class="admin-tool-tags">
+                            <span class="admin-tool-tag">PDF</span>
+                            <span class="admin-tool-tag">CSV</span>
+                            <span class="admin-tool-tag">PyMuPDF</span>
+                            <span class="admin-tool-tag">Async</span>
+                        </div>
+                        <i class="fas fa-arrow-right tool-arrow"></i>
+                    </a>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <a href="/data-management" class="admin-tool-card" style="--card-accent:#00a3e0;">
+                        <span class="tool-status-badge tool-status-active">Aktif</span>
+                        <div class="tool-card-icon-wrap" style="background:rgba(0,163,224,.1);color:var(--tusas-blue);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="admin-tool-card-title">Veri Yönetimi</h3>
+                        <p class="admin-tool-card-desc">
+                            Veritabanındaki projeleri listele, sayfalama ve arama asistanıyla kolayca göz at.
+                        </p>
+                        <div class="admin-tool-tags">
+                            <span class="admin-tool-tag">Tablo</span>
+                            <span class="admin-tool-tag">Arama</span>
+                            <span class="admin-tool-tag">Index</span>
+                        </div>
+                        <i class="fas fa-arrow-right tool-arrow"></i>
+                    </a>
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <a href="/reports" class="admin-tool-card" style="--card-accent:#10b981;">
+                        <span class="tool-status-badge tool-status-active" style="background:rgba(16,185,129,.12);color:#059669;border:1px solid rgba(16,185,129,.25);">Aktif</span>
+                        <div class="tool-card-icon-wrap" style="background:rgba(16,185,129,.1);color:#10b981;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="admin-tool-card-title">Raporlar & İstatistikler</h3>
+                        <p class="admin-tool-card-desc">
+                            Sistem kullanım istatistikleri, benzerlik analizi raporları ve veritabanı sağlık durumu grafikleri.
+                        </p>
+                        <div class="admin-tool-tags">
+                            <span class="admin-tool-tag">Analitik</span>
+                            <span class="admin-tool-tag">Grafikler</span>
+                            <span class="admin-tool-tag">Export</span>
+                        </div>
+                        <i class="fas fa-arrow-right tool-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="admin-info-alert mb-5">
+                <i class="fas fa-shield-alt fa-lg" style="color:var(--tusas-blue);flex-shrink:0;margin-top:2px;"></i>
+                <div>
+                    <strong>Admin Paneli Güvenlik Notu</strong>
+                    <p class="mb-0 mt-1">
+                        Bu panel yalnızca yetkili kullanıcılar içindir. Tüm API istekleri
+                        <code>X-Admin-Key</code> başlığı ile doğrulanmaktadır.
+                        API dokümantasyonu için <a href="/docs" target="_blank">Swagger UI</a>'ı ziyaret edin.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer py-4 text-center">
+            <div class="container">
+                <p class="mb-1 text-white fw-bold">TUSAŞ - Türk Havacılık ve Uzay Sanayii A.Ş.</p>
+                <p class="small mb-0 opacity-50">&copy; 2026 TUSAŞ - LIFT UP Prestige Ekibi, Tüm Hakları Saklıdır.</p>
+            </div>
+        </footer>
+
+    </div><!-- /sidebar-push-content -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/shared/dashboard.js"></script>
+</body>
+</html>
