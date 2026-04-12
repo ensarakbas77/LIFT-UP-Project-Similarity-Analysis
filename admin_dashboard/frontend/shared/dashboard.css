@@ -30,7 +30,8 @@
     width: 280px;
     background: linear-gradient(160deg, var(--tusas-navy) 0%, #0d1b3e 100%);
     z-index: 1050;
-    transform: translateX(0);               /* VARSAYILAN: AÇIK */
+    transform: translateX(0);
+    /* VARSAYILAN: AÇIK */
     transition: transform .32s cubic-bezier(.4, 0, .2, 1);
     display: flex;
     flex-direction: column;
@@ -38,7 +39,8 @@
 }
 
 .admin-sidebar.collapsed {
-    transform: translateX(-100%);           /* hamburger ile kapandığında */
+    transform: translateX(-100%);
+    /* hamburger ile kapandığında */
 }
 
 /* İçerik alanı sidebar açıkken sağa itilir */
@@ -620,9 +622,110 @@
 
 /* Sadece mobilde aktif */
 @media (max-width: 768px) {
-    .sidebar-overlay           { display: block; }
-    .sidebar-overlay.visible   { opacity: 1; pointer-events: all; }
-    .admin-sidebar             { transform: translateX(-100%); }  /* mobilde kapalı başlar */
-    .admin-sidebar:not(.collapsed) { transform: translateX(0); }  /* JS .collapsed kaldırınca açılır */
-    .sidebar-push-content      { margin-left: 0 !important; }
-}
+    .sidebar-overlay {
+        display: block;
+    }
+
+    .sidebar-overlay.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+
+    /* mobilde kapalı başlar */
+    .admin-sidebar:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    /* JS .collapsed kaldırınca açılır */
+    .sidebar-push-content {
+        margin-left: 0 !important;
+    }
+}
+
+/* ── Sidebar Kullanıcı Kartı ─────────────────── */
+.sidebar-user-card {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .75rem 1rem;
+    background: rgba(0, 163, 224, .07);
+    border: 1px solid rgba(0, 163, 224, .15);
+    border-radius: 12px;
+    margin-bottom: .85rem;
+}
+
+.sidebar-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--tusas-blue, #00A3E0) 0%, #0087ba 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 163, 224, .3);
+}
+
+.sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sidebar-user-name {
+    font-size: .8rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-email {
+    font-size: .65rem;
+    color: rgba(255, 255, 255, .4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Sidebar Çıkış Butonu ────────────────────── */
+.sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    width: 100%;
+    margin-top: .75rem;
+    padding: .6rem 1rem;
+    border: 1px solid rgba(227, 6, 19, .25);
+    border-radius: 10px;
+    background: rgba(227, 6, 19, .07);
+    color: rgba(255, 255, 255, .55);
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    letter-spacing: .3px;
+}
+
+.sidebar-logout-btn i {
+    font-size: .85rem;
+    color: rgba(227, 6, 19, .7);
+    transition: color .2s;
+}
+
+.sidebar-logout-btn:hover {
+    background: rgba(227, 6, 19, .15);
+    border-color: rgba(227, 6, 19, .4);
+    color: #fff;
+}
+
+.sidebar-logout-btn:hover i {
+    color: #E30613;
+}

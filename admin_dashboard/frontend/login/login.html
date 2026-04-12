@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap — LIFT UP Admin Paneli</title>
+    <meta name="description" content="TUSAŞ LIFT UP Admin Paneli — Yetkili giriş ekranı.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/login/login.css?v=2">
+</head>
+
+<body>
+
+    <!-- ── Animated Background ─────────────────────────── -->
+    <div class="bg-particles" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- ── Grid Lines Overlay ──────────────────────────── -->
+    <div class="grid-overlay" aria-hidden="true"></div>
+
+    <!-- ── Login Card ─────────────────────────────────── -->
+    <main class="login-wrapper" role="main">
+        <div class="login-card">
+
+            <!-- Logo / Brand -->
+            <header class="login-header">
+                <div class="brand-icon">
+                    <i class="fas fa-fighter-jet"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-main">TUSAŞ</span>
+                    <span class="brand-sub">LIFT UP Admin Paneli</span>
+                </div>
+            </header>
+
+            <div class="login-divider"></div>
+
+            <p class="login-subtitle">
+                <i class="fas fa-shield-alt"></i>
+                Yetkili personel girişi
+            </p>
+
+            <!-- Alert Box -->
+            <div class="login-alert" id="loginAlert" role="alert" aria-live="polite">
+                <i class="fas fa-exclamation-circle alert-icon"></i>
+                <span id="loginAlertMsg"></span>
+            </div>
+
+            <!-- Form -->
+            <form id="loginForm" class="login-form" novalidate autocomplete="off">
+                <div class="field-group">
+                    <label class="field-label" for="username">
+                        <i class="fas fa-user"></i> Kullanıcı Adı
+                    </label>
+                    <div class="field-input-wrap">
+                        <input
+                            class="field-input"
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="kullanıcı adınızı girin"
+                            autocomplete="username"
+                            required
+                        >
+                        <span class="field-focus-ring"></span>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="password">
+                        <i class="fas fa-lock"></i> Şifre
+                    </label>
+                    <div class="field-input-wrap">
+                        <input
+                            class="field-input"
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="şifrenizi girin"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            id="togglePassword"
+                            aria-label="Şifreyi göster/gizle"
+                        >
+                            <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                        </button>
+                        <span class="field-focus-ring"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text" id="btnText">
+                        <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                    </span>
+                    <span class="btn-loader" id="btnLoader" style="display:none;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Doğrulanıyor...
+                    </span>
+                </button>
+            </form>
+
+            <!-- Footer note -->
+            <footer class="login-footer">
+                <i class="fas fa-lock-open"></i>
+                Bu sistem yalnızca yetkili TUSAŞ personeli içindir.
+            </footer>
+        </div>
+
+        <!-- Version badge -->
+        <div class="version-badge">v1.0.0 · 2026</div>
+    </main>
+
+    <script src="/static/login/login.js?v=2"></script>
+</body>
+
+</html>

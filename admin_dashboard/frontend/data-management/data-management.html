@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,11 @@
     <meta name="description" content="LIFT UP projelerinin listelendiği, arama yapılabilen veri yönetimi paneli.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/shared/style.css">
-    <link rel="stylesheet" href="/static/shared/dashboard.css">
+    <link rel="stylesheet" href="/static/shared/dashboard.css?v=2">
     <style>
         .data-card {
             background: #fff;
@@ -19,11 +22,13 @@
             border: 1px solid #f0f4f8;
             height: 100%;
         }
+
         .search-wrapper {
             position: relative;
             max-width: 500px;
             width: 100%;
         }
+
         .search-wrapper .fa-search {
             position: absolute;
             left: 15px;
@@ -31,6 +36,7 @@
             transform: translateY(-50%);
             color: #94a3b8;
         }
+
         .search-input {
             padding-left: 40px;
             border-radius: 10px;
@@ -38,14 +44,17 @@
             background: #f8fafc;
             transition: all 0.3s ease;
         }
+
         .search-input:focus {
             background: #fff;
             border-color: var(--tusas-blue);
             box-shadow: 0 0 0 0.25rem rgba(0, 163, 224, 0.25);
         }
+
         .table-custom {
             margin-top: 1.5rem;
         }
+
         .table-custom thead th {
             background: rgba(31, 45, 90, 0.04);
             color: var(--tusas-navy);
@@ -54,21 +63,25 @@
             padding: 1rem;
             white-space: nowrap;
         }
+
         .table-custom tbody td {
             vertical-align: middle;
             color: #475569;
             padding: 1rem;
             border-bottom: 1px solid #f1f5f9;
         }
+
         .table-custom tbody tr:hover {
             background: #f8fafc;
         }
+
         .abstract-truncate {
             max-width: 350px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         .keyword-tag {
             font-size: 0.65rem;
             font-weight: 600;
@@ -80,6 +93,7 @@
             display: inline-block;
             margin-bottom: 4px;
         }
+
         .pagination-container {
             display: flex;
             justify-content: space-between;
@@ -88,19 +102,23 @@
             color: #64748b;
             font-size: 0.9rem;
         }
+
         .pagination-btns .btn {
             border-color: #e2e8f0;
             color: #475569;
         }
+
         .pagination-btns .btn:hover {
             background: var(--tusas-gray);
         }
+
         .pagination-btns .btn:disabled {
             background: #f1f5f9;
             opacity: 0.5;
         }
     </style>
 </head>
+
 <body>
 
     <!-- Sidebar Overlay (sadece mobil) -->
@@ -109,7 +127,7 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-drawer-header">
-            <a href="/" class="sidebar-drawer-brand">
+            <a href="/dashboard" class="sidebar-drawer-brand">
                 <i class="fas fa-fighter-jet"></i>
                 <div class="sidebar-drawer-brand-text">
                     <span class="brand-main">TUSAŞ</span>
@@ -119,7 +137,7 @@
         </div>
         <nav class="sidebar-drawer-nav">
             <div class="sidebar-nav-label">Genel</div>
-            <a href="/" class="sidebar-nav-link">
+            <a href="/dashboard" class="sidebar-nav-link">
                 <i class="fas fa-th-large"></i><span>Dashboard</span>
             </a>
             <div class="sidebar-nav-label">Araçlar</div>
@@ -138,10 +156,26 @@
             </a>
         </nav>
         <div class="sidebar-drawer-footer">
+            <!-- Kullanıcı Kartı -->
+            <div class="sidebar-user-card">
+                <div class="sidebar-user-avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="sidebar-user-info">
+                    <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
+                    <span class="sidebar-user-email" id="sidebarUserEmail">—</span>
+                </div>
+            </div>
+            <!-- Sistem Durumu -->
             <div class="sidebar-status">
                 <span class="sidebar-status-dot"></span>
                 <span class="sidebar-status-text">Kontrol ediliyor...</span>
             </div>
+            <!-- Çıkış Butonu -->
+            <button class="sidebar-logout-btn" id="logoutBtn" title="Oturumu Kapat">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Çıkış Yap</span>
+            </button>
         </div>
     </aside>
 
@@ -155,7 +189,7 @@
                     <button class="sidebar-toggle-btn" id="openSidebar" title="Menüyü Aç/Kapat">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <a class="navbar-brand d-flex align-items-center mb-0" href="/">
+                    <a class="navbar-brand d-flex align-items-center mb-0" href="/dashboard">
                         <i class="fas fa-fighter-jet me-2 fa-lg"></i>
                         <div>
                             TUSAŞ
@@ -173,18 +207,20 @@
         <div class="container-fluid px-4 my-5 page-fade">
 
             <div class="text-center mb-5">
-                <h1 class="display-5 mb-3 fw-bold" style="color:var(--tusas-navy); font-family:'Orbitron', sans-serif;">Veritabanı Yönetimi</h1>
+                <h1 class="display-5 mb-3 fw-bold" style="color:var(--tusas-navy); font-family:'Orbitron', sans-serif;">
+                    Veritabanı Yönetimi</h1>
                 <p class="lead text-muted">
                     Semantik arama motorunu besleyen eğitim verilerini görüntüleyin ve projelerde arama yapın.
                 </p>
             </div>
 
             <div class="data-card">
-                
+
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                     <div class="search-wrapper">
                         <i class="fas fa-search"></i>
-                        <input type="text" id="searchInput" class="form-control form-control-lg search-input" placeholder="Başlık, özet veya anahtar kelime ile projelerde ara...">
+                        <input type="text" id="searchInput" class="form-control form-control-lg search-input"
+                            placeholder="Başlık, özet veya anahtar kelime ile projelerde ara...">
                     </div>
                 </div>
 
@@ -213,8 +249,10 @@
                 <div class="pagination-container">
                     <div id="pageInfo">Gösterilen: 0 proje</div>
                     <div class="pagination-btns d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary" id="prevBtn" disabled><i class="fas fa-chevron-left me-1"></i> Önceki</button>
-                        <button class="btn btn-sm btn-outline-secondary" id="nextBtn" disabled>Sonraki <i class="fas fa-chevron-right ms-1"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" id="prevBtn" disabled><i
+                                class="fas fa-chevron-left me-1"></i> Önceki</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="nextBtn" disabled>Sonraki <i
+                                class="fas fa-chevron-right ms-1"></i></button>
                     </div>
                 </div>
 
@@ -223,28 +261,39 @@
         </div>
 
         <!-- Project Detail Modal -->
-        <div class="modal fade" id="projectDetailModal" tabindex="-1" aria-labelledby="projectDetailModalLabel" aria-hidden="true">
+        <div class="modal fade" id="projectDetailModal" tabindex="-1" aria-labelledby="projectDetailModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                 <div class="modal-content border-0 shadow-lg rounded-4">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 100%);">
-                        <h5 class="modal-title fw-bold text-white" id="projectDetailModalLabel"><i class="fas fa-book-open me-2 text-info"></i> Proje Detayları</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-header text-white"
+                        style="background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 100%);">
+                        <h5 class="modal-title fw-bold text-white" id="projectDetailModalLabel"><i
+                                class="fas fa-book-open me-2 text-info"></i> Proje Detayları</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-4">
                         <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
                             <span class="badge bg-primary px-3 py-2 fs-6 me-3" id="modalYear"></span>
-                            <span class="text-muted fw-bold">Proje Kayıt ID: <span id="modalId" style="color:var(--tusas-navy)"></span></span>
+                            <span class="text-muted fw-bold">Proje Kayıt ID: <span id="modalId"
+                                    style="color:var(--tusas-navy)"></span></span>
                         </div>
-                        <h4 class="fw-bold mb-4" id="modalTitle" style="color: var(--tusas-navy); line-height: 1.4;"></h4>
-                        
-                        <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-align-left me-2 text-primary"></i>Özet</h6>
-                        <div class="p-3 rounded-3 mb-4" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.95rem; line-height: 1.7; color: #334155;" id="modalAbstract"></div>
-                        
-                        <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-tags me-2 text-warning"></i>Anahtar Kelimeler</h6>
+                        <h4 class="fw-bold mb-4" id="modalTitle" style="color: var(--tusas-navy); line-height: 1.4;">
+                        </h4>
+
+                        <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-align-left me-2 text-primary"></i>Özet
+                        </h6>
+                        <div class="p-3 rounded-3 mb-4"
+                            style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.95rem; line-height: 1.7; color: #334155;"
+                            id="modalAbstract"></div>
+
+                        <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-tags me-2 text-warning"></i>Anahtar
+                            Kelimeler</h6>
                         <div id="modalKeywords" class="d-flex flex-wrap gap-2"></div>
                     </div>
                     <div class="modal-footer bg-light border-0 rounded-bottom-4">
-                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Kapat</button>
+                        <button type="button" class="btn btn-secondary px-4 fw-bold"
+                            data-bs-dismiss="modal">Kapat</button>
                     </div>
                 </div>
             </div>
@@ -260,7 +309,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/shared/dashboard.js"></script>
+    <script src="/static/shared/dashboard.js?v=2"></script>
     <script src="/static/data-management/data-management.js"></script>
 </body>
+
 </html>

@@ -24,6 +24,7 @@ from fastapi.responses import FileResponse
 from app.core.config import admin_settings
 from app.api.routes import extract, csv_ops, cleanup
 from app.api import projects
+from app.api import auth
 
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ app.add_middleware(
 
 # ─── Router'ları Kaydet ───────────────────────────────────────────────────────
 
+app.include_router(auth.router)
 app.include_router(extract.router)
 app.include_router(csv_ops.router)
 app.include_router(cleanup.router)
@@ -111,6 +113,12 @@ if os.path.isdir(_FRONTEND_DIR):
 
 
 @app.get("/", tags=["Sistem"], include_in_schema=False)
+def serve_login() -> FileResponse:
+    """Admin giriş sayfasını serve eder."""
+    return FileResponse(os.path.join(_FRONTEND_DIR, "login", "login.html"))
+
+
+@app.get("/dashboard", tags=["Sistem"], include_in_schema=False)
 def serve_frontend() -> FileResponse:
     """Admin dashboard ana sayfasını serve eder."""
     return FileResponse(os.path.join(_FRONTEND_DIR, "dashboard", "index.html"))
