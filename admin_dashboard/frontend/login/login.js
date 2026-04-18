@@ -6,7 +6,7 @@
  * - Dashboard'a yönlendirir
  */
 
-const API_BASE = '';   // Aynı origin — FastAPI serve ediyor
+const API_BASE = '';
 
 // ── DOM Referansları ─────────────────────────────────────────────
 const form = document.getElementById('loginForm');

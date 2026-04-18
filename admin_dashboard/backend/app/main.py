@@ -10,7 +10,6 @@ Startup sırasında:
 Shutdown sırasında:
   (Gerekirse ek temizlik yapılabilir)
 
-Ana backend'deki main.py yapısını birebir takip eder.
 """
 
 import os

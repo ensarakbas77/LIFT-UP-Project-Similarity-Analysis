@@ -6,7 +6,6 @@
 // ── Auth Guard ───────────────────────────────────────────────────────────────
 // Dashboard sayfaları: token yoksa /'e yönlendir
 (function authGuard() {
-    // / sayfasındaysa guard çalışmasın (artik login /'te)
     if (window.location.pathname === '/' || window.location.pathname === '/login') return;
 
     const token = localStorage.getItem('lift_admin_token');

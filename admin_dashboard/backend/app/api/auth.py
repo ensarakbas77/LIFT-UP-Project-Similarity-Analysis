@@ -10,7 +10,7 @@ Endpoint'ler:
 import os
 import time
 
-import bcrypt as _bcrypt          # doğrudan bcrypt kütüphanesi
+import bcrypt as _bcrypt          
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -18,7 +18,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-import jwt                         # PyJWT
+import jwt                         
 
 from app.core.config import admin_settings
 
@@ -28,7 +28,7 @@ from app.core.config import admin_settings
 bearer_scheme = HTTPBearer(auto_error=False)
 
 # JWT ayarları (.env'den okun; yoksa güvenli bir default)
-JWT_SECRET: str = os.getenv("JWT_SECRET", "lift-up-jwt-super-secret-2026")
+JWT_SECRET: str = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 saat
 
@@ -68,7 +68,7 @@ def get_db():
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    """Direkt bcrypt doğrulaması (passlib çözümsüz hatasından kaçınmak için)."""
+    """Direkt bcrypt doğrulaması"""
     try:
         return _bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
     except Exception:
@@ -136,7 +136,7 @@ def login(req: LoginRequest):
         cur.close()
         conn.close()
 
-    # Kullanıcı yoksa veya şifre yanlışsa aynı hata mesajı (timing-safe olmak için)
+    # Kullanıcı yoksa veya şifre yanlışsa aynı hata mesajı
     if not user or not verify_password(req.password, user["password_hash"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

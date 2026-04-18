@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             datasets: [{
                 label: 'Makale Sayısı',
                 data: [132, 98, 154, 282],
-                backgroundColor: '#5a7bb0', // Görseldeki soft mavi-lacivert tonu
+                backgroundColor: '#5a7bb0',
                 borderRadius: 2,
                 borderWidth: 0,
                 barPercentage: 0.8,

@@ -21,7 +21,7 @@ class AdminSettings:
     DB_PORT: str = os.getenv("DB_PORT", "5432")
 
     # Admin API Güvenlik Anahtarı
-    ADMIN_API_KEY: str = os.getenv("ADMIN_API_KEY", "lift-up-admin-secret-2026")
+    ADMIN_API_KEY: str = os.getenv("ADMIN_API_KEY", "")
 
     # Geçici Dosya Dizini (PDF yükleme işleri için)
     JOBS_DIR: str = os.getenv("JOBS_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "jobs"))

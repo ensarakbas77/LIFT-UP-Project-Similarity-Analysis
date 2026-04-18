@@ -3,7 +3,6 @@ Admin Backend — Route Katmanı: Geçici Dosya Temizleme.
 
 DELETE /admin/cleanup/{job_id} → İş geçici dizinini sil
 
-Flask'taki POST /cleanup/<temp_id> endpoint'inin FastAPI karşılığı.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -25,9 +24,6 @@ router = APIRouter(prefix="/admin", tags=["Admin — Temizleme"])
 def cleanup(job_id: str) -> CleanupResponse:
     """
     Geçici iş dosyalarını siler.
-
-    Flask'ta POST /cleanup/<temp_id> kullanılıyordu.
-    RESTful convention'a uygun olarak burada DELETE metodu kullanılır.
 
     Args:
         job_id: Temizlenecek iş kimliği.

@@ -4,7 +4,6 @@ Admin Backend — Route Katmanı: CSV Analiz ve İndirme.
 GET  /admin/analyze/{job_id}/{filename}  → CSV analiz sonuçları
 GET  /admin/download/{job_id}/{filename} → CSV dosyası indirme
 
-Flask'taki /analyze ve /download route'larının FastAPI karşılığı.
 Ana backend'deki health.py route yapısını takip eder.
 """
 
