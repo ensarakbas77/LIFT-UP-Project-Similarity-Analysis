@@ -1,240 +1,348 @@
 /**
- * LIFT UP Admin — Reports & Analytics Logic
- * Grafikleri Chart.js kullanarak doldurur.
+ * LIFT UP Admin — Reports & Analytics
+ * Tüm istatistikler /api/projects/ endpoint'inden gerçek veriyle hesaplanır.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Ortak Chart.js Ayarları
     Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = "#64748b";
-    
-    // Animasyonla değerleri say (Top cards)
-    animateValue("metricUsage", 0, 1284, 1500, "");
-    animateValue("metricSim", 0, 42, 1500, "%");
-    animateValue("metricDB", 0, 246, 1500, " MB");
+    Chart.defaults.color = '#64748b';
 
-    // Inline plugin to show values on top of bars
-    const barValuePlugin = {
-        id: 'barValuePlugin',
-        afterDatasetsDraw(chart, args, pluginOptions) {
-            const { ctx } = chart;
-            chart.data.datasets.forEach((dataset, i) => {
-                const meta = chart.getDatasetMeta(i);
-                meta.data.forEach((bar, index) => {
-                    const data = dataset.data[index];
-                    ctx.save();
-                    ctx.fillStyle = '#334155'; // koyu gri/mavi metin rengi
-                    ctx.font = '500 13px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillText(data, bar.x, bar.y - 6);
-                    ctx.restore();
+    const YEAR_COLORS = {
+        '2020-2021': { bg: 'rgba(0,163,224,.85)',    border: '#00a3e0' },
+        '2021-2022': { bg: 'rgba(31,45,90,.85)',     border: '#1F2D5A' },
+        '2022-2023': { bg: 'rgba(16,185,129,.85)',   border: '#10b981' },
+        '2023-2024': { bg: 'rgba(245,158,11,.85)',   border: '#f59e0b' },
+    };
+
+    let yearlyChartInst  = null;
+    let donutChartInst   = null;
+    let abstractChartInst = null;
+
+    // ── Veri çek ─────────────────────────────────────────────────────────────
+    fetch('/api/projects/')
+        .then(res => {
+            if (!res.ok) throw new Error('API hatası');
+            return res.json();
+        })
+        .then(data => {
+            buildReports(data);
+        })
+        .catch(err => {
+            console.warn('API bağlantısı kurulamadı, örnek veri kullanılıyor:', err);
+            buildReports(generateMockData());
+        });
+
+    // ── Ana hesaplama ve render ───────────────────────────────────────────────
+    function buildReports(projects) {
+
+        // ── 1. Yıl bazlı sayım ────────────────────────────────────────────────
+        const yearCount = {};
+        projects.forEach(p => {
+            const y = p.year || 'Bilinmiyor';
+            yearCount[y] = (yearCount[y] || 0) + 1;
+        });
+        const sortedYears = Object.keys(yearCount).sort();
+
+        // ── 2. Anahtar kelime frekansı ────────────────────────────────────────
+        const kwFreq = {};
+        projects.forEach(p => {
+            if (!p.keywords) return;
+            p.keywords.split(',').forEach(kw => {
+                const clean = kw.trim().toLowerCase();
+                if (clean.length > 1) kwFreq[clean] = (kwFreq[clean] || 0) + 1;
+            });
+        });
+        const sortedKw = Object.entries(kwFreq)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15);
+        const uniqueKwCount = Object.keys(kwFreq).length;
+
+        // ── 3. Özet kelime uzunlukları ────────────────────────────────────────
+        const abstractLengths = projects
+            .map(p => (p.abstract || '').split(/\s+/).filter(w => w).length)
+            .filter(n => n > 0);
+
+        const avgAbstract = abstractLengths.length
+            ? Math.round(abstractLengths.reduce((a, b) => a + b, 0) / abstractLengths.length)
+            : 0;
+
+        // Histogram bucket'leri (kelime sayısı aralıkları)
+        const buckets = [
+            { label: '0-50',   min: 0,   max: 50   },
+            { label: '51-100', min: 51,  max: 100  },
+            { label: '101-150',min: 101, max: 150  },
+            { label: '151-200',min: 151, max: 200  },
+            { label: '201-300',min: 201, max: 300  },
+            { label: '300+',   min: 301, max: Infinity },
+        ];
+        const bucketCounts = buckets.map(b =>
+            abstractLengths.filter(n => n >= b.min && n <= b.max).length
+        );
+
+        // ── Stat kartlarını doldur ─────────────────────────────────────────────
+        animateValue('statTotal',       0, projects.length,   1200, '');
+        animateValue('statYears',       0, sortedYears.length, 800, '');
+        animateValue('statKeywords',    0, uniqueKwCount,     1400, '');
+        animateValue('statAvgAbstract', 0, avgAbstract,       1200, '');
+
+        // ── Grafik 1: Yıl bazlı bar chart ────────────────────────────────────
+        renderYearlyBar(sortedYears, yearCount);
+
+        // ── Grafik 2: Yıl bazlı donut chart ──────────────────────────────────
+        renderDonut(sortedYears, yearCount);
+
+        // ── Grafik 3: En sık anahtar kelimeler ───────────────────────────────
+        renderKeywordBars(sortedKw);
+
+        // ── Grafik 4: Özet uzunluğu histogramı ───────────────────────────────
+        renderAbstractHistogram(buckets, bucketCounts);
+    }
+
+    // ── Bar Chart ─────────────────────────────────────────────────────────────
+    function renderYearlyBar(years, yearCount) {
+        const ctx = document.getElementById('yearlyChart');
+        if (!ctx) return;
+
+        const bgColors = years.map(y => (YEAR_COLORS[y] || { bg: 'rgba(0,163,224,.8)' }).bg);
+
+        const barValuePlugin = {
+            id: 'barValuePlugin',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+                        ctx.save();
+                        ctx.fillStyle = '#334155';
+                        ctx.font = '600 13px Inter';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(dataset.data[idx], bar.x, bar.y - 6);
+                        ctx.restore();
+                    });
                 });
+            }
+        };
+
+        if (yearlyChartInst) yearlyChartInst.destroy();
+        yearlyChartInst = new Chart(ctx, {
+            type: 'bar',
+            plugins: [barValuePlugin],
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Proje Sayısı',
+                    data: years.map(y => yearCount[y]),
+                    backgroundColor: bgColors,
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.85,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 24 } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: c => `  Proje: ${c.parsed.y}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Proje Sayısı', font: { size: 12, weight: '500' }, color: '#64748b' },
+                        grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false }
+                    },
+                    x: {
+                        title: { display: true, text: 'Akademik Yıl', font: { size: 12, weight: '500' }, color: '#64748b' },
+                        grid: { display: false, drawBorder: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Donut Chart ───────────────────────────────────────────────────────────
+    function renderDonut(years, yearCount) {
+        const ctx = document.getElementById('donutChart');
+        if (!ctx) return;
+
+        const bgColors = years.map(y => (YEAR_COLORS[y] || { bg: '#94a3b8' }).bg);
+
+        if (donutChartInst) donutChartInst.destroy();
+        donutChartInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: years,
+                datasets: [{
+                    data: years.map(y => yearCount[y]),
+                    backgroundColor: bgColors,
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverOffset: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 16,
+                            font: { size: 12, weight: '600' },
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: c => ` ${c.label}: ${c.parsed} proje`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Keyword Bars ──────────────────────────────────────────────────────────
+    function renderKeywordBars(sortedKw) {
+        const container = document.getElementById('keywordBarsContainer');
+        if (!container || sortedKw.length === 0) return;
+
+        const maxCount = sortedKw[0][1];
+        container.innerHTML = '';
+
+        sortedKw.forEach(([kw, count], i) => {
+            const pct = Math.round((count / maxCount) * 100);
+            const row = document.createElement('div');
+            row.className = 'kw-bar-row';
+            row.innerHTML = `
+                <span class="kw-bar-label" title="${kw}">${kw}</span>
+                <div class="kw-bar-track">
+                    <div class="kw-bar-fill" data-pct="${pct}" style="width:0%;"></div>
+                </div>
+                <span class="kw-bar-count">${count}</span>
+            `;
+            container.appendChild(row);
+        });
+
+        // Animasyonlu genişleme (slight delay per row)
+        requestAnimationFrame(() => {
+            container.querySelectorAll('.kw-bar-fill').forEach((el, i) => {
+                setTimeout(() => {
+                    el.style.width = el.dataset.pct + '%';
+                }, i * 40);
+            });
+        });
+    }
+
+    // ── Abstract Histogram ────────────────────────────────────────────────────
+    function renderAbstractHistogram(buckets, counts) {
+        const ctx = document.getElementById('abstractChart');
+        if (!ctx) return;
+
+        if (abstractChartInst) abstractChartInst.destroy();
+        abstractChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: buckets.map(b => b.label),
+                datasets: [{
+                    label: 'Proje Sayısı',
+                    data: counts,
+                    backgroundColor: 'rgba(139,92,246,.75)',
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barPercentage: 0.75,
+                    categoryPercentage: 0.9,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: c => `Kelime aralığı: ${c[0].label}`,
+                            label: c => `  Proje: ${c.parsed.y}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Proje', font: { size: 12, weight: '500' }, color: '#64748b' },
+                        grid: { color: 'rgba(0,0,0,0.06)', drawBorder: false }
+                    },
+                    x: {
+                        title: { display: true, text: 'Özet kelime sayısı', font: { size: 12, weight: '500' }, color: '#64748b' },
+                        grid: { display: false, drawBorder: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Sayı animasyonu ───────────────────────────────────────────────────────
+    function animateValue(id, start, end, duration, suffix) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let startTs = null;
+        const step = ts => {
+            if (!startTs) startTs = ts;
+            const progress = Math.min((ts - startTs) / duration, 1);
+            el.textContent = Math.floor(progress * (end - start) + start).toLocaleString('tr-TR') + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+
+    // ── PNG indir ─────────────────────────────────────────────────────────────
+    window.downloadChart = function (canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const tmp = document.createElement('canvas');
+        tmp.width  = canvas.width;
+        tmp.height = canvas.height;
+        const ctx = tmp.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, tmp.width, tmp.height);
+        ctx.drawImage(canvas, 0, 0);
+        const a = document.createElement('a');
+        a.download = `liftup-rapor-${canvasId}-${Date.now()}.png`;
+        a.href = tmp.toDataURL('image/png');
+        a.click();
+    };
+
+    // ── Mock veri (API yokken) ────────────────────────────────────────────────
+    function generateMockData() {
+        const years = ['2020-2021', '2021-2022', '2022-2023', '2023-2024'];
+        const kwPool = [
+            'Yapay Zeka', 'Makine Öğrenmesi', 'Derin Öğrenme', 'Kompozit Malzeme',
+            'Sonlu Elemanlar', 'Aerodinamik', 'Aviyonik', 'Kontrol Sistemi',
+            'İHA', 'Otonom Sistem', 'Navigasyon', 'Termal Analiz',
+            'Yapısal Analiz', 'Titreşim', 'Optimizasyon', 'Malzeme Testi',
+        ];
+        const data = [];
+        for (let i = 1; i <= 666; i++) {
+            const kws = kwPool.slice(0, 2 + (i % 4)).join(', ');
+            const wordCount = 80 + (i % 5) * 30;
+            data.push({
+                id: i + 1000,
+                year: years[i % 4],
+                title: `Proje ${i}: Havacılık Uygulaması`,
+                abstract: Array(wordCount).fill('kelime').join(' '),
+                keywords: kws,
             });
         }
-    };
+        return data;
+    }
 
-    // 1. Bar Chart - Yıllara Göre Makale Sayısı
-    const ctxYearly = document.getElementById('yearlyChart').getContext('2d');
-    new Chart(ctxYearly, {
-        type: 'bar',
-        data: {
-            labels: ['2020-2021', '2021-2022', '2022-2023', '2023-2024'],
-            datasets: [{
-                label: 'Makale Sayısı',
-                data: [132, 98, 154, 282],
-                backgroundColor: '#5a7bb0',
-                borderRadius: 2,
-                borderWidth: 0,
-                barPercentage: 0.8,
-                categoryPercentage: 0.9
-            }]
-        },
-        plugins: [barValuePlugin],
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-                padding: { top: 20 } // Yazıların üste taşmaması için pay
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) { return '  Makale: ' + context.parsed.y; }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Makale Sayısı',
-                        font: { size: 14, weight: '500' },
-                        color: '#334155'
-                    },
-                    grid: { color: 'rgba(0,0,0,0.08)', drawBorder: false }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Yıl',
-                        font: { size: 14, weight: '500' },
-                        color: '#334155'
-                    },
-                    grid: { display: false, drawBorder: false },
-                    ticks: {
-                        font: { size: 13, color: '#334155' }
-                    }
-                }
-            }
-        }
-    });
-
-    // 2. Doughnut Chart - Dil Dağılımı
-    const ctxLang = document.getElementById('langChart').getContext('2d');
-    new Chart(ctxLang, {
-        type: 'doughnut',
-        data: {
-            labels: ['Türkçe', 'İngilizce', 'Diğer'],
-            datasets: [{
-                data: [68, 28, 4],
-                backgroundColor: [
-                    '#10b981', // Yeşil
-                    '#00a3e0', // Mavi
-                    '#f59e0b'  // Sarı
-                ],
-                borderWidth: 0,
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
-
-    // 3. Line Chart - API İstek Yoğunluğu
-    const ctxActivity = document.getElementById('activityChart').getContext('2d');
-    
-    // Gradient for line chart
-    let gradientLine = ctxActivity.createLinearGradient(0, 0, 0, 300);
-    gradientLine.addColorStop(0, 'rgba(0, 163, 224, 0.5)');
-    gradientLine.addColorStop(1, 'rgba(0, 163, 224, 0.0)');
-
-    new Chart(ctxActivity, {
-        type: 'line',
-        data: {
-            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
-            datasets: [{
-                label: 'İstek Sayısı',
-                data: [120, 190, 150, 320, 210, 45, 60],
-                borderColor: '#00a3e0',
-                backgroundColor: gradientLine,
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#00a3e0',
-                pointBorderWidth: 2,
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }
-                },
-                x: {
-                    grid: { display: false, drawBorder: false }
-                }
-            }
-        }
-    });
-
-    // 4. Radar Chart - Kategori Analizi
-    const ctxRadar = document.getElementById('radarChart').getContext('2d');
-    new Chart(ctxRadar, {
-        type: 'radar',
-        data: {
-            labels: ['Yapay Zeka', 'Malzeme', 'Aviyonik', 'Yapısal', 'İtki', 'Sistem Müh.'],
-            datasets: [{
-                label: 'Proje Sayısı',
-                data: [85, 45, 60, 50, 40, 75],
-                backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                borderColor: '#f59e0b',
-                pointBackgroundColor: '#f59e0b',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: '#f59e0b'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                r: {
-                    angleLines: { color: 'rgba(0,0,0,0.05)' },
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    pointLabels: {
-                        font: { family: "'Inter', sans-serif", size: 11 },
-                        color: '#64748b'
-                    },
-                    ticks: { display: false }
-                }
-            }
-        }
-    });
 });
-
-// Sayı sayma efekti fonksiyonu
-function animateValue(id, start, end, duration, suffix) {
-    const obj = document.getElementById(id);
-    if (!obj) return;
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const currentVal = Math.floor(progress * (end - start) + start);
-        obj.innerHTML = currentVal.toLocaleString('tr-TR') + suffix;
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// Global scope attach download
-window.downloadChart = function(canvasId) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    
-    // Geçici bir arka plan ekleyerek şeffaflığı siyah olmaktan kurtarmak için
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const ctx = tempCanvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-    ctx.drawImage(canvas, 0, 0);
-
-    const link = document.createElement('a');
-    link.download = `liftup-rapor-${canvasId}-${new Date().getTime()}.png`;
-    link.href = tempCanvas.toDataURL('image/png');
-    link.click();
-};

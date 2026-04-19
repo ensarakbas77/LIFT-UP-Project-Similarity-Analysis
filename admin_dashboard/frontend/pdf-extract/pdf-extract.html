@@ -46,6 +46,26 @@
             <a href="/reports" class="sidebar-nav-link">
                 <i class="fas fa-chart-bar"></i><span>Raporlar</span>
             </a>
+
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/settings" class="sidebar-nav-link">
+                <i class="fas fa-cog"></i><span>Ayarlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Notebooks</div>
+            <a href="https://github.com/ensarakbas77/LIFT-UP-Dataset-Preparation/blob/main/notebooks/Data_Preprocessing.ipynb"
+               target="_blank" rel="noopener noreferrer" class="sidebar-nav-link">
+                <i class="fas fa-broom"></i>
+                <span>Data Preprocessing</span>
+                <i class="fas fa-external-link-alt ms-auto" style="font-size:.55rem;opacity:.45;"></i>
+            </a>
+            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-admin/notebooks/SBERT.ipynb"
+               target="_blank" rel="noopener noreferrer" class="sidebar-nav-link">
+                <i class="fas fa-brain"></i>
+                <span>SBERT Model</span>
+                <i class="fas fa-external-link-alt ms-auto" style="font-size:.55rem;opacity:.45;"></i>
+            </a>
+
         </nav>
         <div class="sidebar-drawer-footer">
             <div class="sidebar-user-card">
@@ -138,8 +158,13 @@
                                     <label for="year" class="form-label fw-semibold">
                                         <i class="fas fa-calendar me-2 text-primary"></i>Yıl Bilgisi
                                     </label>
-                                    <input type="text" class="form-control form-control-lg" id="year" name="year"
-                                        value="2021-2022" placeholder="Örn: 2021-2022" required>
+                                    <select class="form-select form-select-lg" id="year" name="year" required>
+                                        <option value="" disabled selected hidden>Yıl seçiniz...</option>
+                                        <option value="2020-2021">2020-2021</option>
+                                        <option value="2021-2022">2021-2022</option>
+                                        <option value="2022-2023">2022-2023</option>
+                                        <option value="2023-2024">2023-2024</option>
+                                    </select>
                                     <div class="form-text"><i class="fas fa-info-circle me-1"></i>Bu bilgi CSV dosyasına
                                         yazılacaktır.</div>
                                 </div>

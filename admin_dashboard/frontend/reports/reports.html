@@ -14,80 +14,250 @@
     <link rel="stylesheet" href="/static/shared/style.css">
     <link rel="stylesheet" href="/static/shared/dashboard.css?v=2">
     <style>
-        .report-card {
+        /* ── Page Header ────────────────────────────── */
+        .reports-page-header {
+            background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 60%, #1a2d5a 100%);
+            border-radius: 20px;
+            padding: 2.2rem 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(31, 45, 90, .25);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .reports-page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 85% 50%, rgba(0, 163, 224, .18) 0%, transparent 65%);
+        }
+
+        .reports-header-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            background: rgba(0, 163, 224, .15);
+            border: 1px solid rgba(0, 163, 224, .3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            color: var(--tusas-blue);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .reports-header-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .reports-header-text h1 {
+            font-family: 'Orbitron', 'Inter', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .3rem;
+        }
+
+        .reports-header-text p {
+            color: rgba(255, 255, 255, .55);
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        /* ── Stat Cards ─────────────────────────────── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        @media (max-width: 992px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 576px) { .stat-row { grid-template-columns: 1fr; } }
+
+        .stat-card {
             background: #fff;
             border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(31, 45, 90, 0.08);
-            border: 1px solid #f0f4f8;
+            padding: 1.4rem 1.6rem;
+            box-shadow: 0 4px 20px rgba(31, 45, 90, .08);
+            border: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            transition: all .25s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(31, 45, 90, .14);
+        }
+
+        .stat-card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--tusas-navy);
+            line-height: 1;
+        }
+
+        .stat-card-label {
+            font-size: .72rem;
+            color: #94a3b8;
+            margin-top: .25rem;
+            font-weight: 500;
+        }
+
+        /* ── Report Cards ───────────────────────────── */
+        .report-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(31, 45, 90, .07);
+            border: 1px solid #edf2f7;
             height: 100%;
-            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        .report-card:hover {
-            box-shadow: 0 10px 30px rgba(31, 45, 90, 0.14);
-        }
-
-        .report-header {
+        .report-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            padding: 1.3rem 1.6rem;
             border-bottom: 1px solid #f0f4f8;
-            padding-bottom: 1rem;
         }
 
-        .report-title {
-            font-size: 1.1rem;
+        .report-card-title {
+            font-size: 1rem;
             font-weight: 700;
             color: var(--tusas-navy);
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: .5rem;
+        }
+
+        .report-card-body {
+            padding: 1.4rem 1.6rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .report-chart-wrapper {
             position: relative;
-            height: 300px;
-            width: 100%;
+            flex: 1;
+            min-height: 280px;
         }
 
-        .btn-export {
-            font-size: 0.8rem;
+        /* ── Download Btn ───────────────────────────── */
+        .btn-dl {
+            font-size: .75rem;
             font-weight: 600;
             color: #64748b;
             border: 1px solid #e2e8f0;
-            background: #fff;
-            padding: 0.3rem 0.8rem;
-            border-radius: 6px;
-            transition: all 0.2s;
+            background: #f8fafc;
+            padding: .3rem .8rem;
+            border-radius: 8px;
+            transition: all .2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
         }
 
-        .btn-export:hover {
+        .btn-dl:hover {
             background: var(--tusas-gray);
             color: var(--tusas-navy);
             border-color: #cbd5e1;
         }
 
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--tusas-blue);
-            line-height: 1;
+        /* ── Keyword bars ───────────────────────────── */
+        .kw-bar-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .65rem;
         }
 
-        .metric-trend {
-            font-size: 0.85rem;
+        .kw-bar-label {
+            font-size: .78rem;
             font-weight: 600;
+            color: var(--tusas-navy);
+            min-width: 130px;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
         }
 
-        .trend-up {
-            color: #10b981;
+        .kw-bar-track {
+            flex: 1;
+            height: 10px;
+            background: #f0f4f8;
+            border-radius: 5px;
+            overflow: hidden;
         }
 
-        .trend-down {
-            color: #ef4444;
+        .kw-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--tusas-blue) 0%, #00c6ff 100%);
+            width: 0%;
+            transition: width .8s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .kw-bar-count {
+            font-size: .72rem;
+            font-weight: 700;
+            color: #64748b;
+            min-width: 28px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ── Loading skeleton ───────────────────────── */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to   { background-position: -200% 0; }
+        }
+
+        /* ── Data source badge ──────────────────────── */
+        .data-source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .68rem;
+            font-weight: 600;
+            padding: .25rem .65rem;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, .1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, .2);
         }
     </style>
 </head>
@@ -123,6 +293,26 @@
             <a href="/reports" class="sidebar-nav-link active-link">
                 <i class="fas fa-chart-bar"></i><span>Raporlar</span>
             </a>
+
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/settings" class="sidebar-nav-link">
+                <i class="fas fa-cog"></i><span>Ayarlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Notebooks</div>
+            <a href="https://github.com/ensarakbas77/LIFT-UP-Dataset-Preparation/blob/main/notebooks/Data_Preprocessing.ipynb"
+               target="_blank" rel="noopener noreferrer" class="sidebar-nav-link">
+                <i class="fas fa-broom"></i>
+                <span>Data Preprocessing</span>
+                <i class="fas fa-external-link-alt ms-auto" style="font-size:.55rem;opacity:.45;"></i>
+            </a>
+            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-admin/notebooks/SBERT.ipynb"
+               target="_blank" rel="noopener noreferrer" class="sidebar-nav-link">
+                <i class="fas fa-brain"></i>
+                <span>SBERT Model</span>
+                <i class="fas fa-external-link-alt ms-auto" style="font-size:.55rem;opacity:.45;"></i>
+            </a>
+
         </nav>
         <div class="sidebar-drawer-footer">
             <div class="sidebar-user-card">
@@ -158,7 +348,7 @@
                     <a class="navbar-brand d-flex align-items-center mb-0" href="/dashboard">
                         <i class="fas fa-fighter-jet me-2 fa-lg"></i>
                         <div>
-                            TUSAŞ LIFT UP 
+                            TUSAŞ LIFT UP
                             <span class="d-block fs-6 fw-light" style="font-family:'Inter';letter-spacing:0;">
                                 Sanayi Odaklı Lisans Bitirme Projeleri Programı
                             </span>
@@ -170,106 +360,146 @@
         </nav>
 
         <!-- Main Content -->
-        <div class="container my-5 page-fade">
+        <div class="container-fluid px-4 my-5 page-fade">
 
-            <div class="text-center mb-5">
-                <h1 class="display-5 mb-3 fw-bold" style="color:var(--tusas-navy); font-family:'Orbitron', sans-serif;">
-                    Raporlar & İstatistikler</h1>
-                <p class="lead text-muted">
-                    Sistem kullanım istatistikleri, analiz raporları ve genel performans metrikleri.
-                </p>
-            </div>
-
-            <!-- Top Summary Metrics -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-4">
-                    <div class="report-card text-center d-flex flex-column justify-content-center">
-                        <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size:0.8rem;letter-spacing:1px;">
-                            Aylık Sistem Kullanımı</h6>
-                        <div class="metric-value mb-1" id="metricUsage">0</div>
-                        <div class="metric-trend trend-up"><i class="fas fa-arrow-up me-1"></i> %14 geçen aya göre</div>
-                    </div>
+            <!-- Page Header -->
+            <div class="reports-page-header">
+                <div class="reports-header-icon">
+                    <i class="fas fa-chart-bar"></i>
                 </div>
-                <div class="col-md-4">
-                    <div class="report-card text-center d-flex flex-column justify-content-center">
-                        <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size:0.8rem;letter-spacing:1px;">
-                            Ortalama Benzerlik Oranı</h6>
-                        <div class="metric-value mb-1" id="metricSim" style="color:#10b981;">0%</div>
-                        <div class="metric-trend trend-down"><i class="fas fa-arrow-down me-1"></i> %2 geçen döneme göre
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="report-card text-center d-flex flex-column justify-content-center">
-                        <h6 class="text-muted text-uppercase fw-bold mb-2" style="font-size:0.8rem;letter-spacing:1px;">
-                            Toplam Veri Büyüklüğü</h6>
-                        <div class="metric-value mb-1" id="metricDB" style="color:#f59e0b;">0 MB</div>
-                        <div class="metric-trend text-muted"><i class="fas fa-database me-1"></i> Sağlıklı Durum</div>
-                    </div>
+                <div class="reports-header-text">
+                    <h1>Raporlar &amp; İstatistikler</h1>
+                    <p>Veritabanındaki proje verileri üzerinden hesaplanan gerçek zamanlı analizler.</p>
                 </div>
             </div>
 
-            <!-- Charts Row 1 -->
+            <!-- ── Stat Cards ─────────────────────────────────── -->
+            <div class="stat-row mb-4">
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(0,163,224,.1);color:var(--tusas-blue);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statTotal">—</div>
+                        <div class="stat-card-label">Toplam Proje</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statYears">—</div>
+                        <div class="stat-card-label">Dönem (Yıl)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(16,185,129,.1);color:#10b981;">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statKeywords">—</div>
+                        <div class="stat-card-label">Benzersiz Anahtar Kelime</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">
+                        <i class="fas fa-align-left"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statAvgAbstract">—</div>
+                        <div class="stat-card-label">Ort. Özet Uzunluğu (kelime)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Grafik Satırı 1 ─────────────────────────── -->
             <div class="row g-4 mb-4">
+
                 <!-- Bar Chart: Yıllara Göre Makale Sayısı -->
                 <div class="col-lg-8">
                     <div class="report-card">
-                        <div class="report-header">
-                            <h3 class="report-title"><i class="fas fa-chart-column text-primary"></i> Yıllara Göre
-                                Makale Sayısı</h3>
-                            <button class="btn-export" onclick="downloadChart('yearlyChart')"><i
-                                    class="fas fa-download"></i> PNG</button>
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-chart-bar" style="color:var(--tusas-blue);"></i>
+                                Yıllara Göre Proje Sayısı
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('yearlyChart')">
+                                <i class="fas fa-download"></i> PNG
+                            </button>
                         </div>
-                        <div class="report-chart-wrapper">
-                            <canvas id="yearlyChart"></canvas>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="yearlyChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- Doughnut Chart: Dil Dağılımı -->
+
+                <!-- Donut Chart: Yıl Bazlı Dağılım -->
                 <div class="col-lg-4">
                     <div class="report-card">
-                        <div class="report-header">
-                            <h3 class="report-title"><i class="fas fa-chart-pie text-success"></i> Dil Dağılımı</h3>
-                            <button class="btn-export" onclick="downloadChart('langChart')"><i
-                                    class="fas fa-download"></i></button>
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-chart-pie" style="color:#f59e0b;"></i>
+                                Yıl Bazlı Dağılım
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('donutChart')">
+                                <i class="fas fa-download"></i>
+                            </button>
                         </div>
-                        <div class="report-chart-wrapper">
-                            <canvas id="langChart"></canvas>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="donutChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts Row 2 -->
+            <!-- ── Grafik Satırı 2 ─────────────────────────── -->
             <div class="row g-4 mb-4">
-                <!-- Line Chart: Sistem Hata/Başarı Oranları -->
-                <div class="col-lg-6">
+
+                <!-- Top Keywords -->
+                <div class="col-lg-7">
                     <div class="report-card">
-                        <div class="report-header">
-                            <h3 class="report-title"><i class="fas fa-chart-line text-info"></i> API İstek Yoğunluğu
-                                (Son 7 Gün)</h3>
-                            <button class="btn-export" onclick="downloadChart('activityChart')"><i
-                                    class="fas fa-download"></i> PNG</button>
-                        </div>
-                        <div class="report-chart-wrapper">
-                            <canvas id="activityChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <!-- Radar Chart: Kategori Dağılımı -->
-                <div class="col-lg-6">
-                    <div class="report-card">
-                        <div class="report-header">
-                            <h3 class="report-title"><i class="fas fa-spider text-warning"></i> Proje Kategori Analizi
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-tags" style="color:#10b981;"></i>
+                                En Sık Geçen Anahtar Kelimeler <small style="font-weight:500;color:#94a3b8;font-size:.75rem;">(İlk 15)</small>
                             </h3>
-                            <button class="btn-export" onclick="downloadChart('radarChart')"><i
-                                    class="fas fa-download"></i> PNG</button>
                         </div>
-                        <div class="report-chart-wrapper">
-                            <canvas id="radarChart"></canvas>
+                        <div class="report-card-body" id="keywordBarsContainer">
+                            <!-- JS ile doldurulur -->
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:85%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:70%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:90%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:60%;"></div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Özet Uzunluğu Dağılımı (histogram benzeri) -->
+                <div class="col-lg-5">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-align-left" style="color:#8b5cf6;"></i>
+                                Özet Uzunluğu Dağılımı
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('abstractChart')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="abstractChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -286,7 +516,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/shared/dashboard.js?v=2"></script>
-    <script src="/static/reports/reports.js"></script>
+    <script src="/static/reports/reports.js?v=2"></script>
 </body>
 
 </html>

@@ -55,6 +55,12 @@ class MeResponse(BaseModel):
     is_active: bool
 
 
+class UpdateProfileRequest(BaseModel):
+    username: str | None = None
+    email: str | None = None
+    new_password: str | None = None
+
+
 # ─── Yardımcı Fonksiyonlar ────────────────────────────────────────────────────
 
 def get_db():
@@ -73,6 +79,11 @@ def verify_password(plain: str, hashed: str) -> bool:
         return _bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
     except Exception:
         return False
+
+
+def hash_password(plain: str) -> str:
+    """Şifreyi bcrypt ile hashler ve string döner."""
+    return _bcrypt.hashpw(plain.encode("utf-8"), _bcrypt.gensalt()).decode("utf-8")
 
 
 def create_access_token(data: dict) -> tuple[str, int]:
@@ -223,3 +234,62 @@ def me(payload: dict = Depends(get_current_admin)):
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
 
     return MeResponse(**user)
+
+
+@router.patch("/update-profile", tags=["Kimlik Doğrulama"])
+def update_profile(
+    req: UpdateProfileRequest,
+    payload: dict = Depends(get_current_admin),
+):
+    """
+    Admin kullanıcı profilini günceller.
+
+    - Kullanıcı adı, e-posta ve/veya şifre güncellenebilir.
+    - Yalnızca gönderilen alanlar güncellenir.
+    - Şifre bcrypt ile hashlenerek saklanır.
+    """
+    user_id = int(payload.get("sub", 0))
+
+    # Güncelleme alanlarını dinamik olarak oluştur
+    sets: list[str] = []
+    values: list = []
+
+    if req.username is not None:
+        if not req.username.strip():
+            raise HTTPException(status_code=422, detail="Kullanıcı adı boş olamaz.")
+        sets.append("username = %s")
+        values.append(req.username.strip())
+
+    if req.email is not None:
+        if not req.email.strip():
+            raise HTTPException(status_code=422, detail="E-posta boş olamaz.")
+        sets.append("email = %s")
+        values.append(req.email.strip())
+
+    if req.new_password is not None:
+        if len(req.new_password) < 6:
+            raise HTTPException(status_code=422, detail="Şifre en az 6 karakter olmalıdır.")
+        sets.append("password_hash = %s")
+        values.append(hash_password(req.new_password))
+
+    if not sets:
+        raise HTTPException(status_code=422, detail="Güncellenecek en az bir alan belirtilmelidir.")
+
+    values.append(user_id)
+    sql = f"UPDATE admin_users SET {', '.join(sets)} WHERE id = %s"
+
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute(sql, values)
+        conn.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Veritabanı güncelleme hatası: {e}")
+    finally:
+        try:
+            cur.close()
+            conn.close()
+        except Exception:
+            pass
+
+    return {"success": True, "message": "Profil başarıyla güncellendi."}

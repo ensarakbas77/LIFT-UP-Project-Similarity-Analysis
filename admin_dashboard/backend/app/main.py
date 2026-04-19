@@ -140,3 +140,8 @@ def serve_data_management() -> FileResponse:
     """Veri Yönetimi sayfasını serve eder."""
     return FileResponse(os.path.join(_FRONTEND_DIR, "data-management", "data-management.html"))
 
+
+@app.get("/settings", tags=["Sistem"], include_in_schema=False)
+def serve_settings() -> FileResponse:
+    """Ayarlar sayfasını serve eder."""
+    return FileResponse(os.path.join(_FRONTEND_DIR, "settings", "settings.html"))
