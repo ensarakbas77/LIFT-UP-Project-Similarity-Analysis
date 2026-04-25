@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.ml.model_loader import ModelLoader
+from app.ml.model_loader import ModelLoader, EmrecanModelLoader
 from app.db.session import DatabaseSession
 from app.api.routes import analyze, health
 
@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
     # ── STARTUP ──
     print("Uygulama baslatiliyor...")
     ModelLoader.load()              # SBERT modelini yükle
+    EmrecanModelLoader.load()       # Emrecan BERT modelini yükle
     DatabaseSession.initialize()    # DB bağlantı havuzunu oluştur
     print("Sistem hazir!\n")
 

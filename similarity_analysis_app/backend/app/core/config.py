@@ -25,6 +25,11 @@ class Settings:
         "MODEL_NAME", "paraphrase-multilingual-MiniLM-L12-v2"
     )
 
+    # Emrecan BERT Model Adı
+    EMRECAN_MODEL_NAME: str = os.getenv(
+        "EMRECAN_MODEL_NAME", "emrecan/bert-base-turkish-cased-mean-nli-stsb-tr"
+    )
+
     # Benzerlik Eşik Değerleri (5 Seviye)
     CRITICAL_THRESHOLD: float = float(os.getenv("CRITICAL_THRESHOLD", "0.90"))
     HIGH_THRESHOLD: float = float(os.getenv("HIGH_THRESHOLD", "0.70"))

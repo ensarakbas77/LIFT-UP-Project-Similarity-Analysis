@@ -994,6 +994,17 @@ button {
     border-radius: var(--radius-md);
 }
 
+.project-card__emrecan-badge {
+    font-size: var(--font-size-xs);
+    color: var(--neutral-600);
+    font-weight: 600;
+    background: var(--neutral-100);
+    border: 1px solid var(--neutral-200);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-md);
+    font-variant-numeric: tabular-nums;
+}
+
 /* Number input spinner */
 .form__input[type="number"] {
     -moz-appearance: textfield;

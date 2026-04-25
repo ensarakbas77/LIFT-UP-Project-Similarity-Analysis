@@ -16,12 +16,18 @@ class SimilarProject(BaseModel):
         ...,
         ge=0.0,
         le=1.0,
-        description="Cosine similarity skoru (0-1 arası)",
+        description="SBERT cosine similarity skoru (0-1 arası)",
     )
     year: Optional[str] = Field(None, description="Projenin yılı")
     classification: str = Field(
         ...,
         description="Bireysel benzerlik sınıflandırması: 'critical', 'high', 'medium', 'low' veya 'irrelevant'",
+    )
+    emrecan_similarity: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Emrecan BERT cosine similarity skoru (0-1 arası)",
     )
 
 
