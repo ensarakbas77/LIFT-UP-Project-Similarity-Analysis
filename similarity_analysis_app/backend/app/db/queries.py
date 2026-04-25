@@ -28,7 +28,7 @@ def find_similar_projects(query_vector: list[float], top_k: int = 5) -> list[dic
             SELECT id, title_tr, abstract_tr,
                    1 - (embedding <=> %s::vector) AS similarity,
                    year
-            FROM projects
+            FROM sbert_projects
             ORDER BY embedding <=> %s::vector
             LIMIT %s;
         """
