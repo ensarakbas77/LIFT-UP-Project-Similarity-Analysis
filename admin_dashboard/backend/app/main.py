@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from app.core.config import admin_settings
-from app.api.routes import extract, csv_ops, cleanup
+from app.api.routes import extract, csv_ops, cleanup, data_update
 from app.api import projects
 from app.api import auth
 
@@ -83,6 +83,7 @@ app.include_router(extract.router)
 app.include_router(csv_ops.router)
 app.include_router(cleanup.router)
 app.include_router(projects.router)
+app.include_router(data_update.router)
 
 
 # ─── Health Check ─────────────────────────────────────────────────────────────
@@ -145,3 +146,15 @@ def serve_data_management() -> FileResponse:
 def serve_settings() -> FileResponse:
     """Ayarlar sayfasını serve eder."""
     return FileResponse(os.path.join(_FRONTEND_DIR, "settings", "settings.html"))
+
+
+@app.get("/data-update", tags=["Sistem"], include_in_schema=False)
+def serve_data_update() -> FileResponse:
+    """Veri Düzenleme sayfasını serve eder."""
+    return FileResponse(os.path.join(_FRONTEND_DIR, "data-update", "data-update.html"))
+
+
+@app.get("/notebooks", tags=["Sistem"], include_in_schema=False)
+def serve_notebooks() -> FileResponse:
+    """Notebooks tanıtım sayfasını serve eder."""
+    return FileResponse(os.path.join(_FRONTEND_DIR, "notebooks", "notebooks.html"))

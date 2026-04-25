@@ -38,7 +38,7 @@
         const user = JSON.parse(raw);
         const nameEl = document.getElementById('sidebarUserName');
         const emailEl = document.getElementById('sidebarUserEmail');
-        if (nameEl) nameEl.textContent = user.full_name || user.username || 'Admin';
+        if (nameEl) nameEl.textContent = user.username || user.full_name || 'Admin';
         if (emailEl) emailEl.textContent = user.email || '';
     } catch (e) { /* sessizce geç */ }
 })();

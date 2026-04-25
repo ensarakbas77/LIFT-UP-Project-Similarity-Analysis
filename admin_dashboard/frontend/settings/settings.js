@@ -52,7 +52,7 @@ function loadCurrentUserInfo() {
         // Avatar alanı
         const displayName  = document.getElementById('currentDisplayName');
         const displayEmail = document.getElementById('currentDisplayEmail');
-        if (displayName)  displayName.textContent  = user.full_name || user.username || 'Admin';
+        if (displayName)  displayName.textContent  = user.username || user.full_name || 'Admin';
         if (displayEmail) displayEmail.textContent = user.email || '—';
 
         // Sağ panel bilgi satırları
@@ -197,7 +197,7 @@ if (profileForm) {
             const raw = localStorage.getItem('lift_admin_user');
             if (raw) {
                 const user = JSON.parse(raw);
-                if (nameEl)  nameEl.textContent  = user.full_name || user.username || 'Admin';
+                if (nameEl)  nameEl.textContent  = user.username || user.full_name || 'Admin';
                 if (emailEl) emailEl.textContent = user.email || '';
             }
 
