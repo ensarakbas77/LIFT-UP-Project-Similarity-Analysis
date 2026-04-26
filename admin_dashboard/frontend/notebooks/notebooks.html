@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notebooks — LIFT UP Admin</title>
-    <meta name="description" content="LIFT UP projesi Jupyter notebook koleksiyonu.">
+    <meta name="description" content="LIFT UP veri hazırlama ve embedding üretim iş akışı kılavuzu.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
@@ -68,19 +68,198 @@
             margin: 0;
         }
 
-        /* ── Notebook Card ───────────────────────────── */
+        /* ── Stepper ─────────────────────────────────── */
+        .workflow-stepper {
+            position: relative;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.5rem;
+            position: relative;
+            margin-bottom: 0;
+        }
+
+        .step-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .step-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .15);
+            z-index: 1;
+            position: relative;
+        }
+
+        .step-badge.s1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .step-badge.s2 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .step-badge.s3 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .step-badge.s4 { background: linear-gradient(135deg, #10b981, #059669); }
+
+        .step-connector {
+            width: 3px;
+            flex: 1;
+            min-height: 2rem;
+            background: linear-gradient(to bottom, rgba(31,45,90,.15), rgba(31,45,90,.06));
+            border-radius: 2px;
+            margin: .5rem 0;
+        }
+
+        .step-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.8rem 2rem;
+            box-shadow: 0 4px 20px rgba(31, 45, 90, .08);
+            border: 1px solid #f0f4f8;
+            margin-bottom: 1.5rem;
+            flex: 1;
+            transition: box-shadow .25s, transform .25s;
+        }
+
+        .step-card:hover {
+            box-shadow: 0 8px 32px rgba(31, 45, 90, .13);
+            transform: translateY(-2px);
+        }
+
+        .step-card-header {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .step-card-icon.red    { background: rgba(239,68,68,.1);   color: #dc2626; }
+        .step-card-icon.blue   { background: rgba(59,130,246,.1);  color: #1d4ed8; }
+        .step-card-icon.purple { background: rgba(139,92,246,.1);  color: #6d28d9; }
+        .step-card-icon.green  { background: rgba(16,185,129,.1);  color: #059669; }
+
+        .step-card-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--tusas-navy);
+        }
+
+        .step-card-body {
+            font-size: .9rem;
+            color: #475569;
+            line-height: 1.75;
+        }
+
+        /* ── Tip / Note Box ──────────────────────────── */
+        .step-tip {
+            border-radius: 12px;
+            padding: .9rem 1.1rem;
+            font-size: .85rem;
+            display: flex;
+            align-items: flex-start;
+            gap: .65rem;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .step-tip.tip-blue   { background: rgba(59,130,246,.07);  border: 1.5px solid rgba(59,130,246,.18);  color: #1e40af; }
+        .step-tip.tip-purple { background: rgba(139,92,246,.07);  border: 1.5px solid rgba(139,92,246,.18);  color: #5b21b6; }
+        .step-tip.tip-green  { background: rgba(16,185,129,.07);  border: 1.5px solid rgba(16,185,129,.18);  color: #065f46; }
+        .step-tip.tip-amber  { background: rgba(245,158,11,.07);  border: 1.5px solid rgba(245,158,11,.2);   color: #92400e; }
+
+        .step-tip i { margin-top: .1rem; flex-shrink: 0; }
+
+        /* ── Action Buttons ──────────────────────────── */
+        .step-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .65rem;
+            margin-top: 1.2rem;
+        }
+
+        .step-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            border-radius: 10px;
+            padding: .5rem 1rem;
+            font-size: .85rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background .2s, transform .15s;
+        }
+
+        .step-btn:hover { transform: translateY(-1px); text-decoration: none; }
+
+        .step-btn.btn-navy   { background: var(--tusas-navy); color: #fff; }
+        .step-btn.btn-navy:hover { background: #0d1b3e; color: #fff; }
+
+        .step-btn.btn-github { background: #24292e; color: #fff; }
+        .step-btn.btn-github:hover { background: #111; color: #fff; }
+
+        .step-btn.btn-colab  { background: #f9ab00; color: #1a1a1a; }
+        .step-btn.btn-colab:hover { background: #e09600; color: #1a1a1a; }
+
+        .step-btn.btn-ghost  {
+            background: transparent;
+            border: 1.5px solid var(--tusas-navy);
+            color: var(--tusas-navy);
+        }
+        .step-btn.btn-ghost:hover { background: rgba(31,45,90,.06); color: var(--tusas-navy); }
+
+        /* ── Sub-badge list ──────────────────────────── */
+        .nb-model-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            margin-top: .8rem;
+        }
+
+        .nb-model-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .85rem;
+            border-radius: 30px;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .nb-model-badge.sbert  { background: rgba(139,92,246,.12); color: #6d28d9; }
+        .nb-model-badge.emrecan { background: rgba(16,185,129,.12); color: #059669; }
+
+        /* ── Quick Access Cards ──────────────────────── */
         .nb-card {
             background: #fff;
             border-radius: 20px;
-            padding: 2rem;
+            padding: 1.6rem;
             box-shadow: 0 4px 20px rgba(31, 45, 90, .08);
             border: 1px solid #f0f4f8;
             display: flex;
             align-items: flex-start;
-            gap: 1.5rem;
+            gap: 1.2rem;
             transition: box-shadow .25s, transform .25s;
             text-decoration: none;
             color: inherit;
+            height: 100%;
         }
 
         .nb-card:hover {
@@ -91,56 +270,64 @@
         }
 
         .nb-card-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             flex-shrink: 0;
         }
 
-        .nb-card-icon.blue  { background: rgba(0, 163, 224, .12); color: var(--tusas-blue); }
-        .nb-card-icon.navy  { background: rgba(31, 45, 90, .1);   color: var(--tusas-navy); }
+        .nb-card-icon.blue    { background: rgba(0, 163, 224, .12); color: var(--tusas-blue); }
+        .nb-card-icon.navy    { background: rgba(31, 45, 90, .1);   color: var(--tusas-navy); }
+        .nb-card-icon.purple  { background: rgba(139,92,246,.1);    color: #6d28d9; }
+        .nb-card-icon.green   { background: rgba(16,185,129,.1);    color: #059669; }
 
         .nb-card-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 800;
             color: var(--tusas-navy);
-            margin-bottom: .4rem;
+            margin-bottom: .35rem;
         }
 
         .nb-card-desc {
-            font-size: .88rem;
+            font-size: .83rem;
             color: #64748b;
             line-height: 1.6;
-            margin-bottom: .9rem;
+            margin-bottom: .8rem;
         }
 
         .nb-card-link-badge {
             display: inline-flex;
             align-items: center;
             gap: .4rem;
-            font-size: .8rem;
+            font-size: .78rem;
             font-weight: 700;
             color: var(--tusas-blue);
             background: rgba(0, 163, 224, .1);
             border-radius: 8px;
-            padding: .35rem .75rem;
+            padding: .3rem .7rem;
         }
 
-        .nb-info-banner {
-            background: rgba(0, 163, 224, .07);
-            border: 1.5px solid rgba(0, 163, 224, .2);
-            border-radius: 14px;
-            padding: 1rem 1.4rem;
-            font-size: .88rem;
-            color: #1e5f8a;
+        /* ── Section Title ───────────────────────────── */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--tusas-navy);
+            margin-bottom: 1.2rem;
             display: flex;
             align-items: center;
-            gap: .75rem;
-            margin-bottom: 2rem;
+            gap: .6rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, rgba(31,45,90,.12), transparent);
+            border-radius: 2px;
         }
     </style>
 </head>
@@ -247,25 +434,206 @@
             <!-- Page Header -->
             <div class="nb-page-header">
                 <div class="nb-header-icon">
-                    <i class="fas fa-book-open"></i>
+                    <i class="fas fa-route"></i>
                 </div>
                 <div class="nb-header-text">
-                    <h1>Notebooks</h1>
-                    <p>LIFT UP veri hazırlama ve model geliştirme süreçlerine ait Jupyter Notebook koleksiyonu.</p>
+                    <h1>Veri Hazırlama İş Akışı</h1>
+                    <p>Bildiri kitabından başlayarak benzerlik analizine kadar adım adım kılavuz.</p>
                 </div>
             </div>
 
-            <!-- Info Banner -->
-            <div class="nb-info-banner">
-                <i class="fas fa-info-circle fa-lg"></i>
-                <span>Aşağıdaki notebook'lar GitHub üzerinden açılır. İçerikler ileride bu sayfa üzerinden genişletilecektir.</span>
-            </div>
+            <!-- Workflow Stepper -->
+            <div class="workflow-stepper mb-5">
 
-            <!-- Notebook Cards -->
+                <!-- ── Adım 1 ─────────────────────────────── -->
+                <div class="step-item">
+                    <div class="step-left">
+                        <div class="step-badge s1">1</div>
+                        <div class="step-connector"></div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <div class="step-card-icon red">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="step-card-title">Bildiri Kitabını PDF Olarak Yükle</div>
+                        </div>
+                        <div class="step-card-body">
+                            Süreç, yeni bildiri kitabının sisteme aktarılmasıyla başlar. Sol menüden
+                            <strong>PDF Veri Çıkarıcı</strong> aracına gidin ve bildiri kitabının PDF dosyasını yükleyin.
+                            Sistem PDF'i tarayarak her makaleye ait <strong>başlık, özet ve anahtar kelime</strong>
+                            bilgilerini otomatik olarak çıkarır ve dışa aktarılabilir bir CSV dosyası üretir.
+                        </div>
+                        <div class="step-tip tip-amber">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>
+                                PDF'in metin katmanı içermesi gerekir; taranmış (görüntü tabanlı) PDF'lerde OCR
+                                desteklenmez. Bildiri kitabının dijital baskısını kullandığınızdan emin olun.
+                            </span>
+                        </div>
+                        <div class="step-actions">
+                            <a href="/pdf-extract" class="step-btn btn-navy">
+                                <i class="fas fa-arrow-right"></i> PDF Veri Çıkarıcı'ya Git
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Adım 2 ─────────────────────────────── -->
+                <div class="step-item">
+                    <div class="step-left">
+                        <div class="step-badge s2">2</div>
+                        <div class="step-connector"></div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <div class="step-card-icon blue">
+                                <i class="fas fa-broom"></i>
+                            </div>
+                            <div class="step-card-title">Data Preprocessing Notebook'unu Çalıştır</div>
+                        </div>
+                        <div class="step-card-body">
+                            PDF çıkarma adımında elde ettiğiniz CSV dosyasını <strong>Data_Preprocessing</strong>
+                            notebook'una verin. Bu notebook ham veriyi temizler: boş alanları doldurur, gereksiz
+                            karakterleri kaldırır, metinleri normalize eder ve modellerin doğrudan okuyabileceği
+                            <strong><code>articles_clean.csv</code></strong> dosyasını üretir.
+                            <br><br>
+                            Notebook yerel ortamda Jupyter üzerinden çalıştırılabilir; büyük bir hesaplama yükü gerektirmez.
+                            İşlem tamamlandığında <code>articles_clean.csv</code> dosyasını bilgisayarınıza indirin.
+                        </div>
+                        <div class="step-tip tip-blue">
+                            <i class="fas fa-info-circle"></i>
+                            <span>
+                                Notebook'un girdi yolunu kendi sisteminize göre güncellemeyi unutmayın.
+                                Üretilen <code>articles_clean.csv</code> bir sonraki adımda her iki model notebook'unda da kullanılır.
+                            </span>
+                        </div>
+                        <div class="step-actions">
+                            <a href="https://github.com/ensarakbas77/LIFT-UP-Dataset-Preparation/blob/main/notebooks/Data_Preprocessing.ipynb"
+                               target="_blank" rel="noopener noreferrer" class="step-btn btn-github">
+                                <i class="fab fa-github"></i> GitHub'da Aç
+                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Adım 3 ─────────────────────────────── -->
+                <div class="step-item">
+                    <div class="step-left">
+                        <div class="step-badge s3">3</div>
+                        <div class="step-connector"></div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-card-header">
+                            <div class="step-card-icon purple">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div class="step-card-title">GPU Destekli Embedding Üretimi</div>
+                        </div>
+                        <div class="step-card-body">
+                            <code>articles_clean.csv</code> elinizde olduğunda her iki model notebook'unu sırayla çalıştırabilirsiniz.
+                            Bu notebook'lar makale metinlerini yüksek boyutlu vektörlere (embedding) dönüştürür ve
+                            benzerlik analizinin temelini oluşturur.
+                            <br><br>
+                            Embedding üretimi hesaplama açısından yoğundur; bu nedenle notebook'ları
+                            <strong>Google Colab</strong> üzerinde <strong>ücretsiz GPU</strong> ile çalıştırmanız önerilir.
+                        </div>
+
+                        <!-- GPU Tip -->
+                        <div class="step-tip tip-purple">
+                            <i class="fas fa-bolt"></i>
+                            <div>
+                                <strong>Google Colab GPU'yu nasıl açarsınız?</strong><br>
+                                Notebook'u Colab'da açtıktan sonra üst menüden
+                                <strong>Runtime → Change runtime type</strong> seçeneğine tıklayın ve
+                                <strong>Hardware accelerator</strong> kısmından <strong>T4 GPU</strong>'yu seçin.
+                                Kaydedin ve notebook'u baştan çalıştırın. Ücretsiz T4 GPU kotanızı kullanacaksınız.
+                            </div>
+                        </div>
+
+                        <!-- Model badges -->
+                        <div class="nb-model-list">
+                            <span class="nb-model-badge sbert"><i class="fas fa-brain"></i> SBERT</span>
+                            <span class="nb-model-badge emrecan"><i class="fas fa-brain"></i> Emrecan/BERT</span>
+                        </div>
+
+                        <div class="step-tip tip-green" style="margin-top:.8rem;">
+                            <i class="fas fa-file-archive"></i>
+                            <span>
+                                Her notebook çalıştırıldığında bir <strong>.pkl</strong> dosyası üretilir
+                                (SBERT ve Emrecan/BERT için ayrı ayrı). İki modeli de çalıştırırsanız iki ayrı
+                                .pkl dosyası elde edersiniz; bunları sırayla yükleyebilirsiniz.
+                            </span>
+                        </div>
+
+                        <div class="step-actions">
+                            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT.ipynb"
+                               target="_blank" rel="noopener noreferrer" class="step-btn btn-github">
+                                <i class="fab fa-github"></i> SBERT Notebook
+                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
+                            </a>
+                            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/Emrecan_BERT.ipynb"
+                               target="_blank" rel="noopener noreferrer" class="step-btn btn-github">
+                                <i class="fab fa-github"></i> Emrecan/BERT Notebook
+                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
+                            </a>
+                            <a href="https://colab.research.google.com/" target="_blank" rel="noopener noreferrer"
+                               class="step-btn btn-colab">
+                                <i class="fas fa-play-circle"></i> Google Colab'ı Aç
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Adım 4 ─────────────────────────────── -->
+                <div class="step-item" style="margin-bottom:0;">
+                    <div class="step-left">
+                        <div class="step-badge s4">4</div>
+                    </div>
+                    <div class="step-card" style="margin-bottom:0;">
+                        <div class="step-card-header">
+                            <div class="step-card-icon green">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="step-card-title">.pkl Dosyalarını Veritabanına Yükle</div>
+                        </div>
+                        <div class="step-card-body">
+                            Notebook'lardan elde ettiğiniz <strong>.pkl</strong> dosyalarını indirin. Ardından
+                            sol menüden <strong>Veri Düzenleme</strong> aracına gidin ve dosyayı yükleme alanına
+                            sürükleyin ya da dosya seçiciyle seçin.
+                            <br><br>
+                            İşlemi başlatmak için önce uygun tabloyu seçin, sonrasında bir onay iletişim kutusu gelir, ardından
+                            <strong>admin şifrenizle</strong> doğrulama yaparsınız. Onayın ardından embedding verileri
+                            <strong>doğru tabloya (sbert_projects ya da emrecan_projects)</strong> tabloya kaydedilir; yeni makalelerin bilgileri veritabanına eklenir
+                            ve benzerlik analizi motoru güncel hale gelir.
+                        </div>
+                        <div class="step-tip tip-green">
+                            <i class="fas fa-check-circle"></i>
+                            <span>
+                                Her .pkl dosyasını ayrı ayrı yükleyebilirsiniz. Yükleme tamamlandığında kaç projenin
+                                veritabanına eklendiğini gösteren bir bildirim alırsınız.
+                            </span>
+                        </div>
+                        <div class="step-actions">
+                            <a href="/data-update" class="step-btn btn-navy">
+                                <i class="fas fa-upload"></i> Veri Düzenleme'ye Git
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /workflow-stepper -->
+
+            <!-- Quick Access -->
+            <p class="section-title">
+                <i class="fas fa-bolt" style="color:var(--tusas-blue);"></i>
+                Hızlı Erişim — Notebook'lar
+            </p>
             <div class="row g-4">
 
                 <!-- Data Preprocessing -->
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-lg-4">
                     <a href="https://github.com/ensarakbas77/LIFT-UP-Dataset-Preparation/blob/main/notebooks/Data_Preprocessing.ipynb"
                        target="_blank" rel="noopener noreferrer" class="nb-card">
                         <div class="nb-card-icon blue">
@@ -274,39 +642,58 @@
                         <div>
                             <div class="nb-card-title">Data Preprocessing</div>
                             <div class="nb-card-desc">
-                                Ham proje verilerinin temizlenmesi, normalize edilmesi ve modele hazır hale getirilmesi
-                                süreçlerini içeren veri ön işleme notebook'u.
+                                Ham CSV'den temiz veri setine. <code>articles_clean.csv</code>'i burada üretirsiniz.
                             </div>
                             <span class="nb-card-link-badge">
                                 <i class="fab fa-github"></i> GitHub'da Aç
-                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
+                                <i class="fas fa-external-link-alt" style="font-size:.65rem;"></i>
                             </span>
                         </div>
                     </a>
                 </div>
 
-                <!-- SBERT Model -->
-                <div class="col-12 col-lg-6">
+                <!-- SBERT -->
+                <div class="col-12 col-lg-4">
                     <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT.ipynb"
                        target="_blank" rel="noopener noreferrer" class="nb-card">
                         <div class="nb-card-icon navy">
                             <i class="fas fa-brain"></i>
                         </div>
                         <div>
-                            <div class="nb-card-title">SBERT Model</div>
+                            <div class="nb-card-title">SBERT Embedding</div>
                             <div class="nb-card-desc">
-                                Sentence-BERT mimarisi kullanılarak proje benzerlik analizine yönelik embedding
-                                üretimi ve model eğitim sürecini içeren notebook.
+                                Sentence-BERT modeliyle Türkçe makale metinlerinden embedding üretir.
                             </div>
                             <span class="nb-card-link-badge">
                                 <i class="fab fa-github"></i> GitHub'da Aç
-                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
+                                <i class="fas fa-external-link-alt" style="font-size:.65rem;"></i>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Emrecan/BERT -->
+                <div class="col-12 col-lg-4">
+                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/Emrecan_BERT.ipynb"
+                       target="_blank" rel="noopener noreferrer" class="nb-card">
+                        <div class="nb-card-icon purple">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <div class="nb-card-title">Emrecan/BERT Embedding</div>
+                            <div class="nb-card-desc">
+                                Emrecan BERT modeliyle Türkçe makale metinlerinden embedding üretir.
+                            </div>
+                            <span class="nb-card-link-badge">
+                                <i class="fab fa-github"></i> GitHub'da Aç
+                                <i class="fas fa-external-link-alt" style="font-size:.65rem;"></i>
                             </span>
                         </div>
                     </a>
                 </div>
 
             </div>
+
         </div>
     </div>
 

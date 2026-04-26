@@ -21,11 +21,18 @@ router = APIRouter(prefix="/data", tags=["Veri Güncelleme"])
 
 REQUIRED_COLUMNS = {"Year", "Title_TR", "Abstract_TR", "Keywords_TR", "combined_text", "embedding"}
 
+ALLOWED_TABLES = {"sbert_projects", "emrecan_projects"}
+TABLE_MODEL_KEYWORD = {
+    "sbert_projects":   "sbert",
+    "emrecan_projects": "emrecan",
+}
+
 
 @router.post("/upload-pkl")
 async def upload_pkl(
     file: UploadFile = File(...),
     password: str = Form(...),
+    table: str = Form(...),
     payload: dict = Depends(get_current_admin),
 ):
     """
@@ -54,7 +61,26 @@ async def upload_pkl(
     if not user_row or not verify_password(password, user_row["password_hash"]):
         raise HTTPException(status_code=401, detail="Şifre hatalı. İşlem iptal edildi.")
 
-    # ── 2. Dosya doğrulama ────────────────────────────────────────────────────
+    # ── 2. Tablo doğrulama ────────────────────────────────────────────────────
+    if table not in ALLOWED_TABLES:
+        raise HTTPException(status_code=422, detail="Geçersiz tablo adı. Yalnızca 'sbert_projects' veya 'emrecan_projects' kabul edilir.")
+
+    # Dosya adı ile seçilen tablo uyuşmazlık kontrolü
+    filename_lower = (file.filename or "").lower()
+    for other_table, keyword in TABLE_MODEL_KEYWORD.items():
+        if other_table != table and keyword in filename_lower:
+            selected_label = "SBERT" if table == "sbert_projects" else "Emrecan/BERT"
+            file_label     = "SBERT" if keyword == "sbert" else "Emrecan/BERT"
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Dosya adı '{file_label}' modeline ait görünüyor "
+                    f"ancak seçilen tablo '{selected_label}' tablosudur. "
+                    f"Lütfen doğru tabloyu seçin."
+                ),
+            )
+
+    # ── 3. Dosya formatı doğrulama ────────────────────────────────────────────
     if not (file.filename or "").endswith(".pkl"):
         raise HTTPException(status_code=422, detail="Yalnızca .pkl uzantılı dosyalar kabul edilir.")
 
@@ -80,7 +106,7 @@ async def upload_pkl(
     if len(df) == 0:
         raise HTTPException(status_code=422, detail="DataFrame boş, eklenecek kayıt yok.")
 
-    # ── 3. Veri hazırlama ─────────────────────────────────────────────────────
+    # ── 4. Veri hazırlama ─────────────────────────────────────────────────────
     data_to_insert = []
     for _, row in df.iterrows():
         emb = row["embedding"]
@@ -98,9 +124,10 @@ async def upload_pkl(
             emb,
         ))
 
-    # ── 4. Veritabanına toplu ekleme ──────────────────────────────────────────
-    insert_query = """
-        INSERT INTO projects (year, title_tr, abstract_tr, keywords_tr, combined_text, embedding)
+    # ── 5. Veritabanına toplu ekleme ──────────────────────────────────────────
+    # table adı ALLOWED_TABLES ile doğrulandı; string interpolasyon güvenlidir.
+    insert_query = f"""
+        INSERT INTO {table} (year, title_tr, abstract_tr, keywords_tr, combined_text, embedding)
         VALUES %s
     """
     template = "(%s, %s, %s, %s, %s, %s::vector)"
@@ -126,5 +153,6 @@ async def upload_pkl(
     return {
         "success": True,
         "inserted": len(data_to_insert),
-        "message": f"{len(data_to_insert)} proje başarıyla veritabanına eklendi.",
+        "table": table,
+        "message": f"{len(data_to_insert)} proje '{table}' tablosuna başarıyla eklendi.",
     }

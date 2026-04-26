@@ -90,9 +90,29 @@ function setUploading(loading) {
 }
 
 
-// ── Dosya Seçimi ──────────────────────────────────────────────────────────────
-let selectedFile = null;
+// ── Dosya & Tablo Durumu ──────────────────────────────────────────────────────
+let selectedFile  = null;
+let selectedTable = null;
 
+function updateStartBtn() {
+    startUploadBtn.disabled = !(selectedFile && selectedTable);
+}
+
+// ── Tablo Seçimi ──────────────────────────────────────────────────────────────
+const optSbert   = document.getElementById('optSbert');
+const optEmrecan = document.getElementById('optEmrecan');
+
+function selectTable(tableName) {
+    selectedTable = tableName;
+    optSbert.classList.toggle('selected',   tableName === 'sbert_projects');
+    optEmrecan.classList.toggle('selected', tableName === 'emrecan_projects');
+    updateStartBtn();
+}
+
+optSbert.addEventListener('click',   () => selectTable('sbert_projects'));
+optEmrecan.addEventListener('click', () => selectTable('emrecan_projects'));
+
+// ── Dosya Seçimi ──────────────────────────────────────────────────────────────
 function applyFile(file) {
     if (!file) return;
     if (!file.name.endsWith('.pkl')) {
@@ -106,8 +126,13 @@ function applyFile(file) {
     uploadZone.classList.add('file-selected');
     uploadZoneTitle.textContent = 'Dosya seçildi';
     uploadZoneSub.textContent   = 'Değiştirmek için tekrar tıklayın veya sürükleyin';
-    startUploadBtn.disabled = false;
     hideResult();
+
+    // Dosya adından modeli tespit et ve tabloyu otomatik seç
+    const fname = file.name.toLowerCase();
+    if (fname.includes('sbert'))        selectTable('sbert_projects');
+    else if (fname.includes('emrecan')) selectTable('emrecan_projects');
+    else updateStartBtn();
 }
 
 function clearFile() {
@@ -117,9 +142,9 @@ function clearFile() {
     uploadZone.classList.remove('file-selected');
     uploadZoneTitle.textContent = '.pkl dosyasını buraya sürükleyin veya tıklayın';
     uploadZoneSub.textContent   = 'Desteklenen format: .pkl (pandas DataFrame)';
-    startUploadBtn.disabled = true;
     hideResult();
     setProgressVisible(false);
+    updateStartBtn();
 }
 
 pklFileInput.addEventListener('change', () => {
@@ -155,10 +180,27 @@ toggleAdminPw.addEventListener('click', () => {
 
 // ── Yükleme Akışı ─────────────────────────────────────────────────────────────
 
-// Adım 1: Butona tıkla → Uyarı modalı
+// Adım 1: Butona tıkla → Dosya-tablo uyuşmazlık kontrolü → Uyarı modalı
 startUploadBtn.addEventListener('click', () => {
-    if (!selectedFile) return;
-    confirmModalText.textContent = 'Devam etmek istiyor musunuz?';
+    if (!selectedFile || !selectedTable) return;
+
+    const fname      = selectedFile.name.toLowerCase();
+    const hasSbert   = fname.includes('sbert');
+    const hasEmrecan = fname.includes('emrecan');
+
+    if (hasEmrecan && selectedTable === 'sbert_projects') {
+        showResult('error', 'Tablo Uyuşmazlığı',
+            'Dosya adı "emrecan" içeriyor ancak hedef tablo "SBERT" seçili. Lütfen Emrecan/BERT tablosunu seçin.');
+        return;
+    }
+    if (hasSbert && selectedTable === 'emrecan_projects') {
+        showResult('error', 'Tablo Uyuşmazlığı',
+            'Dosya adı "sbert" içeriyor ancak hedef tablo "Emrecan/BERT" seçili. Lütfen SBERT tablosunu seçin.');
+        return;
+    }
+
+    const tableLabel = selectedTable === 'sbert_projects' ? 'SBERT (sbert_projects)' : 'Emrecan/BERT (emrecan_projects)';
+    confirmModalText.textContent = `"${selectedFile.name}" dosyası ${tableLabel} tablosuna eklenecek. Devam etmek istiyor musunuz?`;
     showModal(confirmModal);
 });
 
@@ -219,6 +261,7 @@ passwordOkBtn.addEventListener('click', async () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('password', password);
+    formData.append('table', selectedTable);
 
     try {
         progressFill.style.width = '60%';
@@ -246,8 +289,9 @@ passwordOkBtn.addEventListener('click', async () => {
             }
         } else {
             progressLabel.textContent = 'Tamamlandı!';
+            const tableLabel = selectedTable === 'sbert_projects' ? 'SBERT' : 'Emrecan/BERT';
             clearFile();
-            showToast(`${data.inserted ?? '?'} proje başarıyla veritabanına eklendi.`);
+            showToast(`${data.inserted ?? '?'} proje ${tableLabel} tablosuna başarıyla eklendi.`);
         }
 
     } catch (err) {

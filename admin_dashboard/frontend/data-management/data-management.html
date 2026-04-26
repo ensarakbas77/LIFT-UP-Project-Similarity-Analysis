@@ -199,6 +199,58 @@
             color: var(--tusas-blue);
         }
 
+        /* ── Table Tabs ─────────────────────────────────── */
+        .table-tabs {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .table-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            padding: .6rem 1.15rem;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: .86rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .table-tab:hover:not(.active) { border-color: #94a3b8; background: #fff; }
+
+        .table-tab .tab-sub {
+            font-size: .72rem;
+            font-weight: 500;
+            font-family: monospace;
+            opacity: .65;
+            margin-left: .15rem;
+        }
+
+        .table-tab.active.tab-projects {
+            border-color: var(--tusas-navy);
+            background: rgba(31,45,90,.07);
+            color: var(--tusas-navy);
+        }
+
+        .table-tab.active.tab-sbert {
+            border-color: #8b5cf6;
+            background: rgba(139,92,246,.08);
+            color: #6d28d9;
+        }
+
+        .table-tab.active.tab-emrecan {
+            border-color: #10b981;
+            background: rgba(16,185,129,.08);
+            color: #059669;
+        }
+
         /* ── Pagination ─────────────────────────────────── */
         .pagination-container {
             display: flex;
@@ -333,6 +385,25 @@
             </div>
 
             <div class="data-card">
+
+                <!-- ── Tablo Sekmeleri ────────────────────────────── -->
+                <div class="table-tabs" id="tableTabs">
+                    <button class="table-tab tab-projects active" data-table="projects">
+                        <i class="fas fa-folder-open"></i>
+                        Projeler
+                        <span class="tab-sub">projects</span>
+                    </button>
+                    <button class="table-tab tab-sbert" data-table="sbert_projects">
+                        <i class="fas fa-brain"></i>
+                        SBERT
+                        <span class="tab-sub">sbert_projects</span>
+                    </button>
+                    <button class="table-tab tab-emrecan" data-table="emrecan_projects">
+                        <i class="fas fa-brain"></i>
+                        Emrecan/BERT
+                        <span class="tab-sub">emrecan_projects</span>
+                    </button>
+                </div>
 
                 <!-- ── Filter Toolbar ──────────────────────────────── -->
                 <div class="filter-toolbar">

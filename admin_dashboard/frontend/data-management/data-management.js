@@ -18,12 +18,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let filteredProjects = [];
     let currentPage      = 1;
     const itemsPerPage   = 10;
+    let currentTable     = 'projects';
+
+    // ── Tablo Sekmeleri ───────────────────────────────────────────────────────
+    document.querySelectorAll('.table-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.table === currentTable) return;
+            currentTable = btn.dataset.table;
+            document.querySelectorAll('.table-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            searchInput.value = '';
+            yearFilter.value  = '';
+            syncYearSelectStyle();
+            fetchProjects();
+        });
+    });
 
     // ── Veri Çek ─────────────────────────────────────────────────────────────
     fetchProjects();
 
+    function showLoading() {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    Veriler yükleniyor...
+                </td>
+            </tr>`;
+        resultsBadge.textContent = '— proje';
+        pageInfo.innerText       = 'Gösterilen: 0 proje';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+    }
+
     function fetchProjects() {
-        fetch('/api/projects/')
+        showLoading();
+        fetch(`/api/projects/?table=${currentTable}`)
             .then(res => {
                 if (!res.ok) throw new Error('API Bağlantı Hatası');
                 return res.json();
