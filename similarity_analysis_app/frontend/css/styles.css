@@ -598,6 +598,109 @@ button {
 }
 
 
+/* ─── AI Önerisi Butonu (Anahtar kelimeler) ────────────────── */
+.form__label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.form__label-row .form__label {
+    margin-bottom: 0;
+}
+
+.ai-suggest-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6d28d9 0%, #2563eb 100%);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+    box-shadow: 0 2px 8px rgba(109, 40, 217, .25);
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.ai-suggest-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(109, 40, 217, .35);
+}
+
+.ai-suggest-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.ai-suggest-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.ai-suggest-btn[hidden] { display: none; }
+
+.ai-suggest-btn__content,
+.ai-suggest-btn__loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-suggest-btn__loading[hidden],
+.ai-suggest-btn__content[hidden] { display: none; }
+
+.ai-suggest-btn__icon { flex-shrink: 0; }
+
+.ai-suggest-btn__spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: aiSpin .7s linear infinite;
+}
+
+@keyframes aiSpin { to { transform: rotate(360deg); } }
+
+.ai-suggest-msg {
+    margin-top: 8px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    line-height: 1.45;
+}
+
+.ai-suggest-msg[hidden] { display: none; }
+
+.ai-suggest-msg.success {
+    color: #047857;
+    background: rgba(16, 185, 129, .08);
+    border: 1px solid rgba(16, 185, 129, .25);
+}
+
+.ai-suggest-msg.error {
+    color: #b91c1c;
+    background: rgba(239, 68, 68, .07);
+    border: 1px solid rgba(239, 68, 68, .25);
+}
+
+.ai-suggest-msg.info {
+    color: #1e40af;
+    background: rgba(59, 130, 246, .07);
+    border: 1px solid rgba(59, 130, 246, .25);
+}
+
+
 /* ─── Submit Button ────────────────────────────────────────── */
 .form__submit {
     width: 100%;

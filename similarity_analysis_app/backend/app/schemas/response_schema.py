@@ -55,3 +55,9 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Servis durumu")
     model_loaded: bool = Field(..., description="SBERT modeli yüklü mü?")
     database_connected: bool = Field(..., description="Veritabanı bağlantısı aktif mi?")
+
+
+class KeywordSuggestResponse(BaseModel):
+    """POST /suggest-keywords endpoint'i için yanıt gövdesi."""
+
+    keywords: list[str] = Field(..., description="Önerilen anahtar kelimeler")

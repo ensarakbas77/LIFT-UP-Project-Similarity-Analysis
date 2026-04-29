@@ -142,11 +142,29 @@
 
                         <!-- Anahtar Kelimeler -->
                         <div class="form__group" id="group-keywords">
-                            <label class="form__label" for="project-keywords">
-                                <span class="form__label-icon">🏷️</span>
-                                Anahtar Kelimeler
-                                <span class="form__label-required">*</span>
-                            </label>
+                            <div class="form__label-row">
+                                <label class="form__label" for="project-keywords">
+                                    <span class="form__label-icon">🏷️</span>
+                                    Anahtar Kelimeler
+                                    <span class="form__label-required">*</span>
+                                </label>
+                                <button type="button" class="ai-suggest-btn" id="ai-suggest-btn"
+                                        hidden aria-label="AI ile anahtar kelime öner">
+                                    <span class="ai-suggest-btn__content" id="ai-suggest-content">
+                                        <svg class="ai-suggest-btn__icon" width="14" height="14" viewBox="0 0 24 24"
+                                             fill="none" stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/>
+                                            <path d="M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z"/>
+                                        </svg>
+                                        AI Önerisi
+                                    </span>
+                                    <span class="ai-suggest-btn__loading" id="ai-suggest-loading" hidden>
+                                        <span class="ai-suggest-btn__spinner"></span>
+                                        Öneri alınıyor...
+                                    </span>
+                                </button>
+                            </div>
                             <input type="text" class="form__input" id="project-keywords" name="keywords"
                                 placeholder="Ör: bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları"
                                 minlength="3" maxlength="1000" required autocomplete="off">
@@ -154,6 +172,7 @@
                                 <span class="form__error" id="keywords-error"></span>
                                 <span class="form__counter"><span id="keywords-count">0</span>/1000</span>
                             </div>
+                            <div class="ai-suggest-msg" id="ai-suggest-msg" hidden></div>
                         </div>
 
                         <!-- Sonuç Sayısı (top_k) -->

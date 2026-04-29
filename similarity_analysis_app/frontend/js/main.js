@@ -15,6 +15,13 @@ const API_BASE_URL = "http://localhost:8000";
 const ENDPOINTS = {
     analyze: `${API_BASE_URL}/analyze`,
     health: `${API_BASE_URL}/health`,
+    suggestKeywords: `${API_BASE_URL}/suggest-keywords`,
+};
+
+// AI Önerisi davranış sabitleri
+const AI_SUGGEST = {
+    minAbstractLength: 50,   // Bu eşiğin altında özet varsa buton gizli
+    cooldownMs: 8000,        // Tıklamalar arası soğuma süresi (RPM korumasi)
 };
 
 // ─── DOM Elements ──────────────────────────────────────────────
@@ -65,6 +72,12 @@ const DOM = {
     // Status
     statusDot: document.getElementById("status-dot"),
     statusLabel: document.getElementById("status-label"),
+
+    // AI keyword suggestion
+    aiSuggestBtn: document.getElementById("ai-suggest-btn"),
+    aiSuggestContent: document.getElementById("ai-suggest-content"),
+    aiSuggestLoading: document.getElementById("ai-suggest-loading"),
+    aiSuggestMsg: document.getElementById("ai-suggest-msg"),
 };
 
 // ─── Classification Config (5 Seviye) ─────────────────────────
@@ -151,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initCharCounters();
     initFormListeners();
     initActionButtons();
+    initAiSuggest();
     checkSystemHealth();
 });
 
@@ -170,6 +184,7 @@ function initCharCounters() {
     DOM.abstractInput.addEventListener("input", () => {
         DOM.abstractCount.textContent = DOM.abstractInput.value.length;
         clearFieldError("abstract");
+        updateAiSuggestVisibility();
     });
 
     // Keywords counter
@@ -327,6 +342,11 @@ function setLoadingState(isLoading) {
     DOM.abstractInput.disabled = isLoading;
     DOM.keywordsInput.disabled = isLoading;
     DOM.topkInput.disabled = isLoading;
+
+    // AI öneri butonu da analiz sırasında devre dışı
+    if (DOM.aiSuggestBtn && !DOM.aiSuggestBtn.hidden) {
+        DOM.aiSuggestBtn.disabled = isLoading || performance.now() < aiCooldownUntil;
+    }
 }
 
 
@@ -524,7 +544,7 @@ function showError(error) {
 
 function initActionButtons() {
     // "Yeni Analiz" button
-    DOM.btnNewAnalysis.addEventListener("click", resetToForm);
+    DOM.btnNewAnalysis.addEventListener("click", () => window.location.reload());
 
     // "Tekrar Dene" button
     DOM.btnRetry.addEventListener("click", resetToForm);
@@ -608,4 +628,153 @@ function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// AI KEYWORD SUGGESTION (Gemini)
+// ═══════════════════════════════════════════════════════════════
+
+let aiCooldownUntil = 0;       // performance.now() ms — bu ana kadar devre dışı
+let aiCooldownTimer = null;    // Cooldown geri sayım timer'ı
+
+function initAiSuggest() {
+    if (!DOM.aiSuggestBtn) return;
+    DOM.aiSuggestBtn.addEventListener("click", handleAiSuggest);
+    updateAiSuggestVisibility();
+}
+
+/**
+ * Özet uzunluğuna göre butonu gösterip gizler.
+ * Eşik altındaysa hem butonu hem önceki mesajı temizler.
+ */
+function updateAiSuggestVisibility() {
+    if (!DOM.aiSuggestBtn) return;
+    const len = DOM.abstractInput.value.trim().length;
+    const shouldShow = len >= AI_SUGGEST.minAbstractLength;
+
+    DOM.aiSuggestBtn.hidden = !shouldShow;
+    if (!shouldShow) {
+        hideAiMsg();
+    }
+}
+
+async function handleAiSuggest() {
+    const abstract = DOM.abstractInput.value.trim();
+
+    if (abstract.length < AI_SUGGEST.minAbstractLength) {
+        showAiMsg("info", `Özet en az ${AI_SUGGEST.minAbstractLength} karakter olmalı.`);
+        return;
+    }
+
+    // Cooldown kontrolü (frontend tarafı)
+    const now = performance.now();
+    if (now < aiCooldownUntil) {
+        const remaining = Math.ceil((aiCooldownUntil - now) / 1000);
+        showAiMsg("info", `Lütfen ${remaining} saniye bekleyin.`);
+        return;
+    }
+
+    setAiLoading(true);
+    hideAiMsg();
+
+    try {
+        const response = await fetch(ENDPOINTS.suggestKeywords, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ abstract }),
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            const detail = data?.detail || `HTTP ${response.status}`;
+            const msg = mapAiErrorMessage(response.status, detail);
+            showAiMsg("error", msg);
+            return;
+        }
+
+        const keywords = Array.isArray(data?.keywords) ? data.keywords : [];
+        if (keywords.length === 0) {
+            showAiMsg("error", "AI servisi anahtar kelime üretemedi.");
+            return;
+        }
+
+        const joined = keywords.join(", ");
+        DOM.keywordsInput.value = joined;
+        DOM.keywordsCount.textContent = joined.length;
+        clearFieldError("keywords");
+        showAiMsg("success", `${keywords.length} anahtar kelime önerildi. Düzenleyebilirsiniz.`);
+
+    } catch (err) {
+        showAiMsg("error", "Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin.");
+    } finally {
+        setAiLoading(false);
+        startAiCooldown(AI_SUGGEST.cooldownMs);
+    }
+}
+
+/**
+ * HTTP status koduna göre kullanıcı dostu mesaj döndürür.
+ */
+function mapAiErrorMessage(status, detail) {
+    if (status === 429) {
+        return detail || "Şu an yoğunluk var ya da limitimize ulaştık. Lütfen daha sonra tekrar deneyin.";
+    }
+    if (status === 503) {
+        return "AI servisi şu an meşgul. Lütfen biraz sonra tekrar deneyin.";
+    }
+    if (status === 502) {
+        return "AI servisinden geçersiz yanıt geldi. Lütfen tekrar deneyin.";
+    }
+    if (status === 500) {
+        return detail || "AI servisi şu an kullanılamıyor.";
+    }
+    return detail || "Öneri alınamadı.";
+}
+
+function setAiLoading(loading) {
+    DOM.aiSuggestBtn.disabled = loading;
+    DOM.aiSuggestContent.hidden = loading;
+    DOM.aiSuggestLoading.hidden = !loading;
+}
+
+function startAiCooldown(ms) {
+    aiCooldownUntil = performance.now() + ms;
+
+    if (aiCooldownTimer) clearInterval(aiCooldownTimer);
+    DOM.aiSuggestBtn.disabled = true;
+
+    const tick = () => {
+        const remainingMs = aiCooldownUntil - performance.now();
+        if (remainingMs <= 0) {
+            clearInterval(aiCooldownTimer);
+            aiCooldownTimer = null;
+            DOM.aiSuggestBtn.disabled = false;
+            DOM.aiSuggestContent.innerHTML =
+                '<svg class="ai-suggest-btn__icon" width="14" height="14" viewBox="0 0 24 24" ' +
+                'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
+                'stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/>' +
+                '<path d="M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z"/></svg>AI Önerisi';
+            return;
+        }
+        const sec = Math.ceil(remainingMs / 1000);
+        DOM.aiSuggestContent.textContent = `${sec}s bekle`;
+    };
+    tick();
+    aiCooldownTimer = setInterval(tick, 250);
+}
+
+function showAiMsg(type, text) {
+    if (!DOM.aiSuggestMsg) return;
+    DOM.aiSuggestMsg.textContent = text;
+    DOM.aiSuggestMsg.className = `ai-suggest-msg ${type}`;
+    DOM.aiSuggestMsg.hidden = false;
+}
+
+function hideAiMsg() {
+    if (!DOM.aiSuggestMsg) return;
+    DOM.aiSuggestMsg.hidden = true;
+    DOM.aiSuggestMsg.textContent = "";
+    DOM.aiSuggestMsg.className = "ai-suggest-msg";
 }
