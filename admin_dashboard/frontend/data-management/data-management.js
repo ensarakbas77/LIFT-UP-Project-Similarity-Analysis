@@ -18,21 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let filteredProjects = [];
     let currentPage      = 1;
     const itemsPerPage   = 10;
-    let currentTable     = 'projects';
-
-    // ── Tablo Sekmeleri ───────────────────────────────────────────────────────
-    document.querySelectorAll('.table-tab').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.dataset.table === currentTable) return;
-            currentTable = btn.dataset.table;
-            document.querySelectorAll('.table-tab').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            searchInput.value = '';
-            yearFilter.value  = '';
-            syncYearSelectStyle();
-            fetchProjects();
-        });
-    });
 
     // ── Veri Çek ─────────────────────────────────────────────────────────────
     fetchProjects();
@@ -53,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fetchProjects() {
         showLoading();
-        fetch(`/api/projects/?table=${currentTable}`)
+        fetch('/api/projects/')
             .then(res => {
                 if (!res.ok) throw new Error('API Bağlantı Hatası');
                 return res.json();
@@ -75,15 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearVal = yearFilter.value;
 
         filteredProjects = allProjects.filter(p => {
-            // Yıl filtresi
             const yearMatch = !yearVal || (p.year && p.year === yearVal);
-
-            // Metin araması (başlık, özet, anahtar kelime)
             const textMatch = !query ||
                 (p.title    && p.title.toLowerCase().includes(query))    ||
                 (p.abstract && p.abstract.toLowerCase().includes(query)) ||
                 (p.keywords && p.keywords.toLowerCase().includes(query));
-
             return yearMatch && textMatch;
         });
 
@@ -210,12 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const project = allProjects.find(p => p.id === projectId);
         if (!project) return;
 
-        document.getElementById('modalId').innerText      = project.id;
-        document.getElementById('modalYear').innerText    = project.year;
-        document.getElementById('modalTitle').innerText   = project.title    || 'Başlık Yok';
+        document.getElementById('modalId').innerText       = project.id;
+        document.getElementById('modalYear').innerText     = project.year;
+        document.getElementById('modalTitle').innerText    = project.title    || 'Başlık Yok';
         document.getElementById('modalAbstract').innerText = project.abstract || 'Özet bulunamadı.';
 
-        const keys   = (project.keywords || '').split(',').map(k => k.trim()).filter(k => k);
+        const keys    = (project.keywords || '').split(',').map(k => k.trim()).filter(k => k);
         const keyHtml = keys.map(k =>
             `<span class="badge bg-primary px-3 py-2 fs-6 mb-1 me-1 shadow-sm">${k}</span>`
         ).join('');

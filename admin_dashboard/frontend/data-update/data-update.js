@@ -17,30 +17,30 @@ const progressFill    = document.getElementById('progressFill');
 const progressLabel   = document.getElementById('progressLabel');
 const resultWrap      = document.getElementById('resultWrap');
 
-const confirmModal    = document.getElementById('confirmModal');
+const confirmModal     = document.getElementById('confirmModal');
 const confirmModalText = document.getElementById('confirmModalText');
-const confirmOkBtn    = document.getElementById('confirmOkBtn');
+const confirmOkBtn     = document.getElementById('confirmOkBtn');
 const confirmCancelBtn = document.getElementById('confirmCancelBtn');
 
-const passwordModal    = document.getElementById('passwordModal');
+const passwordModal      = document.getElementById('passwordModal');
 const adminPasswordInput = document.getElementById('adminPasswordInput');
-const toggleAdminPw    = document.getElementById('toggleAdminPw');
-const toggleAdminPwIcon = document.getElementById('toggleAdminPwIcon');
-const passwordOkBtn    = document.getElementById('passwordOkBtn');
-const passwordCancelBtn = document.getElementById('passwordCancelBtn');
-const pwError          = document.getElementById('pwError');
-const pwErrorText      = document.getElementById('pwErrorText');
+const toggleAdminPw      = document.getElementById('toggleAdminPw');
+const toggleAdminPwIcon  = document.getElementById('toggleAdminPwIcon');
+const passwordOkBtn      = document.getElementById('passwordOkBtn');
+const passwordCancelBtn  = document.getElementById('passwordCancelBtn');
+const pwError            = document.getElementById('pwError');
+const pwErrorText        = document.getElementById('pwErrorText');
 
 
 // ── Yardımcı ─────────────────────────────────────────────────────────────────
 function formatBytes(bytes) {
-    if (bytes < 1024)       return bytes + ' B';
-    if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024)    return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
-function showModal(el)  { el.classList.add('visible'); }
-function hideModal(el)  { el.classList.remove('visible'); }
+function showModal(el) { el.classList.add('visible'); }
+function hideModal(el) { el.classList.remove('visible'); }
 
 function showPwError(msg) {
     pwErrorText.textContent = msg;
@@ -90,27 +90,12 @@ function setUploading(loading) {
 }
 
 
-// ── Dosya & Tablo Durumu ──────────────────────────────────────────────────────
-let selectedFile  = null;
-let selectedTable = null;
+// ── Dosya Durumu ──────────────────────────────────────────────────────────────
+let selectedFile = null;
 
 function updateStartBtn() {
-    startUploadBtn.disabled = !(selectedFile && selectedTable);
+    startUploadBtn.disabled = !selectedFile;
 }
-
-// ── Tablo Seçimi ──────────────────────────────────────────────────────────────
-const optSbert   = document.getElementById('optSbert');
-const optEmrecan = document.getElementById('optEmrecan');
-
-function selectTable(tableName) {
-    selectedTable = tableName;
-    optSbert.classList.toggle('selected',   tableName === 'sbert_projects');
-    optEmrecan.classList.toggle('selected', tableName === 'emrecan_projects');
-    updateStartBtn();
-}
-
-optSbert.addEventListener('click',   () => selectTable('sbert_projects'));
-optEmrecan.addEventListener('click', () => selectTable('emrecan_projects'));
 
 // ── Dosya Seçimi ──────────────────────────────────────────────────────────────
 function applyFile(file) {
@@ -127,12 +112,7 @@ function applyFile(file) {
     uploadZoneTitle.textContent = 'Dosya seçildi';
     uploadZoneSub.textContent   = 'Değiştirmek için tekrar tıklayın veya sürükleyin';
     hideResult();
-
-    // Dosya adından modeli tespit et ve tabloyu otomatik seç
-    const fname = file.name.toLowerCase();
-    if (fname.includes('sbert'))        selectTable('sbert_projects');
-    else if (fname.includes('emrecan')) selectTable('emrecan_projects');
-    else updateStartBtn();
+    updateStartBtn();
 }
 
 function clearFile() {
@@ -180,27 +160,10 @@ toggleAdminPw.addEventListener('click', () => {
 
 // ── Yükleme Akışı ─────────────────────────────────────────────────────────────
 
-// Adım 1: Butona tıkla → Dosya-tablo uyuşmazlık kontrolü → Uyarı modalı
+// Adım 1: Butona tıkla → Uyarı modalı
 startUploadBtn.addEventListener('click', () => {
-    if (!selectedFile || !selectedTable) return;
-
-    const fname      = selectedFile.name.toLowerCase();
-    const hasSbert   = fname.includes('sbert');
-    const hasEmrecan = fname.includes('emrecan');
-
-    if (hasEmrecan && selectedTable === 'sbert_projects') {
-        showResult('error', 'Tablo Uyuşmazlığı',
-            'Dosya adı "emrecan" içeriyor ancak hedef tablo "SBERT" seçili. Lütfen Emrecan/BERT tablosunu seçin.');
-        return;
-    }
-    if (hasSbert && selectedTable === 'emrecan_projects') {
-        showResult('error', 'Tablo Uyuşmazlığı',
-            'Dosya adı "sbert" içeriyor ancak hedef tablo "Emrecan/BERT" seçili. Lütfen SBERT tablosunu seçin.');
-        return;
-    }
-
-    const tableLabel = selectedTable === 'sbert_projects' ? 'SBERT (sbert_projects)' : 'Emrecan/BERT (emrecan_projects)';
-    confirmModalText.textContent = `"${selectedFile.name}" dosyası ${tableLabel} tablosuna eklenecek. Devam etmek istiyor musunuz?`;
+    if (!selectedFile) return;
+    confirmModalText.textContent = `"${selectedFile.name}" dosyası projects tablosuna eklenecek. Devam etmek istiyor musunuz?`;
     showModal(confirmModal);
 });
 
@@ -261,7 +224,6 @@ passwordOkBtn.addEventListener('click', async () => {
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('password', password);
-    formData.append('table', selectedTable);
 
     try {
         progressFill.style.width = '60%';
@@ -289,9 +251,8 @@ passwordOkBtn.addEventListener('click', async () => {
             }
         } else {
             progressLabel.textContent = 'Tamamlandı!';
-            const tableLabel = selectedTable === 'sbert_projects' ? 'SBERT' : 'Emrecan/BERT';
             clearFile();
-            showToast(`${data.inserted ?? '?'} proje ${tableLabel} tablosuna başarıyla eklendi.`);
+            showToast(`${data.inserted ?? '?'} proje başarıyla eklendi.`);
         }
 
     } catch (err) {
