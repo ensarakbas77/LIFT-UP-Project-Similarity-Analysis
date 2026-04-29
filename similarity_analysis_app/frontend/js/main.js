@@ -426,6 +426,10 @@ function createProjectCard(project, index) {
     const abstractId = `abstract-${index}`;
     const toggleId = `toggle-${index}`;
 
+    const emrecanPct    = emrecan_similarity != null ? Math.round(emrecan_similarity * 100) : null;
+    const emrecanLevel  = emrecan_similarity != null ? getLevel(emrecan_similarity) : null;
+    const emrecanConfig = emrecanLevel ? CLASSIFICATION[emrecanLevel] : null;
+
     const card = document.createElement("div");
     card.className = `project-card ${level}`;
     card.id = cardId;
@@ -458,7 +462,7 @@ function createProjectCard(project, index) {
         <div class="project-card__footer">
             <div class="project-card__meta">
                 ${year ? `<span class="project-card__year">📅 ${year}</span>` : ""}
-                ${emrecan_similarity != null ? `<span class="project-card__emrecan-badge">Diğer modelin analiz sonucu: %${Math.round(emrecan_similarity * 100)}</span>` : ""}
+                ${emrecanConfig ? `<span class="project-card__emrecan-badge ${emrecanLevel}">${emrecanConfig.icon} Diğer modelin analiz sonucu: %${emrecanPct} (${emrecanConfig.label})</span>` : ""}
             </div>
             <div class="project-card__similarity-bar">
                 <div class="project-card__similarity-fill ${level}" style="width: 0%;" data-width="${percentage}%"></div>

@@ -1108,6 +1108,36 @@ button {
     font-variant-numeric: tabular-nums;
 }
 
+.project-card__emrecan-badge.critical {
+    background: var(--danger-100);
+    color: var(--danger-700);
+    border-color: var(--danger-200);
+}
+
+.project-card__emrecan-badge.high {
+    background: var(--orange-100);
+    color: var(--orange-700);
+    border-color: var(--orange-200);
+}
+
+.project-card__emrecan-badge.medium {
+    background: var(--warning-100);
+    color: var(--warning-700);
+    border-color: var(--warning-200);
+}
+
+.project-card__emrecan-badge.low {
+    background: var(--success-100);
+    color: var(--success-700);
+    border-color: var(--success-200);
+}
+
+.project-card__emrecan-badge.irrelevant {
+    background: var(--slate-100);
+    color: var(--slate-700);
+    border-color: var(--slate-200);
+}
+
 /* Number input spinner */
 .form__input[type="number"] {
     -moz-appearance: textfield;

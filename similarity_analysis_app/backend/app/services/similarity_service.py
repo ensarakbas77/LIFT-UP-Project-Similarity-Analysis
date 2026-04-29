@@ -81,7 +81,11 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
             similarity=r["similarity"],
             year=r["year"],
             classification=classify_similarity(r["similarity"]),
-            emrecan_similarity=emrecan_scores.get(r["project_id"]),
+            emrecan_similarity=(
+                max(0.0, emrecan_scores[r["project_id"]])
+                if r["project_id"] in emrecan_scores
+                else None
+            ),
         )
         for r in raw_results
     ]
