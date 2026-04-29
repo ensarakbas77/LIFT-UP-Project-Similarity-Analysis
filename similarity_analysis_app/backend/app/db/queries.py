@@ -26,10 +26,10 @@ def find_similar_projects(query_vector: list[float], top_k: int = 5) -> list[dic
 
         sql = """
             SELECT id, title_tr, abstract_tr,
-                   1 - (embedding <=> %s::vector) AS similarity,
+                   1 - (sbert_embedding <=> %s::vector) AS similarity,
                    year
-            FROM sbert_projects
-            ORDER BY embedding <=> %s::vector
+            FROM projects
+            ORDER BY sbert_embedding <=> %s::vector
             LIMIT %s;
         """
 
@@ -61,15 +61,14 @@ def find_emrecan_similarities_by_ids(
     project_ids: list[int], query_vector: list[float]
 ) -> dict[int, float]:
     """
-    Verilen SBERT proje ID'leri için emrecan_projects tablosundan Emrecan BERT benzerlik skorlarını getirir.
-    ID eşleşmesi yerine title_tr üzerinden JOIN yapılır — iki tablodaki ID'ler farklı olabilir.
+    Verilen proje ID'leri için projects tablosundan Emrecan BERT benzerlik skorlarını getirir.
 
     Args:
         project_ids: SBERT sorgusundan dönen proje ID listesi.
         query_vector: Emrecan BERT sorgu embedding vektörü.
 
     Returns:
-        {sbert_project_id: emrecan_similarity_score} sözlüğü.
+        {project_id: emrecan_similarity_score} sözlüğü.
     """
     if not project_ids:
         return {}
@@ -80,11 +79,10 @@ def find_emrecan_similarities_by_ids(
         cur = conn.cursor()
 
         sql = """
-            SELECT s.id AS sbert_id,
-                   1 - (e.embedding <=> %s::vector) AS similarity
-            FROM emrecan_projects e
-            INNER JOIN sbert_projects s ON s.title_tr = e.title_tr
-            WHERE s.id = ANY(%s);
+            SELECT id,
+                   1 - (emrecan_embedding <=> %s::vector) AS similarity
+            FROM projects
+            WHERE id = ANY(%s);
         """
 
         cur.execute(sql, (query_vector, project_ids))

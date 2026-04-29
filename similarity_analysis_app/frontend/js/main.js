@@ -438,7 +438,7 @@ function createProjectCard(project, index) {
         <div class="project-card__footer">
             <div class="project-card__meta">
                 ${year ? `<span class="project-card__year">📅 ${year}</span>` : ""}
-                ${emrecan_similarity != null ? `<span class="project-card__emrecan-badge">EmreCan: %${Math.round(emrecan_similarity * 100)}</span>` : ""}
+                ${emrecan_similarity != null ? `<span class="project-card__emrecan-badge">Diğer modelin analiz sonucu: %${Math.round(emrecan_similarity * 100)}</span>` : ""}
             </div>
             <div class="project-card__similarity-bar">
                 <div class="project-card__similarity-fill ${level}" style="width: 0%;" data-width="${percentage}%"></div>
