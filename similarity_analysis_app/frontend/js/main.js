@@ -78,7 +78,27 @@ const DOM = {
     aiSuggestContent: document.getElementById("ai-suggest-content"),
     aiSuggestLoading: document.getElementById("ai-suggest-loading"),
     aiSuggestMsg: document.getElementById("ai-suggest-msg"),
+
+    // Results toolbar
+    resultsToolbar: document.getElementById("results-toolbar"),
+    resultsTopkInput: document.getElementById("results-topk"),
+    resultsTopkBtn: document.getElementById("results-topk-btn"),
+    resultsTopkBtnContent: document.getElementById("results-topk-btn-content"),
+    resultsTopkBtnLoading: document.getElementById("results-topk-btn-loading"),
+    resultsYear: document.getElementById("results-year"),
+    sortDescBtn: document.getElementById("sort-desc"),
+    sortAscBtn: document.getElementById("sort-asc"),
 };
+
+// ─── Results Toolbar State ─────────────────────────────────────
+// Sonuç ekranındaki filtre/sıralama state'i. Yeni analiz veya
+// top-k güncellemesi sonrası rawResults yeniden doldurulur; yıl
+// filtresi ve sort her render'da yeniden uygulanır.
+let lastQueryPayload = null;   // {title, abstract, keywords} — top-k re-fetch için
+let lastTopK = 5;              // Son kullanılan top_k
+let rawResults = [];           // Backend'den gelen ham sonuç listesi
+let currentSort = "desc";      // "desc" | "asc"
+let currentYearFilter = "";    // "" = tümü
 
 // ─── Classification Config (5 Seviye) ─────────────────────────
 const CLASSIFICATION = {
@@ -165,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initFormListeners();
     initActionButtons();
     initAiSuggest();
+    initResultsToolbar();
     checkSystemHealth();
 });
 
@@ -300,12 +321,21 @@ async function handleSubmit(e) {
     setLoadingState(true);
 
     try {
+        const topK = parseInt(DOM.topkInput.value, 10) || 5;
         const payload = {
             title: DOM.titleInput.value.trim(),
             abstract: DOM.abstractInput.value.trim(),
             keywords: DOM.keywordsInput.value.trim(),
-            top_k: parseInt(DOM.topkInput.value, 10) || 5,
+            top_k: topK,
         };
+
+        // Top-K re-fetch için kullanılacak — sadece sorgu içeriği saklanır
+        lastQueryPayload = {
+            title: payload.title,
+            abstract: payload.abstract,
+            keywords: payload.keywords,
+        };
+        lastTopK = topK;
 
         const response = await fetch(ENDPOINTS.analyze, {
             method: "POST",
@@ -322,7 +352,7 @@ async function handleSubmit(e) {
         }
 
         const data = await response.json();
-        renderResults(data);
+        renderResults(data, { resetToolbar: true });
     } catch (error) {
         showError(error);
     } finally {
@@ -357,9 +387,12 @@ function setLoadingState(isLoading) {
 /**
  * API yanıtını parse edip DOM'a render eder.
  * @param {Object} data - AnalyzeResponse nesnesi
+ * @param {Object} [opts]
+ * @param {boolean} [opts.resetToolbar=false] - Yıl filtresi/sıralama varsayılana dönsün mü
  */
-function renderResults(data) {
-    const { similar_projects, classification } = data;
+function renderResults(data, opts = {}) {
+    const { similar_projects } = data;
+    const { resetToolbar = false } = opts;
 
     // Hide form & hero, show results
     DOM.heroSection.style.display = "none";
@@ -370,11 +403,12 @@ function renderResults(data) {
     // Render query summary (user's input)
     renderQuerySummary();
 
-    // Render project cards
-    renderProjectCards(similar_projects);
+    // Toolbar state senkronizasyonu
+    rawResults = Array.isArray(similar_projects) ? similar_projects : [];
+    syncToolbarAfterFetch({ resetToolbar });
 
-    // Update results count
-    DOM.resultsCount.textContent = `${similar_projects.length} proje bulundu`;
+    // Filtre + sort uygulanmış halini render et
+    applyAndRenderFiltered();
 
     // Smooth scroll to results
     DOM.resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -539,6 +573,158 @@ function showError(error) {
     DOM.errorMessage.textContent = message;
 
     DOM.errorSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// RESULTS TOOLBAR (Top-K re-fetch + Year Filter + Sort)
+// ═══════════════════════════════════════════════════════════════
+
+function initResultsToolbar() {
+    // Top-K Güncelle butonu
+    DOM.resultsTopkBtn.addEventListener("click", handleTopkUpdate);
+    DOM.resultsTopkInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleTopkUpdate();
+        }
+    });
+
+    // Yıl filtresi
+    DOM.resultsYear.addEventListener("change", () => {
+        currentYearFilter = DOM.resultsYear.value;
+        DOM.resultsYear.classList.toggle("active", !!currentYearFilter);
+        applyAndRenderFiltered();
+    });
+
+    // Sıralama butonları
+    DOM.sortDescBtn.addEventListener("click", () => setSortOrder("desc"));
+    DOM.sortAscBtn.addEventListener("click", () => setSortOrder("asc"));
+}
+
+function setSortOrder(order) {
+    if (order === currentSort) return;
+    currentSort = order;
+    DOM.sortDescBtn.classList.toggle("active", order === "desc");
+    DOM.sortAscBtn.classList.toggle("active", order === "asc");
+    DOM.sortDescBtn.setAttribute("aria-pressed", order === "desc");
+    DOM.sortAscBtn.setAttribute("aria-pressed", order === "asc");
+    applyAndRenderFiltered();
+}
+
+/**
+ * Yeni fetch sonrası toolbar UI'sını günceller. resetToolbar true ise
+ * yıl filtresi ve sıralama varsayılana döner; aksi halde mevcut seçimler
+ * korunur (ör. top-k güncellendiğinde).
+ */
+function syncToolbarAfterFetch({ resetToolbar }) {
+    DOM.resultsTopkInput.value = "";
+    DOM.resultsTopkInput.placeholder = String(lastTopK);
+
+    if (resetToolbar) {
+        currentSort = "desc";
+        currentYearFilter = "";
+        DOM.sortDescBtn.classList.add("active");
+        DOM.sortAscBtn.classList.remove("active");
+        DOM.sortDescBtn.setAttribute("aria-pressed", "true");
+        DOM.sortAscBtn.setAttribute("aria-pressed", "false");
+    }
+
+    populateYearFilter();
+}
+
+function populateYearFilter() {
+    const years = [...new Set(rawResults.map(p => p.year).filter(Boolean))]
+        .sort()
+        .reverse();
+
+    const previousValue = currentYearFilter;
+    DOM.resultsYear.innerHTML = '<option value="">Tüm Yıllar</option>' +
+        years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join("");
+
+    // Önceki seçim hâlâ geçerliyse koru
+    if (previousValue && years.includes(previousValue)) {
+        DOM.resultsYear.value = previousValue;
+        DOM.resultsYear.classList.add("active");
+    } else {
+        currentYearFilter = "";
+        DOM.resultsYear.value = "";
+        DOM.resultsYear.classList.remove("active");
+    }
+}
+
+/**
+ * rawResults'a yıl filtresi ve sıralama uygulayıp render eder.
+ */
+function applyAndRenderFiltered() {
+    let list = rawResults;
+
+    if (currentYearFilter) {
+        list = list.filter(p => p.year === currentYearFilter);
+    }
+
+    // Backend desc sıralı geliyor; asc istenirse ters çevir
+    if (currentSort === "asc") {
+        list = [...list].reverse();
+    }
+
+    renderProjectCards(list);
+
+    const total = rawResults.length;
+    const shown = list.length;
+    DOM.resultsCount.textContent = (shown === total)
+        ? `${total} proje bulundu`
+        : `${shown} / ${total} proje gösteriliyor`;
+}
+
+/**
+ * Mevcut sorguyu yeni top_k ile yeniden çalıştırır.
+ */
+async function handleTopkUpdate() {
+    if (!lastQueryPayload) return;
+
+    const newTopK = parseInt(DOM.resultsTopkInput.value, 10);
+    if (!Number.isFinite(newTopK) || newTopK < 1 || newTopK > 50) {
+        DOM.resultsTopkInput.focus();
+        DOM.resultsTopkInput.select();
+        return;
+    }
+
+    if (newTopK === lastTopK && rawResults.length > 0) return;
+
+    setTopkLoading(true);
+
+    try {
+        const payload = { ...lastQueryPayload, top_k: newTopK };
+
+        const response = await fetch(ENDPOINTS.analyze, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            const detail = errorData?.detail || `HTTP ${response.status}: Sunucu hatası`;
+            throw new Error(detail);
+        }
+
+        const data = await response.json();
+        lastTopK = newTopK;
+        // Mevcut yıl/sort tercihlerini koru
+        renderResults(data, { resetToolbar: false });
+    } catch (error) {
+        showError(error);
+    } finally {
+        setTopkLoading(false);
+    }
+}
+
+function setTopkLoading(isLoading) {
+    DOM.resultsTopkBtn.disabled = isLoading;
+    DOM.resultsTopkInput.disabled = isLoading;
+    DOM.resultsTopkBtnContent.hidden = isLoading;
+    DOM.resultsTopkBtnLoading.hidden = !isLoading;
 }
 
 

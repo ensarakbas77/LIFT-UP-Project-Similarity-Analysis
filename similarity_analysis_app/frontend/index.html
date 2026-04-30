@@ -241,6 +241,67 @@
                     </div>
                 </div>
 
+                <!-- Results Toolbar: Top-K Re-query + Year Filter + Sort Order -->
+                <div class="results-toolbar" id="results-toolbar">
+                    <!-- Top-K -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label" for="results-topk">
+                            <span class="results-toolbar__label-icon">📊</span>
+                            Sonuç Sayısı
+                        </label>
+                        <div class="results-toolbar__input-group">
+                            <input type="number" id="results-topk" class="results-toolbar__input"
+                                   min="1" max="50" placeholder="5">
+                            <button type="button" id="results-topk-btn" class="results-toolbar__btn"
+                                    title="Sonuç sayısını güncelle" aria-label="Sonuç sayısını güncelle">
+                                <span class="results-toolbar__btn-content" id="results-topk-btn-content">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 2v6h-6"/>
+                                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                                        <path d="M3 22v-6h6"/>
+                                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                                    </svg>
+                                </span>
+                                <span class="results-toolbar__btn-loading" id="results-topk-btn-loading" hidden>
+                                    <span class="results-toolbar__spinner"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Year Filter -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label" for="results-year">
+                            <span class="results-toolbar__label-icon">📅</span>
+                            Yıl Filtresi
+                        </label>
+                        <select id="results-year" class="results-toolbar__select">
+                            <option value="">Tüm Yıllar</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label">
+                            <span class="results-toolbar__label-icon">🔀</span>
+                            Sıralama
+                        </label>
+                        <div class="results-toolbar__sort" role="group" aria-label="Sıralama yönü">
+                            <button type="button" class="results-toolbar__sort-btn active"
+                                    id="sort-desc" data-sort="desc"
+                                    aria-pressed="true">
+                                ↓ En Benzer Önce
+                            </button>
+                            <button type="button" class="results-toolbar__sort-btn"
+                                    id="sort-asc" data-sort="asc"
+                                    aria-pressed="false">
+                                ↑ En Az Benzer Önce
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Results Header -->
                 <div class="results__header">
                     <h3 class="results__title">
