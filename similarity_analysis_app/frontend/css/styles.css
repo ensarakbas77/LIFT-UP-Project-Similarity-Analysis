@@ -75,7 +75,7 @@
     --slate-700: #334155;
 
     /* Background & Surface */
-    --bg-body: #f5f7fb;
+    --bg-body: #f0f4ff;
     --bg-surface: #ffffff;
     --bg-surface-glass: rgba(255, 255, 255, 0.78);
     --bg-subtle: #edf0f5;
@@ -151,12 +151,7 @@ body {
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     color: var(--neutral-800);
-    background-color: var(--bg-body);
-    background-image:
-        radial-gradient(at 12% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 45%),
-        radial-gradient(at 88% 0%, rgba(31, 45, 90, 0.06) 0px, transparent 45%),
-        radial-gradient(at 50% 100%, rgba(109, 40, 217, 0.05) 0px, transparent 50%);
-    background-attachment: fixed;
+    background: linear-gradient(135deg, #f0f4ff 0%, #eef2fb 100%) fixed;
     line-height: 1.6;
     min-height: 100vh;
     display: flex;
