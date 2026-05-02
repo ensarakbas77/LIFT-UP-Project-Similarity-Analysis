@@ -182,6 +182,7 @@ const VALIDATION = {
 
 document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("home-view");
+    initTheme();
     initCharCounters();
     initFormListeners();
     initActionButtons();
@@ -189,6 +190,33 @@ document.addEventListener("DOMContentLoaded", () => {
     initResultsToolbar();
     checkSystemHealth();
 });
+
+
+// ═══════════════════════════════════════════════════════════════
+// THEME MANAGEMENT (Dark / Light Mode)
+// ═══════════════════════════════════════════════════════════════
+
+const THEME_KEY = "lift-theme";
+
+function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = saved || (prefersDark ? "dark" : "light");
+    applyTheme(theme);
+
+    const btn = document.getElementById("theme-toggle");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "light";
+            applyTheme(current === "dark" ? "light" : "dark");
+        });
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+}
 
 
 // ═══════════════════════════════════════════════════════════════
