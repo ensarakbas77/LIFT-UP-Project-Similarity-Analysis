@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Styles -->
@@ -24,33 +24,38 @@
 
 <body>
 
+    <!-- Decorative background mesh -->
+    <div class="bg-mesh" aria-hidden="true">
+        <div class="bg-mesh__blob bg-mesh__blob--1"></div>
+        <div class="bg-mesh__blob bg-mesh__blob--2"></div>
+        <div class="bg-mesh__blob bg-mesh__blob--3"></div>
+    </div>
+
     <!-- ═══════════════════════════════════════════════════════════ -->
     <!-- HEADER                                                     -->
     <!-- ═══════════════════════════════════════════════════════════ -->
     <header class="header" id="header">
         <div class="header__container">
             <div class="header__brand">
-                <div class="header__logo" id="header-logo">
-                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="36" height="36" rx="8" fill="url(#logo-gradient)" />
-                        <path d="M10 26V10h4v12h8v4H10z" fill="white" opacity="0.9" />
-                        <path d="M18 10h4l4 8-4 8h-4l4-8-4-8z" fill="white" opacity="0.7" />
-                        <defs>
-                            <linearGradient id="logo-gradient" x1="0" y1="0" x2="36" y2="36">
-                                <stop offset="0%" stop-color="#1F2D5A" />
-                                <stop offset="100%" stop-color="#00A3E0" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
+                <a href="#" class="header__logo" id="header-logo" aria-label="TUSAŞ Anasayfa">
+                    <img src="assets/tusas_logo.png" alt="Türk Havacılık ve Uzay Sanayii"
+                        class="header__logo-img">
+                </a>
+                <div class="header__divider" aria-hidden="true"></div>
                 <div class="header__text">
-                    <h1 class="header__title">LIFT UP</h1>
-                    <p class="header__subtitle">Proje Benzerlik Analizi</p>
+                    <h1 class="header__title">
+                        <span class="header__title-tusas">TUSAŞ</span>
+                        <span class="header__title-lift">LIFT UP</span>
+                    </h1>
+                    <p class="header__subtitle">Sanayi Odaklı Lisans Bitirme Projeleri Programı</p>
                 </div>
             </div>
-            <div class="header__status" id="system-status">
-                <span class="status-dot" id="status-dot"></span>
-                <span class="status-label" id="status-label">Kontrol ediliyor...</span>
+
+            <div class="header__meta">
+                <div class="header__status" id="system-status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span class="status-label" id="status-label">Kontrol ediliyor...</span>
+                </div>
             </div>
         </div>
     </header>
@@ -60,58 +65,41 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <main class="main" id="main-content">
 
-        <!-- ─── Two Column Content: Brand Panel + Form ────────── -->
+        <!-- ─── Hero + Form ─────────────────────────────────────── -->
         <section class="content-grid" id="content-section">
             <div class="content-grid__container">
 
-                <!-- LEFT: Branded Info Panel -->
-                <aside class="brand-panel" id="brand-panel">
-                    <!-- Decorative shapes -->
-                    <div class="brand-panel__decor brand-panel__decor--1"></div>
-                    <div class="brand-panel__decor brand-panel__decor--2"></div>
+                <!-- Compact Hero with brand text -->
+                <div class="hero" id="hero">
+                    <h2 class="hero__title">
+                        <span class="hero__title-main">LIFT UP</span>
+                        <span class="hero__title-accent">Proje Benzerlik Analizi</span>
+                    </h2>
+                    <p class="hero__desc">
+                        Proje başlığı, özeti ve anahtar kelimelerinizi girin — yapay zeka
+                        destekli sistemimiz mevcut projelerle anlamsal benzerlik analizi yapsın.
+                    </p>
+                </div>
 
-                    <!-- Logo -->
-                    <div class="brand-panel__logo-wrap">
-                        <img src="assets/tusas_logo.png" alt="Turkish Aerospace" class="brand-panel__logo">
-                    </div>
-
-                    <!-- Program Title -->
-                    <div class="brand-panel__text">
-                        <h2 class="brand-panel__heading">
-                            <span class="brand-panel__heading-lift">TUSAŞ LIFT UP</span>
-                            <span class="brand-panel__heading-sub">Sanayi Odaklı Lisans Bitirme Projeleri
-                                Programı</span>
-                        </h2>
-                        <div class="brand-panel__divider"></div>
-                        <p class="brand-panel__desc">
-                            Proje başlığı, özeti ve anahtar kelimelerinizi girin — yapay zeka destekli
-                            sistemimiz mevcut projelerle semantik benzerlik analizi yapsın.
-                        </p>
-                    </div>
-
-                    <!-- Tech badge at bottom -->
-                    <div class="brand-panel__tech">
-                        <span class="brand-panel__tech-dot"></span>
-                        Yapay Zeka Tabanlı Anlamsal Analiz Sistemi
-                    </div>
-                </aside>
-
-                <!-- RIGHT: Analysis Form (untouched form markup) -->
+                <!-- Analysis Form -->
                 <div class="form-panel" id="form-section">
                     <div class="form-panel__header">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.35-4.35" />
-                        </svg>
+                        <div class="form-panel__icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                        </div>
                         <div>
                             <h3 class="form-panel__title">Proje Analiz Formu</h3>
                             <p class="form-panel__subtitle">Analiz etmek istediğiniz projenin bilgilerini girin</p>
                         </div>
                     </div>
+
                     <form class="form" id="analyze-form" novalidate>
                         <!-- Proje Başlığı -->
-                        <div class="form__group" id="group-title">
+                        <div class="form__group form__group--full" id="group-title">
                             <label class="form__label" for="project-title">
                                 <span class="form__label-icon">📌</span>
                                 Proje Başlığı
@@ -127,7 +115,7 @@
                         </div>
 
                         <!-- Proje Özeti -->
-                        <div class="form__group" id="group-abstract">
+                        <div class="form__group form__group--full" id="group-abstract">
                             <label class="form__label" for="project-abstract">
                                 <span class="form__label-icon">📝</span>
                                 Proje Özeti
@@ -135,7 +123,7 @@
                             </label>
                             <textarea class="form__textarea" id="project-abstract" name="abstract"
                                 placeholder="Projenizin ayrıntılı özetini buraya yazın..." minlength="10"
-                                maxlength="5000" required rows="6"></textarea>
+                                maxlength="5000" required rows="4"></textarea>
                             <div class="form__meta">
                                 <span class="form__error" id="abstract-error"></span>
                                 <span class="form__counter"><span id="abstract-count">0</span>/5000</span>
@@ -184,29 +172,31 @@
                                 Sonuç Sayısı
                             </label>
                             <input type="number" class="form__input" id="project-topk" name="top_k"
-                                placeholder="Kaç benzer proje listelensin?" min="1" max="50" autocomplete="off">
+                                placeholder="10" min="1" max="50" autocomplete="off">
                             <div class="form__meta">
                                 <span class="form__error" id="topk-error"></span>
-                                <span class="form__counter form__counter--hint">1 – 50 arası bir değer girin</span>
+                                <span class="form__counter form__counter--hint">1 – 50 arası bir değer</span>
                             </div>
                         </div>
 
                         <!-- Submit Button -->
-                        <button type="submit" class="form__submit" id="submit-btn">
-                            <span class="form__submit-content" id="submit-content">
-                                <svg class="form__submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <path d="m21 21-4.35-4.35" />
-                                </svg>
-                                Analiz Et
-                            </span>
-                            <span class="form__submit-loading" id="submit-loading">
-                                <span class="spinner"></span>
-                                Analiz Ediliyor...
-                            </span>
-                        </button>
+                        <div class="form__submit-wrap">
+                            <button type="submit" class="form__submit" id="submit-btn">
+                                <span class="form__submit-content" id="submit-content">
+                                    <svg class="form__submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.35-4.35" />
+                                    </svg>
+                                    Analiz Et
+                                </span>
+                                <span class="form__submit-loading" id="submit-loading">
+                                    <span class="spinner"></span>
+                                    Analiz Ediliyor...
+                                </span>
+                            </button>
+                        </div>
                     </form>
                 </div>
 

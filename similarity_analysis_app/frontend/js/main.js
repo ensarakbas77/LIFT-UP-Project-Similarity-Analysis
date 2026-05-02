@@ -181,6 +181,7 @@ const VALIDATION = {
 // ═══════════════════════════════════════════════════════════════
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("home-view");
     initCharCounters();
     initFormListeners();
     initActionButtons();
@@ -395,6 +396,7 @@ function renderResults(data, opts = {}) {
     const { resetToolbar = false } = opts;
 
     // Hide form & hero, show results
+    document.body.classList.remove("home-view");
     DOM.heroSection.style.display = "none";
     DOM.formSection.style.display = "none";
     DOM.errorSection.style.display = "none";
@@ -555,6 +557,7 @@ function getLevel(score) {
  * @param {Error} error
  */
 function showError(error) {
+    document.body.classList.remove("home-view");
     DOM.heroSection.style.display = "none";
     DOM.formSection.style.display = "none";
     DOM.resultsSection.style.display = "none";
@@ -760,6 +763,7 @@ function resetToForm() {
     DOM.resultsCards.innerHTML = "";
 
     // Show form, hide others
+    document.body.classList.add("home-view");
     DOM.heroSection.style.display = "block";
     DOM.formSection.style.display = "block";
     DOM.resultsSection.style.display = "none";
