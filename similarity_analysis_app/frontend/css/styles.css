@@ -878,25 +878,35 @@ button {
 
 /* ─── Query Summary ──────────────────────────────────────────── */
 .query-summary {
-    background: var(--bg-surface);
-    border: 1px solid var(--neutral-200);
+    background: linear-gradient(135deg, #f0f4ff 0%, #eef2fb 100%);
+    border: 1px solid var(--primary-100);
     border-radius: var(--radius-xl);
-    padding: var(--space-5);
+    padding: var(--space-5) var(--space-6);
     margin-bottom: var(--space-6);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
     animation: fadeInUp 0.4s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.query-summary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tusas-navy) 0%, var(--primary-400) 60%, transparent 100%);
 }
 
 .query-summary__heading {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     font-weight: 700;
-    color: var(--primary-600);
+    color: var(--primary-700);
     margin-bottom: var(--space-4);
     padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--neutral-100);
+    border-bottom: 1px solid rgba(31, 45, 90, 0.10);
 }
 
 .query-summary__heading svg {
@@ -906,33 +916,41 @@ button {
 .query-summary__fields {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
 }
 
 .query-summary__field {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    background: rgba(255, 255, 255, 0.70);
+    border-radius: var(--radius-lg);
+    border-left: 3px solid var(--primary-400);
+    padding: var(--space-3) var(--space-4);
+    backdrop-filter: blur(4px);
 }
 
 .query-summary__label {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: var(--neutral-500);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--primary-600);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .query-summary__value {
     font-size: var(--font-size-sm);
     color: var(--neutral-800);
-    line-height: 1.7;
+    line-height: 1.75;
     font-weight: 500;
 }
 
 .query-summary__value--abstract {
-    color: var(--neutral-600);
+    color: var(--neutral-700);
     font-weight: 400;
+    text-align: justify;
+    text-align-last: left;
+    hyphens: auto;
 }
 
 
