@@ -16,6 +16,7 @@ const ENDPOINTS = {
     analyze: `${API_BASE_URL}/analyze`,
     health: `${API_BASE_URL}/health`,
     suggestKeywords: `${API_BASE_URL}/suggest-keywords`,
+    projects: `${API_BASE_URL}/projects/`,
 };
 
 // AI Önerisi davranış sabitleri
@@ -188,6 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initActionButtons();
     initAiSuggest();
     initResultsToolbar();
+    initNavTabs();
+    initProjectHistory();
     checkSystemHealth();
 });
 
@@ -999,4 +1002,404 @@ function hideAiMsg() {
     DOM.aiSuggestMsg.hidden = true;
     DOM.aiSuggestMsg.textContent = "";
     DOM.aiSuggestMsg.className = "ai-suggest-msg";
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION TABS (Benzerlik Analizi / Proje Geçmişi)
+// ═══════════════════════════════════════════════════════════════
+
+const VIEWS = {
+    analyze: {
+        tabId: "tab-analyze",
+        viewId: "analyze-view",
+    },
+    history: {
+        tabId: "tab-history",
+        viewId: "history-view",
+    },
+};
+
+let currentView = "analyze";
+
+function initNavTabs() {
+    const tabs = document.querySelectorAll(".nav-tab");
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const view = tab.dataset.view;
+            if (view) switchView(view);
+        });
+    });
+}
+
+/**
+ * Aktif sekmeyi değiştirir.
+ * @param {"analyze"|"history"} viewName
+ */
+function switchView(viewName) {
+    if (!VIEWS[viewName] || viewName === currentView) return;
+
+    Object.entries(VIEWS).forEach(([name, cfg]) => {
+        const tab = document.getElementById(cfg.tabId);
+        const view = document.getElementById(cfg.viewId);
+        const isActive = name === viewName;
+
+        if (tab) {
+            tab.classList.toggle("active", isActive);
+            tab.setAttribute("aria-selected", String(isActive));
+        }
+        if (view) {
+            view.classList.toggle("view--active", isActive);
+            view.hidden = !isActive;
+        }
+    });
+
+    currentView = viewName;
+
+    // home-view sınıfı yalnızca analiz formu (giriş ekranı) açıkken aktiftir.
+    // Sonuç ekranı görünüyor olabilir; bu durumda da overflow:hidden istemiyoruz.
+    if (viewName === "history") {
+        document.body.classList.remove("home-view");
+        // İlk açılışta projeleri yükle
+        ensureProjectsLoaded();
+    } else {
+        const resultsVisible = DOM.resultsSection.style.display !== "none";
+        const errorVisible = DOM.errorSection.style.display !== "none";
+        if (!resultsVisible && !errorVisible) {
+            document.body.classList.add("home-view");
+        }
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PROJECT HISTORY (Veri Tabanı Listesi)
+// ═══════════════════════════════════════════════════════════════
+
+const HISTORY = {
+    pageSize: 12,
+};
+
+const HistoryDOM = {
+    cards: null,
+    loading: null,
+    search: null,
+    year: null,
+    clear: null,
+    badge: null,
+    pagination: null,
+    pageInfo: null,
+    pages: null,
+    prev: null,
+    next: null,
+    modal: null,
+    modalBackdrop: null,
+    modalClose: null,
+    modalCloseBtn: null,
+    modalYear: null,
+    modalId: null,
+    modalTitle: null,
+    modalAbstract: null,
+    modalKeywords: null,
+};
+
+let historyState = {
+    loaded: false,
+    loading: false,
+    all: [],
+    filtered: [],
+    page: 1,
+    search: "",
+    year: "",
+};
+
+function initProjectHistory() {
+    HistoryDOM.cards = document.getElementById("history-cards");
+    HistoryDOM.loading = document.getElementById("history-loading");
+    HistoryDOM.search = document.getElementById("history-search");
+    HistoryDOM.year = document.getElementById("history-year");
+    HistoryDOM.clear = document.getElementById("history-clear");
+    HistoryDOM.badge = document.getElementById("history-badge");
+    HistoryDOM.pagination = document.getElementById("history-pagination");
+    HistoryDOM.pageInfo = document.getElementById("history-page-info");
+    HistoryDOM.pages = document.getElementById("history-pages");
+    HistoryDOM.prev = document.getElementById("history-prev");
+    HistoryDOM.next = document.getElementById("history-next");
+    HistoryDOM.modal = document.getElementById("history-modal");
+    HistoryDOM.modalBackdrop = document.getElementById("history-modal-backdrop");
+    HistoryDOM.modalClose = document.getElementById("history-modal-close");
+    HistoryDOM.modalCloseBtn = document.getElementById("history-modal-close-btn");
+    HistoryDOM.modalYear = document.getElementById("history-modal-year");
+    HistoryDOM.modalId = document.getElementById("history-modal-id");
+    HistoryDOM.modalTitle = document.getElementById("history-modal-project-title");
+    HistoryDOM.modalAbstract = document.getElementById("history-modal-abstract");
+    HistoryDOM.modalKeywords = document.getElementById("history-modal-keywords");
+
+    if (!HistoryDOM.cards) return;
+
+    // Filtre olayları
+    HistoryDOM.search.addEventListener("input", () => {
+        historyState.search = HistoryDOM.search.value;
+        historyState.page = 1;
+        applyHistoryFilters();
+    });
+
+    HistoryDOM.year.addEventListener("change", () => {
+        historyState.year = HistoryDOM.year.value;
+        historyState.page = 1;
+        HistoryDOM.year.classList.toggle("active", !!historyState.year);
+        applyHistoryFilters();
+    });
+
+    HistoryDOM.clear.addEventListener("click", () => {
+        historyState.search = "";
+        historyState.year = "";
+        historyState.page = 1;
+        HistoryDOM.search.value = "";
+        HistoryDOM.year.value = "";
+        HistoryDOM.year.classList.remove("active");
+        applyHistoryFilters();
+    });
+
+    // Pagination
+    HistoryDOM.prev.addEventListener("click", () => {
+        if (historyState.page > 1) {
+            historyState.page--;
+            renderHistoryCards();
+        }
+    });
+
+    HistoryDOM.next.addEventListener("click", () => {
+        const totalPages = Math.max(
+            1,
+            Math.ceil(historyState.filtered.length / HISTORY.pageSize)
+        );
+        if (historyState.page < totalPages) {
+            historyState.page++;
+            renderHistoryCards();
+        }
+    });
+
+    // Modal
+    HistoryDOM.modalBackdrop.addEventListener("click", closeHistoryModal);
+    HistoryDOM.modalClose.addEventListener("click", closeHistoryModal);
+    HistoryDOM.modalCloseBtn.addEventListener("click", closeHistoryModal);
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !HistoryDOM.modal.hidden) closeHistoryModal();
+    });
+}
+
+/**
+ * Sekme ilk kez açıldığında projeleri çeker; sonraki açılışlarda no-op.
+ */
+async function ensureProjectsLoaded() {
+    if (historyState.loaded || historyState.loading) return;
+    historyState.loading = true;
+
+    try {
+        const response = await fetch(ENDPOINTS.projects);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        historyState.all = Array.isArray(data) ? data : [];
+        historyState.loaded = true;
+        populateHistoryYearFilter();
+        applyHistoryFilters();
+    } catch (err) {
+        showHistoryError(err);
+    } finally {
+        historyState.loading = false;
+    }
+}
+
+/**
+ * Yıl select'ini benzersiz yıllarla doldurur.
+ */
+function populateHistoryYearFilter() {
+    const years = [
+        ...new Set(historyState.all.map((p) => p.year).filter(Boolean)),
+    ].sort().reverse();
+
+    HistoryDOM.year.innerHTML =
+        '<option value="">Tüm Yıllar</option>' +
+        years
+            .map((y) => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`)
+            .join("");
+}
+
+/**
+ * Arama ve yıl filtresini uygulayıp listeyi yeniler.
+ */
+function applyHistoryFilters() {
+    const q = historyState.search.trim().toLowerCase();
+    const y = historyState.year;
+
+    historyState.filtered = historyState.all.filter((p) => {
+        const yearMatch = !y || p.year === y;
+        if (!yearMatch) return false;
+        if (!q) return true;
+        return (
+            (p.title && p.title.toLowerCase().includes(q)) ||
+            (p.abstract && p.abstract.toLowerCase().includes(q)) ||
+            (p.keywords && p.keywords.toLowerCase().includes(q))
+        );
+    });
+
+    updateHistoryToolbarUI();
+    renderHistoryCards();
+}
+
+function updateHistoryToolbarUI() {
+    const isFiltered = !!(historyState.search.trim() || historyState.year);
+    HistoryDOM.clear.disabled = !isFiltered;
+
+    const total = historyState.filtered.length;
+    HistoryDOM.badge.textContent = `${total} proje`;
+    HistoryDOM.badge.classList.toggle("filtered", isFiltered);
+}
+
+/**
+ * Mevcut sayfaya ait kartları render eder.
+ */
+function renderHistoryCards() {
+    HistoryDOM.cards.innerHTML = "";
+
+    if (!historyState.loaded) {
+        HistoryDOM.cards.innerHTML = `
+            <div class="history-loading">
+                <span class="history-loading__spinner"></span>
+                <span class="history-loading__text">Projeler yükleniyor...</span>
+            </div>`;
+        HistoryDOM.pagination.hidden = true;
+        return;
+    }
+
+    if (historyState.filtered.length === 0) {
+        const isFiltered = !!(historyState.search.trim() || historyState.year);
+        HistoryDOM.cards.innerHTML = `
+            <div class="history-empty">
+                <svg class="history-empty__icon" width="40" height="40" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                <span class="history-empty__title">
+                    ${isFiltered ? "Filtreye uygun proje bulunamadı." : "Henüz proje yok."}
+                </span>
+                ${isFiltered ? '<span class="history-empty__hint">Aramayı değiştirin veya filtreleri temizleyin.</span>' : ""}
+            </div>`;
+        HistoryDOM.pagination.hidden = true;
+        return;
+    }
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(historyState.filtered.length / HISTORY.pageSize)
+    );
+    if (historyState.page > totalPages) historyState.page = totalPages;
+
+    const start = (historyState.page - 1) * HISTORY.pageSize;
+    const end = start + HISTORY.pageSize;
+    const slice = historyState.filtered.slice(start, end);
+
+    slice.forEach((project, index) => {
+        const card = createHistoryCard(project, index);
+        HistoryDOM.cards.appendChild(card);
+    });
+
+    // Pagination UI
+    const total = historyState.filtered.length;
+    HistoryDOM.pagination.hidden = total <= HISTORY.pageSize;
+    HistoryDOM.pageInfo.textContent =
+        `Toplam ${total} projeden ${start + 1}–${Math.min(end, total)} arası gösteriliyor`;
+    HistoryDOM.pages.textContent = `${historyState.page} / ${totalPages}`;
+    HistoryDOM.prev.disabled = historyState.page === 1;
+    HistoryDOM.next.disabled = historyState.page === totalPages;
+}
+
+/**
+ * Tek bir history card element'i oluşturur.
+ */
+function createHistoryCard(project, index) {
+    const card = document.createElement("article");
+    card.className = "history-card";
+    card.style.animationDelay = `${Math.min(index, 8) * 0.04}s`;
+
+    const keywords = (project.keywords || "")
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+
+    const tagsHtml = keywords
+        .map((k) => `<span class="history-card__tag">${escapeHtml(k)}</span>`)
+        .join("");
+
+    card.innerHTML = `
+        <div class="history-card__header">
+            <span class="history-card__id">#${escapeHtml(String(project.id))}</span>
+            ${project.year ? `<span class="history-card__year">${escapeHtml(project.year)}</span>` : ""}
+        </div>
+        <h3 class="history-card__title">${escapeHtml(project.title || "Başlıksız Proje")}</h3>
+        <div class="history-card__keywords">${tagsHtml}</div>
+        <div class="history-card__footer">
+            <button type="button" class="history-card__detail-btn">
+                Detayları Gör
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+        </div>
+    `;
+
+    card.addEventListener("click", () => openHistoryModal(project));
+    return card;
+}
+
+function showHistoryError(err) {
+    HistoryDOM.cards.innerHTML = `
+        <div class="history-empty">
+            <svg class="history-empty__icon" width="40" height="40" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span class="history-empty__title">Projeler yüklenemedi</span>
+            <span class="history-empty__hint">${escapeHtml(err?.message || "Sunucuya bağlanılamadı.")}</span>
+        </div>`;
+    HistoryDOM.pagination.hidden = true;
+}
+
+
+// ─── History Modal ─────────────────────────────────────────────
+function openHistoryModal(project) {
+    HistoryDOM.modalId.textContent = project.id ?? "—";
+    HistoryDOM.modalYear.textContent = project.year || "—";
+    HistoryDOM.modalTitle.textContent = project.title || "Başlıksız Proje";
+    HistoryDOM.modalAbstract.textContent = project.abstract || "Özet bulunamadı.";
+
+    const keywords = (project.keywords || "")
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean);
+
+    HistoryDOM.modalKeywords.innerHTML = keywords.length
+        ? keywords
+              .map((k) => `<span class="history-modal__keyword">${escapeHtml(k)}</span>`)
+              .join("")
+        : '<span class="history-empty__hint">Anahtar kelime bulunamadı.</span>';
+
+    HistoryDOM.modal.hidden = false;
+    document.body.style.overflow = "hidden";
+}
+
+function closeHistoryModal() {
+    HistoryDOM.modal.hidden = true;
+    document.body.style.overflow = "";
 }

@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.ml.model_loader import ModelLoader, EmrecanModelLoader
 from app.db.session import DatabaseSession
-from app.api.routes import analyze, health, keywords
+from app.api.routes import analyze, health, keywords, projects
 
 
 # ─── Lifecycle ────────────────────────────────────────────────
@@ -69,6 +69,7 @@ app.add_middleware(
 app.include_router(analyze.router, tags=["Analiz"])
 app.include_router(health.router, tags=["Sistem"])
 app.include_router(keywords.router, tags=["Anahtar Kelime"])
+app.include_router(projects.router)
 
 
 # ─── Root Endpoint ───────────────────────────────────────────
