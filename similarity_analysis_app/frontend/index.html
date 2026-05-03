@@ -69,6 +69,16 @@
                     data-view="history" role="tab" aria-selected="false" aria-controls="history-view">
                     <span class="nav-tab__label">Proje Geçmişi</span>
                 </button>
+                <a href="https://liftup.tusas.com/" target="_blank" rel="noopener noreferrer"
+                    class="nav-tab nav-tab--link">
+                    <span class="nav-tab__label">Program</span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                </a>
             </nav>
 
             <div class="header__meta">
@@ -624,12 +634,96 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
     <footer class="footer" id="footer">
         <div class="footer__container">
-            <p class="footer__text">
-                TUSAŞ - Türk Havacılık ve Uzay Sanayii A.Ş.
-            </p>
-            <p class="footer__tech">
-                &copy; 2026 TUSAŞ - LIFT UP Prestige Ekibi, Tüm Hakları Saklıdır.
-            </p>
+
+            <!-- ─── Main Grid ───────────────────────────── -->
+            <div class="footer__grid">
+
+                <!-- Brand Column -->
+                <div class="footer__col footer__col--brand">
+                    <div class="footer__logo-wrap">
+                        <img src="assets/app_logo.png" alt="Prestige AI Logosu" class="footer__logo-img">
+                    </div>
+                    <p class="footer__brand-name">Prestige AI</p>
+                    <p class="footer__brand-desc">
+                        TUSAŞ iş birliğiyle geliştirilen yapay zeka destekli
+                        anlamsal proje benzerlik analizi sistemi.
+                    </p>
+                </div>
+
+                <!-- System Column -->
+                <div class="footer__col">
+                    <h4 class="footer__col-title">Özellikler</h4>
+                    <ul class="footer__list">
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Anlamsal Benzerlik Analizi
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Proje Geçmişi &amp; Arama
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            AI Anahtar Kelime Önerisi
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Çoklu Model Karşılaştırma
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            5 Seviyeli Sınıflandırma
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Column -->
+                <div class="footer__col">
+                    <h4 class="footer__col-title">İletişim</h4>
+                    <ul class="footer__list">
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </span>
+                            <a href="mailto:tusas.prestigeai@gmail.com" class="footer__contact-link">
+                                tusas.prestigeai@gmail.com
+                            </a>
+                        </li>
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </span>
+                            <a href="mailto:liftup@tai.com.tr" class="footer__contact-link">
+                                liftup@tai.com.tr
+                            </a>
+                        </li>
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                            </span>
+                            <span class="footer__contact-nowrap">TUSAŞ — Türk Havacılık ve Uzay Sanayii A.Ş.</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div><!-- /.footer__grid -->
+
+            <!-- ─── Bottom Bar ──────────────────────────── -->
+            <div class="footer__bottom">
+                <p class="footer__copyright footer__copyright--center">
+                    &copy; 2026 TUSAŞ – LIFT UP Prestige AI Ekibi. Tüm Hakları Saklıdır.
+                </p>
+            </div>
+
         </div>
     </footer>
 
