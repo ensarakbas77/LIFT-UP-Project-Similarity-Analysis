@@ -506,7 +506,7 @@
                             <i class="fas fa-info-circle"></i>
                             <span>
                                 Notebook'un girdi yolunu kendi sisteminize göre güncellemeyi unutmayın.
-                                Üretilen <code>articles_clean.csv</code> bir sonraki adımda her iki model notebook'unda da kullanılır.
+                                Üretilen <code>articles_clean.csv</code> bir sonraki adımda embedding notebook'unda kullanılır.
                             </span>
                         </div>
                         <div class="step-actions">
@@ -533,11 +533,11 @@
                             <div class="step-card-title">GPU Destekli Embedding Üretimi</div>
                         </div>
                         <div class="step-card-body">
-                            <code>articles_clean.csv</code> elinizde olduğunda her iki model notebook'unu sırayla çalıştırabilirsiniz.
-                            Bu notebook'lar makale metinlerini yüksek boyutlu vektörlere (embedding) dönüştürür ve
+                            <code>articles_clean.csv</code> elinizde olduğunda tek embedding notebook'unu çalıştırabilirsiniz.
+                            Bu notebook SBERT ve Emrecan/BERT modelleriyle makale metinlerini yüksek boyutlu vektörlere (embedding) dönüştürür ve
                             benzerlik analizinin temelini oluşturur.
                             <br><br>
-                            Embedding üretimi hesaplama açısından yoğundur; bu nedenle notebook'ları
+                            Embedding üretimi hesaplama açısından yoğundur; bu nedenle notebook'u
                             <strong>Google Colab</strong> üzerinde <strong>ücretsiz GPU</strong> ile çalıştırmanız önerilir.
                         </div>
 
@@ -562,21 +562,15 @@
                         <div class="step-tip tip-green" style="margin-top:.8rem;">
                             <i class="fas fa-file-archive"></i>
                             <span>
-                                Her notebook çalıştırıldığında bir <strong>.pkl</strong> dosyası üretilir
-                                (SBERT ve Emrecan/BERT için ayrı ayrı). İki modeli de çalıştırırsanız iki ayrı
-                                .pkl dosyası elde edersiniz; bunları sırayla yükleyebilirsiniz.
+                                Notebook çalıştırıldığında seçilen model çıktısına göre <strong>.pkl</strong> dosyası üretilir.
+                                SBERT ve Emrecan/BERT çıktılarını aynı notebook üzerinden alabilir, oluşan dosyaları sırayla yükleyebilirsiniz.
                             </span>
                         </div>
 
                         <div class="step-actions">
-                            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT.ipynb"
+                            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT%20%26%20Emrecan-BERT.ipynb"
                                target="_blank" rel="noopener noreferrer" class="step-btn btn-github">
-                                <i class="fab fa-github"></i> SBERT Notebook
-                                <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
-                            </a>
-                            <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/Emrecan_BERT.ipynb"
-                               target="_blank" rel="noopener noreferrer" class="step-btn btn-github">
-                                <i class="fab fa-github"></i> Emrecan/BERT Notebook
+                                <i class="fab fa-github"></i> SBERT & Emrecan/BERT Notebook
                                 <i class="fas fa-external-link-alt" style="font-size:.7rem;"></i>
                             </a>
                             <a href="https://colab.research.google.com/" target="_blank" rel="noopener noreferrer"
@@ -600,7 +594,7 @@
                             <div class="step-card-title">.pkl Dosyalarını Veritabanına Yükle</div>
                         </div>
                         <div class="step-card-body">
-                            Notebook'lardan elde ettiğiniz <strong>.pkl</strong> dosyalarını indirin. Ardından
+                            Notebook'tan elde ettiğiniz <strong>.pkl</strong> dosyalarını indirin. Ardından
                             sol menüden <strong>Veri Düzenleme</strong> aracına gidin ve dosyayı yükleme alanına
                             sürükleyin ya da dosya seçiciyle seçin.
                             <br><br>
@@ -634,7 +628,7 @@
             <div class="row g-4">
 
                 <!-- Data Preprocessing -->
-                <div class="col-12 col-lg-4">
+                <div class="col-12 col-lg-6">
                     <a href="https://github.com/ensarakbas77/LIFT-UP-Dataset-Preparation/blob/main/notebooks/Data_Preprocessing.ipynb"
                        target="_blank" rel="noopener noreferrer" class="nb-card">
                         <div class="nb-card-icon blue">
@@ -653,37 +647,17 @@
                     </a>
                 </div>
 
-                <!-- SBERT -->
-                <div class="col-12 col-lg-4">
-                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT.ipynb"
+                <!-- SBERT & Emrecan/BERT -->
+                <div class="col-12 col-lg-6">
+                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/SBERT%20%26%20Emrecan-BERT.ipynb"
                        target="_blank" rel="noopener noreferrer" class="nb-card">
                         <div class="nb-card-icon navy">
                             <i class="fas fa-brain"></i>
                         </div>
                         <div>
-                            <div class="nb-card-title">SBERT Embedding</div>
+                            <div class="nb-card-title">SBERT & Emrecan/BERT Embedding</div>
                             <div class="nb-card-desc">
-                                Sentence-BERT modeliyle Türkçe makale metinlerinden embedding üretir.
-                            </div>
-                            <span class="nb-card-link-badge">
-                                <i class="fab fa-github"></i> GitHub'da Aç
-                                <i class="fas fa-external-link-alt" style="font-size:.65rem;"></i>
-                            </span>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Emrecan/BERT -->
-                <div class="col-12 col-lg-4">
-                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis/blob/develop-dev/notebooks/Emrecan_BERT.ipynb"
-                       target="_blank" rel="noopener noreferrer" class="nb-card">
-                        <div class="nb-card-icon purple">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <div>
-                            <div class="nb-card-title">Emrecan/BERT Embedding</div>
-                            <div class="nb-card-desc">
-                                Emrecan BERT modeliyle Türkçe makale metinlerinden embedding üretir.
+                                Tek notebook üzerinden SBERT ve Emrecan/BERT modelleriyle Türkçe makale embeddingleri üretir.
                             </div>
                             <span class="nb-card-link-badge">
                                 <i class="fab fa-github"></i> GitHub'da Aç
