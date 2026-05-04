@@ -38,9 +38,8 @@
         try { user = JSON.parse(raw); } catch (e) { /* yoksay */ }
     }
 
-    const displayName = user.full_name || user.username || 'Admin';
+    const displayName = user.username || user.full_name || 'Admin';
     const email       = user.email || '—';
-    const initial     = (displayName.trim().charAt(0) || 'A').toUpperCase();
 
     const setText = (id, val) => {
         const el = document.getElementById(id);
@@ -49,8 +48,6 @@
 
     setText('navUserName', displayName);
     setText('navUserEmail', email);
-    setText('navUserAvatar', initial);
-    setText('navUserInitial', initial);
 })();
 
 // ── Çıkış Yap ────────────────────────────────────────────────────────────────
@@ -98,23 +95,26 @@ setGreeting();
 
 // ── Sistem Durumu (API health check) ────────────────────────────────────────
 async function checkSystemStatus() {
-    const dot     = document.querySelector('.sidebar-status-dot');
-    const text    = document.querySelector('.sidebar-status-text');
-    const navDot  = document.getElementById('navUserStatusDot');
+    const avatarBtn = document.getElementById('navUserBtn');
+
+    const setStatus = (state) => {
+        if (!avatarBtn) return;
+        avatarBtn.classList.remove('status-ok', 'status-err');
+        if (state === 'ok') {
+            avatarBtn.classList.add('status-ok');
+            avatarBtn.title = 'Sistem aktif';
+        } else {
+            avatarBtn.classList.add('status-err');
+            avatarBtn.title = 'Bağlantı yok';
+        }
+    };
 
     try {
-        const res = await fetch('/health', {
-            signal: AbortSignal.timeout(4000),
-        });
-        if (res.ok) {
-            if (dot)    { dot.className = 'sidebar-status-dot ok'; }
-            if (text)   { text.textContent = 'Sistem aktif'; }
-            if (navDot) { navDot.style.background = '#10b981'; navDot.style.boxShadow = '0 0 6px rgba(16,185,129,.6)'; navDot.title = 'Sistem aktif'; }
-        } else { throw new Error(); }
+        const res = await fetch('/health', { signal: AbortSignal.timeout(4000) });
+        if (res.ok) setStatus('ok');
+        else throw new Error();
     } catch {
-        if (dot)    { dot.className = 'sidebar-status-dot err'; }
-        if (text)   { text.textContent = 'Bağlantı yok'; }
-        if (navDot) { navDot.style.background = '#ef4444'; navDot.style.boxShadow = '0 0 6px rgba(239,68,68,.6)'; navDot.title = 'Bağlantı yok'; }
+        setStatus('err');
     }
 }
 

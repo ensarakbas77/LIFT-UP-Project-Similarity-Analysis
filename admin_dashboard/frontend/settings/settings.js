@@ -192,19 +192,14 @@ if (profileForm) {
             loadCurrentUserInfo();
 
             // Navbar'daki kullanıcı bilgisini güncelle
-            const nameEl    = document.getElementById('navUserName');
-            const emailEl   = document.getElementById('navUserEmail');
-            const avatarEl  = document.getElementById('navUserAvatar');
-            const initialEl = document.getElementById('navUserInitial');
+            const nameEl  = document.getElementById('navUserName');
+            const emailEl = document.getElementById('navUserEmail');
             const raw = localStorage.getItem('lift_admin_user');
             if (raw) {
                 const user = JSON.parse(raw);
-                const displayName = user.full_name || user.username || 'Admin';
-                const initial     = (displayName.trim().charAt(0) || 'A').toUpperCase();
-                if (nameEl)    nameEl.textContent    = displayName;
-                if (emailEl)   emailEl.textContent   = user.email || '—';
-                if (avatarEl)  avatarEl.textContent  = initial;
-                if (initialEl) initialEl.textContent = initial;
+                const displayName = user.username || user.full_name || 'Admin';
+                if (nameEl)  nameEl.textContent  = displayName;
+                if (emailEl) emailEl.textContent = user.email || '—';
             }
 
             // Formu temizle

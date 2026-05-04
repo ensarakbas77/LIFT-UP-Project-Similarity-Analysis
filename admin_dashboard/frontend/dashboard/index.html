@@ -64,13 +64,6 @@
 
         </nav>
 
-        <div class="sidebar-drawer-footer">
-            <!-- Sistem Durumu -->
-            <div class="sidebar-status">
-                <span class="sidebar-status-dot"></span>
-                <span class="sidebar-status-text">Kontrol ediliyor...</span>
-            </div>
-        </div>
     </aside>
 
     <!-- ── Push Content Wrapper (sidebar ile birlikte hareket eder) ── -->
@@ -96,21 +89,21 @@
                     <div class="dropdown">
                         <button class="navbar-user-btn" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false" aria-label="Hesap menüsü" id="navUserBtn">
-                            <span id="navUserInitial">A</span>
-                            <span class="navbar-user-btn-status-dot" id="navUserStatusDot"></span>
+                            <i class="fas fa-user-shield"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end navbar-user-menu" aria-labelledby="navUserBtn">
                             <div class="navbar-user-card">
-                                <div class="navbar-user-card-avatar" id="navUserAvatar">A</div>
+                                <div class="navbar-user-card-avatar"><i class="fas fa-user-shield"></i></div>
                                 <div class="navbar-user-card-info">
                                     <span class="navbar-user-card-name" id="navUserName">Admin</span>
                                     <span class="navbar-user-card-email" id="navUserEmail">—</span>
-                                    <span class="navbar-user-card-role">
-                                        <i class="fas fa-user-shield"></i> Yönetici
-                                    </span>
                                 </div>
                             </div>
                             <div class="navbar-user-menu-actions">
+                                <a href="/settings" class="navbar-user-menu-link">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Hesap Ayarları</span>
+                                </a>
                                 <button class="navbar-user-logout" id="logoutBtn" type="button">
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>Çıkış Yap</span>
