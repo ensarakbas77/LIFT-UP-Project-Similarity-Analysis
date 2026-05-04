@@ -86,28 +86,8 @@ function setGreeting() {
 }
 setGreeting();
 
-// ── Sidebar Push Toggle ──────────────────────────────────────────────────────
-const adminSidebar = document.getElementById('adminSidebar');
-const pushContent = document.getElementById('pushContent');
-const toggleBtn = document.getElementById('openSidebar');
-const closeSidebarBtn = document.getElementById('closeSidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-function toggleSidebar() {
-    if (!adminSidebar) return;
-    const isNowCollapsed = adminSidebar.classList.toggle('collapsed');
-    if (pushContent) pushContent.classList.toggle('full-width', isNowCollapsed);
-    if (sidebarOverlay && window.innerWidth <= 768) {
-        sidebarOverlay.classList.toggle('visible', !isNowCollapsed);
-    }
-}
-
-if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
-
 // ── Sistem Durumu (API health check) ────────────────────────────────────────
 async function checkSystemStatus() {
-    const apiVal = document.getElementById('apiStatus');
     const dot = document.querySelector('.sidebar-status-dot');
     const text = document.querySelector('.sidebar-status-text');
 
@@ -118,14 +98,51 @@ async function checkSystemStatus() {
         if (res.ok) {
             if (dot) { dot.className = 'sidebar-status-dot ok'; }
             if (text) { text.textContent = 'Sistem aktif'; }
-            if (apiVal) { apiVal.textContent = 'Aktif'; apiVal.style.color = '#10b981'; }
         } else { throw new Error(); }
     } catch {
         if (dot) { dot.className = 'sidebar-status-dot err'; }
         if (text) { text.textContent = 'Bağlantı yok'; }
-        if (apiVal) { apiVal.textContent = 'Offline'; apiVal.style.color = '#ef4444'; }
     }
 }
 
 checkSystemStatus();
 setInterval(checkSystemStatus, 30_000);
+
+// ── Dashboard İstatistikleri ────────────────────────────────────────────────
+async function loadDashboardStats() {
+    const totalEl    = document.getElementById('statTotalProjects');
+    const yearsEl    = document.getElementById('statTotalYears');
+    const kwEl       = document.getElementById('statUniqueKeywords');
+    const topYearEl  = document.getElementById('statTopYear');
+    const topLabelEl = document.getElementById('statTopYearLabel');
+
+    if (!totalEl) return; // dashboard sayfasında değiliz
+
+    try {
+        const res = await fetch('/api/projects/stats');
+        if (!res.ok) throw new Error('Stats API hatası');
+        const s = await res.json();
+
+        const fmt = n => new Intl.NumberFormat('tr-TR').format(n ?? 0);
+
+        totalEl.textContent = fmt(s.total_projects);
+        yearsEl.textContent = fmt(s.total_years);
+        kwEl.textContent    = fmt(s.unique_keywords);
+
+        if (s.top_year) {
+            topYearEl.textContent = s.top_year;
+            if (topLabelEl) {
+                topLabelEl.textContent = `En Verimli Dönem · ${fmt(s.top_year_count)} proje`;
+            }
+        } else {
+            topYearEl.textContent = '–';
+        }
+    } catch (err) {
+        console.warn('Dashboard istatistikleri yüklenemedi:', err);
+        [totalEl, yearsEl, kwEl, topYearEl].forEach(el => {
+            if (el) { el.textContent = '—'; el.style.color = '#94a3b8'; }
+        });
+    }
+}
+
+loadDashboardStats();

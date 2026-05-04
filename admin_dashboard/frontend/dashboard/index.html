@@ -18,10 +18,7 @@
 
 <body>
 
-    <!-- ── Sidebar Overlay (sadece mobil) ──────────── -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- ── Sidebar Drawer (varsayılan AÇIK) ────────── -->
+    <!-- ── Sidebar (her zaman açık) ─────────────────── -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-drawer-header">
             <a href="/dashboard" class="sidebar-drawer-brand">
@@ -98,9 +95,6 @@
         <nav class="navbar navbar-dark bg-gradient shadow-sm">
             <div class="container-fluid px-4">
                 <div class="d-flex align-items-center gap-3">
-                    <button class="sidebar-toggle-btn" id="openSidebar" title="Menüyü Aç/Kapat">
-                        <i class="fas fa-bars"></i>
-                    </button>
                     <a class="navbar-brand d-flex align-items-center mb-0" href="/dashboard">
                         <i class="fas fa-fighter-jet me-2 fa-lg"></i>
                         <div>
@@ -133,9 +127,8 @@
                 <div class="position-relative" style="z-index:1;">
                     <p class="hero-greeting mb-1" id="greeting">Merhaba!</p>
                     <h1 class="hero-title">LIFT UP Admin Paneline<br>Hoş Geldiniz</h1>
-                    <p class="hero-desc mb-0">
-                        LIFT UP Bildiri Kitaplarından veri çıkarma, veritabanı yönetimi ve analiz araçlarına buradan
-                        erişebilirsiniz.
+                    <p class="hero-desc mb-0" style="max-width:none;white-space:nowrap;">
+                        LIFT UP Bildiri Kitaplarından veri çıkarma, veritabanı yönetimi ve analiz araçlarına buradan erişebilirsiniz.
                     </p>
                 </div>
                 <div class="hero-icon-wrap d-none d-md-flex">
@@ -153,19 +146,8 @@
                             <i class="fas fa-file-pdf"></i>
                         </div>
                         <div>
-                            <div class="admin-stat-value">666</div>
+                            <div class="admin-stat-value" id="statTotalProjects">–</div>
                             <div class="admin-stat-label">Toplam Proje</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-3">
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-icon" style="background:rgba(16,185,129,.1);color:#10b981">
-                            <i class="fas fa-brain"></i>
-                        </div>
-                        <div>
-                            <div class="admin-stat-value">384</div>
-                            <div class="admin-stat-label">Embedding Boyutu</div>
                         </div>
                     </div>
                 </div>
@@ -175,19 +157,30 @@
                             <i class="fas fa-calendar-alt"></i>
                         </div>
                         <div>
-                            <div class="admin-stat-value">4</div>
+                            <div class="admin-stat-value" id="statTotalYears">–</div>
                             <div class="admin-stat-label">Dönem (Yıl)</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-6 col-xl-3">
                     <div class="admin-stat-card">
-                        <div class="admin-stat-icon" style="background:rgba(31,45,90,.1);color:var(--tusas-navy)">
-                            <i class="fas fa-server"></i>
+                        <div class="admin-stat-icon" style="background:rgba(16,185,129,.1);color:#10b981">
+                            <i class="fas fa-tags"></i>
                         </div>
                         <div>
-                            <div class="admin-stat-value" id="apiStatus" style="font-size:1rem;">–</div>
-                            <div class="admin-stat-label">API Durumu</div>
+                            <div class="admin-stat-value" id="statUniqueKeywords">–</div>
+                            <div class="admin-stat-label">Tekil Anahtar Kelime</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="admin-stat-card">
+                        <div class="admin-stat-icon" style="background:rgba(124,58,237,.1);color:#7c3aed">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div>
+                            <div class="admin-stat-value" id="statTopYear" style="font-size:1.25rem;">–</div>
+                            <div class="admin-stat-label" id="statTopYearLabel">En Verimli Dönem</div>
                         </div>
                     </div>
                 </div>

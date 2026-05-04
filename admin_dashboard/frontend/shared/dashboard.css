@@ -3,25 +3,7 @@
    (style.css üzerine eklenir, onunla birlikte çalışır)
    ============================================== */
 
-/* ── Hamburger Toggle Butonu ─────────────────── */
-.sidebar-toggle-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, .75);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: .4rem .7rem;
-    border-radius: 8px;
-    transition: all .2s;
-    line-height: 1;
-}
-
-.sidebar-toggle-btn:hover {
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
-}
-
-/* ── Sidebar — Varsayılan AÇIK, collapsed ile kapanır ── */
+/* ── Sidebar — Her zaman açık, kapatılamaz ── */
 .admin-sidebar {
     position: fixed;
     top: 0;
@@ -30,27 +12,14 @@
     width: 280px;
     background: linear-gradient(160deg, var(--tusas-navy) 0%, #0d1b3e 100%);
     z-index: 1050;
-    transform: translateX(0);
-    /* VARSAYILAN: AÇIK */
-    transition: transform .32s cubic-bezier(.4, 0, .2, 1);
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 20px rgba(0, 0, 0, .15);
 }
 
-.admin-sidebar.collapsed {
-    transform: translateX(-100%);
-    /* hamburger ile kapandığında */
-}
-
-/* İçerik alanı sidebar açıkken sağa itilir */
+/* İçerik alanı sidebar genişliği kadar sağa itilir */
 .sidebar-push-content {
     margin-left: 280px;
-    transition: margin-left .32s cubic-bezier(.4, 0, .2, 1);
-}
-
-.sidebar-push-content.full-width {
-    margin-left: 0;
 }
 
 .sidebar-drawer-header {
@@ -90,23 +59,6 @@
     color: rgba(255, 255, 255, .38);
     letter-spacing: .5px;
     text-transform: uppercase;
-}
-
-.sidebar-close-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, .45);
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: .3rem .5rem;
-    border-radius: 6px;
-    transition: all .2s;
-    line-height: 1;
-}
-
-.sidebar-close-btn:hover {
-    background: rgba(255, 255, 255, .1);
-    color: #fff;
 }
 
 /* Nav Items */
@@ -226,23 +178,6 @@
     50% {
         opacity: .4;
     }
-}
-
-/* ── Overlay ─────────────────────────────────── */
-.sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .5);
-    backdrop-filter: blur(2px);
-    z-index: 1040;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .32s ease;
-}
-
-.sidebar-overlay.visible {
-    opacity: 1;
-    pointer-events: all;
 }
 
 /* ── Nav badge (eski uyumluluk) ──────────────── */
@@ -604,46 +539,6 @@
     font-size: .78rem;
     font-variant-numeric: tabular-nums;
     letter-spacing: .5px;
-}
-
-/* ── Sidebar Overlay ─────────────────────────── */
-/* Masaüstünde TAMAMEN GİZLİ — bulanıklık yaratmasın */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .45);
-    backdrop-filter: blur(2px);
-    z-index: 1040;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .28s ease;
-}
-
-/* Sadece mobilde aktif */
-@media (max-width: 768px) {
-    .sidebar-overlay {
-        display: block;
-    }
-
-    .sidebar-overlay.visible {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .admin-sidebar {
-        transform: translateX(-100%);
-    }
-
-    /* mobilde kapalı başlar */
-    .admin-sidebar:not(.collapsed) {
-        transform: translateX(0);
-    }
-
-    /* JS .collapsed kaldırınca açılır */
-    .sidebar-push-content {
-        margin-left: 0 !important;
-    }
 }
 
 /* ── Sidebar Kullanıcı Kartı ─────────────────── */
