@@ -191,14 +191,20 @@ if (profileForm) {
             // UI'daki görünür alanları güncelle
             loadCurrentUserInfo();
 
-            // Sidebar'daki kullanıcı adını güncelle
-            const nameEl  = document.getElementById('sidebarUserName');
-            const emailEl = document.getElementById('sidebarUserEmail');
+            // Navbar'daki kullanıcı bilgisini güncelle
+            const nameEl    = document.getElementById('navUserName');
+            const emailEl   = document.getElementById('navUserEmail');
+            const avatarEl  = document.getElementById('navUserAvatar');
+            const initialEl = document.getElementById('navUserInitial');
             const raw = localStorage.getItem('lift_admin_user');
             if (raw) {
                 const user = JSON.parse(raw);
-                if (nameEl)  nameEl.textContent  = user.username || user.full_name || 'Admin';
-                if (emailEl) emailEl.textContent = user.email || '';
+                const displayName = user.full_name || user.username || 'Admin';
+                const initial     = (displayName.trim().charAt(0) || 'A').toUpperCase();
+                if (nameEl)    nameEl.textContent    = displayName;
+                if (emailEl)   emailEl.textContent   = user.email || '—';
+                if (avatarEl)  avatarEl.textContent  = initial;
+                if (initialEl) initialEl.textContent = initial;
             }
 
             // Formu temizle

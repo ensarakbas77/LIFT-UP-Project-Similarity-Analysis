@@ -33,14 +33,24 @@
 // ── Kullanıcı Bilgisini Göster ───────────────────────────────────────────────
 (function renderUserInfo() {
     const raw = localStorage.getItem('lift_admin_user');
-    if (!raw) return;
-    try {
-        const user = JSON.parse(raw);
-        const nameEl = document.getElementById('sidebarUserName');
-        const emailEl = document.getElementById('sidebarUserEmail');
-        if (nameEl) nameEl.textContent = user.username || user.full_name || 'Admin';
-        if (emailEl) emailEl.textContent = user.email || '';
-    } catch (e) { /* sessizce geç */ }
+    let user = {};
+    if (raw) {
+        try { user = JSON.parse(raw); } catch (e) { /* yoksay */ }
+    }
+
+    const displayName = user.full_name || user.username || 'Admin';
+    const email       = user.email || '—';
+    const initial     = (displayName.trim().charAt(0) || 'A').toUpperCase();
+
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
+    setText('navUserName', displayName);
+    setText('navUserEmail', email);
+    setText('navUserAvatar', initial);
+    setText('navUserInitial', initial);
 })();
 
 // ── Çıkış Yap ────────────────────────────────────────────────────────────────
@@ -88,20 +98,23 @@ setGreeting();
 
 // ── Sistem Durumu (API health check) ────────────────────────────────────────
 async function checkSystemStatus() {
-    const dot = document.querySelector('.sidebar-status-dot');
-    const text = document.querySelector('.sidebar-status-text');
+    const dot     = document.querySelector('.sidebar-status-dot');
+    const text    = document.querySelector('.sidebar-status-text');
+    const navDot  = document.getElementById('navUserStatusDot');
 
     try {
         const res = await fetch('/health', {
             signal: AbortSignal.timeout(4000),
         });
         if (res.ok) {
-            if (dot) { dot.className = 'sidebar-status-dot ok'; }
-            if (text) { text.textContent = 'Sistem aktif'; }
+            if (dot)    { dot.className = 'sidebar-status-dot ok'; }
+            if (text)   { text.textContent = 'Sistem aktif'; }
+            if (navDot) { navDot.style.background = '#10b981'; navDot.style.boxShadow = '0 0 6px rgba(16,185,129,.6)'; navDot.title = 'Sistem aktif'; }
         } else { throw new Error(); }
     } catch {
-        if (dot) { dot.className = 'sidebar-status-dot err'; }
-        if (text) { text.textContent = 'Bağlantı yok'; }
+        if (dot)    { dot.className = 'sidebar-status-dot err'; }
+        if (text)   { text.textContent = 'Bağlantı yok'; }
+        if (navDot) { navDot.style.background = '#ef4444'; navDot.style.boxShadow = '0 0 6px rgba(239,68,68,.6)'; navDot.title = 'Bağlantı yok'; }
     }
 }
 

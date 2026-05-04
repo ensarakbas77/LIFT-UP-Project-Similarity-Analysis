@@ -474,23 +474,10 @@
         </nav>
 
         <div class="sidebar-drawer-footer">
-            <div class="sidebar-user-card">
-                <div class="sidebar-user-avatar">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <div class="sidebar-user-info">
-                    <span class="sidebar-user-name" id="sidebarUserName">Admin</span>
-                    <span class="sidebar-user-email" id="sidebarUserEmail">—</span>
-                </div>
-            </div>
             <div class="sidebar-status">
                 <span class="sidebar-status-dot"></span>
                 <span class="sidebar-status-text">Kontrol ediliyor...</span>
             </div>
-            <button class="sidebar-logout-btn" id="logoutBtn" title="Oturumu Kapat">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Çıkış Yap</span>
-            </button>
         </div>
     </aside>
 
@@ -514,6 +501,31 @@
                         <i class="fab fa-github"></i>
                         <span class="d-none d-md-inline">GitHub</span>
                     </a>
+                    <div class="dropdown">
+                        <button class="navbar-user-btn" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" aria-label="Hesap menüsü" id="navUserBtn">
+                            <span id="navUserInitial">A</span>
+                            <span class="navbar-user-btn-status-dot" id="navUserStatusDot"></span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end navbar-user-menu" aria-labelledby="navUserBtn">
+                            <div class="navbar-user-card">
+                                <div class="navbar-user-card-avatar" id="navUserAvatar">A</div>
+                                <div class="navbar-user-card-info">
+                                    <span class="navbar-user-card-name" id="navUserName">Admin</span>
+                                    <span class="navbar-user-card-email" id="navUserEmail">—</span>
+                                    <span class="navbar-user-card-role">
+                                        <i class="fas fa-user-shield"></i> Yönetici
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="navbar-user-menu-actions">
+                                <button class="navbar-user-logout" id="logoutBtn" type="button">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Çıkış Yap</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -730,7 +742,8 @@
 
                             <hr class="settings-divider">
 
-                            <button class="sidebar-logout-btn w-100" style="margin-top:0; color:rgba(100,30,30,.85);" id="logoutBtn2">
+                            <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold py-2"
+                                id="logoutBtn2" type="button">
                                 <i class="fas fa-sign-out-alt"></i>
                                 <span>Oturumu Sonlandır</span>
                             </button>
