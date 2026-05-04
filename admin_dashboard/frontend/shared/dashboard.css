@@ -26,39 +26,121 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.25rem 1rem;
+    padding: 1.4rem 1.25rem 1.2rem;
     border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .sidebar-drawer-brand {
     display: flex;
     align-items: center;
-    gap: .75rem;
+    gap: .8rem;
     color: #fff;
     text-decoration: none;
+    min-width: 0;
 }
 
 .sidebar-drawer-brand i {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     color: var(--tusas-blue);
     filter: drop-shadow(0 0 6px rgba(0, 163, 224, .5));
+    flex-shrink: 0;
+}
+
+.sidebar-drawer-brand-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .sidebar-drawer-brand-text .brand-main {
     font-family: 'Orbitron', 'Inter', sans-serif;
-    font-size: .9rem;
+    font-size: .92rem;
     font-weight: 900;
     color: #fff;
-    letter-spacing: 2px;
+    letter-spacing: 1.8px;
     display: block;
     line-height: 1.2;
 }
 
 .sidebar-drawer-brand-text .brand-sub {
-    font-size: .63rem;
-    color: rgba(255, 255, 255, .38);
-    letter-spacing: .5px;
+    font-size: .58rem;
+    color: rgba(255, 255, 255, .42);
+    letter-spacing: .35px;
     text-transform: uppercase;
+    line-height: 1.45;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ── Navbar — Page Title + Actions ───────────── */
+.navbar-page-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    color: #fff;
+    text-decoration: none;
+    min-width: 0;
+}
+
+.navbar-page-header:hover {
+    color: #fff;
+}
+
+.navbar-page-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(0, 163, 224, .18);
+    color: var(--tusas-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.navbar-page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: .2px;
+}
+
+.navbar-page-subtitle {
+    display: block;
+    font-size: .68rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, .5);
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.navbar-github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .4rem .85rem;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, .8);
+    font-size: .78rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+    background: rgba(255, 255, 255, .06);
+}
+
+.navbar-github-btn i {
+    font-size: 1.05rem;
+}
+
+.navbar-github-btn:hover {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
 }
 
 /* Nav Items */
