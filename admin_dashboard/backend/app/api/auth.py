@@ -27,8 +27,21 @@ from app.core.config import admin_settings
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
-# JWT ayarları (.env'den okun; yoksa güvenli bir default)
-JWT_SECRET: str = os.getenv("JWT_SECRET", "")
+
+def _get_validated_jwt_secret() -> str:
+    secret = os.getenv("JWT_SECRET")
+    if secret is None:
+        raise RuntimeError("JWT_SECRET environment variable must be set before starting the service.")
+    secret = secret.strip()
+    if not secret:
+        raise RuntimeError("JWT_SECRET must not be empty or whitespace.")
+    if len(secret) < 32:
+        raise RuntimeError("JWT_SECRET must be at least 32 characters long.")
+    return secret
+
+
+# JWT ayarları (.env'den okunur; eksik/geçersizse uygulama startup'ında fail edilir)
+JWT_SECRET: str = _get_validated_jwt_secret()
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "480"))  # 8 saat
 

@@ -118,13 +118,6 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
-// ── Enter tuşu desteği ───────────────────────────────────────────
-[usernameEl, passwordEl].forEach(el => {
-    el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') form.dispatchEvent(new Event('submit'));
-    });
-});
-
 // ── Input temizleme ───────────────────────────────────────────────
 [usernameEl, passwordEl].forEach(el => {
     el.addEventListener('input', hideAlert);
