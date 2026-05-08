@@ -7,7 +7,7 @@ DELETE /admin/cleanup/{job_id} → İş geçici dizinini sil
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.core.security import verify_admin_key
+from app.api.auth import get_current_admin
 from app.jobs.job_store import cleanup_job
 from app.schemas.admin_schemas import CleanupResponse
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/admin", tags=["Admin — Temizleme"])
     response_model=CleanupResponse,
     summary="Geçici Dosyaları Temizle",
     description="Belirtilen iş için oluşturulan tüm geçici dosyaları ve dizini siler.",
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def cleanup(job_id: str) -> CleanupResponse:
     """

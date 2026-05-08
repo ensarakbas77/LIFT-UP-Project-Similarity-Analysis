@@ -15,15 +15,18 @@
     }
 
     // Token süresi dolmuş mu kontrol et (JWT payload decode)
+    // base64url → base64 dönüşümü yapılmadan atob() özel karakter içeren tokenları patlıyor
     try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=');
+        const payload = JSON.parse(atob(padded));
         if (payload.exp && Date.now() / 1000 > payload.exp) {
             localStorage.removeItem('lift_admin_token');
             localStorage.removeItem('lift_admin_user');
             window.location.replace('/');
         }
     } catch (e) {
-        // Token bozuksa temizle
+        // Gerçekten bozuk tokenları temizle
         localStorage.removeItem('lift_admin_token');
         localStorage.removeItem('lift_admin_user');
         window.location.replace('/');

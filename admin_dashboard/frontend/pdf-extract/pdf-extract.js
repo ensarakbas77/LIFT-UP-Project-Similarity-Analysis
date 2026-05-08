@@ -6,7 +6,6 @@
 // ─── Konfigürasyon ────────────────────────────────────────────────────────────
 // Relative URL kullanıyoruz — 127.0.0.1 vs localhost CORS sorununu önler
 const API_BASE = '';
-const ADMIN_KEY = 'lift-up-admin-secret-2026'; // .env'deki ADMIN_API_KEY ile eşleşmeli
 const POLL_INTERVAL_MS = 2000; // İş durumu sorgulama aralığı
 
 // ─── Global State ─────────────────────────────────────────────────────────────
@@ -44,9 +43,22 @@ document.getElementById('year').addEventListener('input', function () {
     this.classList.remove('is-invalid');
 });
 
+// ─── Auth Guard ───────────────────────────────────────────────────────────────
+(function checkAuth() {
+    const token = localStorage.getItem('lift_admin_token');
+    if (!token) {
+        window.location.replace('/');
+    }
+})();
+
 // ─── API Headers ──────────────────────────────────────────────────────────────
 function getAdminHeaders() {
-    return { 'X-Admin-Key': ADMIN_KEY };
+    const token = localStorage.getItem('lift_admin_token');
+    if (!token) {
+        window.location.replace('/');
+        return {};
+    }
+    return { 'Authorization': `Bearer ${token}` };
 }
 
 // ============================================

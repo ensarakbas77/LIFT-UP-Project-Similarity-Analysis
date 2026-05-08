@@ -10,7 +10,7 @@ Ana backend'deki health.py route yapısını takip eder.
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
-from app.core.security import verify_admin_key
+from app.api.auth import get_current_admin
 from app.jobs.job_store import get_job_csv_path
 from app.schemas.admin_schemas import AnalyzeCSVResponse
 from app.services.csv_service import analyze_csv_file
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/admin", tags=["Admin — CSV İşlemleri"])
         "Tamamlanmış bir iş için oluşturulan CSV dosyasını analiz eder. "
         "Temel istatistikler, dil doluluk oranları ve metin uzunlukları döndürülür."
     ),
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def analyze_csv(job_id: str, filename: str) -> AnalyzeCSVResponse:
     """
@@ -60,7 +60,7 @@ def analyze_csv(job_id: str, filename: str) -> AnalyzeCSVResponse:
     "/download/{job_id}/{filename}",
     summary="CSV Dosyasını İndir",
     description="Tamamlanmış işin CSV çıktısını dosya olarak indirir.",
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def download_csv(job_id: str, filename: str) -> FileResponse:
     """
