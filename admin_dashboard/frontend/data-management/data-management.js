@@ -38,20 +38,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fetchProjects() {
         showLoading();
-        fetch('/api/projects/')
+        const _dmToken = localStorage.getItem('lift_admin_token');
+        fetch('/api/projects/', {
+            headers: _dmToken ? { 'Authorization': `Bearer ${_dmToken}` } : {}
+        })
             .then(res => {
                 if (!res.ok) throw new Error('API Bağlantı Hatası');
                 return res.json();
             })
             .then(data => {
                 allProjects = data;
+                populateYearFilter(allProjects);
                 applyFilters();
             })
             .catch(err => {
                 console.log('Dummy veri ile devam ediliyor:', err);
                 allProjects = generateMockData();
+                populateYearFilter(allProjects);
                 applyFilters();
             });
+    }
+
+    // ── Yıl Filtresi Doldur ───────────────────────────────────────────────────
+    function populateYearFilter(projects) {
+        const years = [...new Set(
+            projects.map(p => p.year).filter(y => y && y.toString().trim() !== '')
+        )].sort();
+
+        const currentVal = yearFilter.value;
+        yearFilter.innerHTML = '<option value="">Tüm Yıllar</option>';
+        years.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            yearFilter.appendChild(opt);
+        });
+        if (years.includes(currentVal)) yearFilter.value = currentVal;
     }
 
     // ── Filtre Uygula ─────────────────────────────────────────────────────────

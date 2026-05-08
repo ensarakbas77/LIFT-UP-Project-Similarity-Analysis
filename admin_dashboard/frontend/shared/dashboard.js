@@ -135,7 +135,10 @@ async function loadDashboardStats() {
     if (!totalEl) return; // dashboard sayfasında değiliz
 
     try {
-        const res = await fetch('/api/projects/stats');
+        const token = localStorage.getItem('lift_admin_token');
+        const res = await fetch('/api/projects/stats', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (!res.ok) throw new Error('Stats API hatası');
         const s = await res.json();
 

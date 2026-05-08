@@ -1,7 +1,8 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from app.core.config import admin_settings
+from app.api.auth import get_current_admin
 
 router = APIRouter(prefix="/api/projects", tags=["Proje Veritabanı"])
 
@@ -21,7 +22,7 @@ def get_db_connection():
         return None
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(get_current_admin)])
 def get_all_projects():
     """projects tablosundaki tüm projeleri döndürür."""
     conn = get_db_connection()
@@ -44,7 +45,7 @@ def get_all_projects():
             conn.close()
 
 
-@router.get("/stats")
+@router.get("/stats", dependencies=[Depends(get_current_admin)])
 def get_project_stats():
     """Dashboard için özet istatistikler döndürür."""
     conn = get_db_connection()
