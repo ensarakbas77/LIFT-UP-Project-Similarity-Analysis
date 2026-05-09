@@ -15,15 +15,18 @@
     }
 
     // Token süresi dolmuş mu kontrol et (JWT payload decode)
+    // base64url → base64 dönüşümü yapılmadan atob() özel karakter içeren tokenları patlıyor
     try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64.padEnd(b64.length + (4 - b64.length % 4) % 4, '=');
+        const payload = JSON.parse(atob(padded));
         if (payload.exp && Date.now() / 1000 > payload.exp) {
             localStorage.removeItem('lift_admin_token');
             localStorage.removeItem('lift_admin_user');
             window.location.replace('/');
         }
     } catch (e) {
-        // Token bozuksa temizle
+        // Gerçekten bozuk tokenları temizle
         localStorage.removeItem('lift_admin_token');
         localStorage.removeItem('lift_admin_user');
         window.location.replace('/');
@@ -33,14 +36,21 @@
 // ── Kullanıcı Bilgisini Göster ───────────────────────────────────────────────
 (function renderUserInfo() {
     const raw = localStorage.getItem('lift_admin_user');
-    if (!raw) return;
-    try {
-        const user = JSON.parse(raw);
-        const nameEl = document.getElementById('sidebarUserName');
-        const emailEl = document.getElementById('sidebarUserEmail');
-        if (nameEl) nameEl.textContent = user.full_name || user.username || 'Admin';
-        if (emailEl) emailEl.textContent = user.email || '';
-    } catch (e) { /* sessizce geç */ }
+    let user = {};
+    if (raw) {
+        try { user = JSON.parse(raw); } catch (e) { /* yoksay */ }
+    }
+
+    const displayName = user.username || user.full_name || 'Admin';
+    const email       = user.email || '—';
+
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
+    setText('navUserName', displayName);
+    setText('navUserEmail', email);
 })();
 
 // ── Çıkış Yap ────────────────────────────────────────────────────────────────
@@ -86,46 +96,72 @@ function setGreeting() {
 }
 setGreeting();
 
-// ── Sidebar Push Toggle ──────────────────────────────────────────────────────
-const adminSidebar = document.getElementById('adminSidebar');
-const pushContent = document.getElementById('pushContent');
-const toggleBtn = document.getElementById('openSidebar');
-const closeSidebarBtn = document.getElementById('closeSidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-function toggleSidebar() {
-    if (!adminSidebar) return;
-    const isNowCollapsed = adminSidebar.classList.toggle('collapsed');
-    if (pushContent) pushContent.classList.toggle('full-width', isNowCollapsed);
-    if (sidebarOverlay && window.innerWidth <= 768) {
-        sidebarOverlay.classList.toggle('visible', !isNowCollapsed);
-    }
-}
-
-if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
-
 // ── Sistem Durumu (API health check) ────────────────────────────────────────
 async function checkSystemStatus() {
-    const apiVal = document.getElementById('apiStatus');
-    const dot = document.querySelector('.sidebar-status-dot');
-    const text = document.querySelector('.sidebar-status-text');
+    const avatarBtn = document.getElementById('navUserBtn');
+
+    const setStatus = (state) => {
+        if (!avatarBtn) return;
+        avatarBtn.classList.remove('status-ok', 'status-err');
+        if (state === 'ok') {
+            avatarBtn.classList.add('status-ok');
+            avatarBtn.title = 'Sistem aktif';
+        } else {
+            avatarBtn.classList.add('status-err');
+            avatarBtn.title = 'Bağlantı yok';
+        }
+    };
 
     try {
-        const res = await fetch('/health', {
-            signal: AbortSignal.timeout(4000),
-        });
-        if (res.ok) {
-            if (dot) { dot.className = 'sidebar-status-dot ok'; }
-            if (text) { text.textContent = 'Sistem aktif'; }
-            if (apiVal) { apiVal.textContent = 'Aktif'; apiVal.style.color = '#10b981'; }
-        } else { throw new Error(); }
+        const res = await fetch('/health', { signal: AbortSignal.timeout(4000) });
+        if (res.ok) setStatus('ok');
+        else throw new Error();
     } catch {
-        if (dot) { dot.className = 'sidebar-status-dot err'; }
-        if (text) { text.textContent = 'Bağlantı yok'; }
-        if (apiVal) { apiVal.textContent = 'Offline'; apiVal.style.color = '#ef4444'; }
+        setStatus('err');
     }
 }
 
 checkSystemStatus();
 setInterval(checkSystemStatus, 30_000);
+
+// ── Dashboard İstatistikleri ────────────────────────────────────────────────
+async function loadDashboardStats() {
+    const totalEl    = document.getElementById('statTotalProjects');
+    const yearsEl    = document.getElementById('statTotalYears');
+    const kwEl       = document.getElementById('statUniqueKeywords');
+    const topYearEl  = document.getElementById('statTopYear');
+    const topLabelEl = document.getElementById('statTopYearLabel');
+
+    if (!totalEl) return; // dashboard sayfasında değiliz
+
+    try {
+        const token = localStorage.getItem('lift_admin_token');
+        const res = await fetch('/api/projects/stats', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error('Stats API hatası');
+        const s = await res.json();
+
+        const fmt = n => new Intl.NumberFormat('tr-TR').format(n ?? 0);
+
+        totalEl.textContent = fmt(s.total_projects);
+        yearsEl.textContent = fmt(s.total_years);
+        kwEl.textContent    = fmt(s.unique_keywords);
+
+        if (s.top_year) {
+            topYearEl.textContent = s.top_year;
+            if (topLabelEl) {
+                topLabelEl.textContent = `En Verimli Dönem · ${fmt(s.top_year_count)} proje`;
+            }
+        } else {
+            topYearEl.textContent = '–';
+        }
+    } catch (err) {
+        console.warn('Dashboard istatistikleri yüklenemedi:', err);
+        [totalEl, yearsEl, kwEl, topYearEl].forEach(el => {
+            if (el) { el.textContent = '—'; el.style.color = '#94a3b8'; }
+        });
+    }
+}
+
+loadDashboardStats();

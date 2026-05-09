@@ -16,12 +16,18 @@ class SimilarProject(BaseModel):
         ...,
         ge=0.0,
         le=1.0,
-        description="Cosine similarity skoru (0-1 arası)",
+        description="SBERT cosine similarity skoru (0-1 arası)",
     )
     year: Optional[str] = Field(None, description="Projenin yılı")
     classification: str = Field(
         ...,
         description="Bireysel benzerlik sınıflandırması: 'critical', 'high', 'medium', 'low' veya 'irrelevant'",
+    )
+    emrecan_similarity: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Emrecan BERT cosine similarity skoru (0-1 arası)",
     )
 
 
@@ -49,3 +55,9 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Servis durumu")
     model_loaded: bool = Field(..., description="SBERT modeli yüklü mü?")
     database_connected: bool = Field(..., description="Veritabanı bağlantısı aktif mi?")
+
+
+class KeywordSuggestResponse(BaseModel):
+    """POST /suggest-keywords endpoint'i için yanıt gövdesi."""
+
+    keywords: list[str] = Field(..., description="Önerilen anahtar kelimeler")

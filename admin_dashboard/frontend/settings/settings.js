@@ -52,7 +52,7 @@ function loadCurrentUserInfo() {
         // Avatar alanı
         const displayName  = document.getElementById('currentDisplayName');
         const displayEmail = document.getElementById('currentDisplayEmail');
-        if (displayName)  displayName.textContent  = user.full_name || user.username || 'Admin';
+        if (displayName)  displayName.textContent  = user.username || user.full_name || 'Admin';
         if (displayEmail) displayEmail.textContent = user.email || '—';
 
         // Sağ panel bilgi satırları
@@ -191,14 +191,15 @@ if (profileForm) {
             // UI'daki görünür alanları güncelle
             loadCurrentUserInfo();
 
-            // Sidebar'daki kullanıcı adını güncelle
-            const nameEl  = document.getElementById('sidebarUserName');
-            const emailEl = document.getElementById('sidebarUserEmail');
+            // Navbar'daki kullanıcı bilgisini güncelle
+            const nameEl  = document.getElementById('navUserName');
+            const emailEl = document.getElementById('navUserEmail');
             const raw = localStorage.getItem('lift_admin_user');
             if (raw) {
                 const user = JSON.parse(raw);
-                if (nameEl)  nameEl.textContent  = user.full_name || user.username || 'Admin';
-                if (emailEl) emailEl.textContent = user.email || '';
+                const displayName = user.username || user.full_name || 'Admin';
+                if (nameEl)  nameEl.textContent  = displayName;
+                if (emailEl) emailEl.textContent = user.email || '—';
             }
 
             // Formu temizle

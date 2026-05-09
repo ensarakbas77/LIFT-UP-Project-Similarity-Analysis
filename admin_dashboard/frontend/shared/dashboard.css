@@ -3,25 +3,7 @@
    (style.css üzerine eklenir, onunla birlikte çalışır)
    ============================================== */
 
-/* ── Hamburger Toggle Butonu ─────────────────── */
-.sidebar-toggle-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, .75);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: .4rem .7rem;
-    border-radius: 8px;
-    transition: all .2s;
-    line-height: 1;
-}
-
-.sidebar-toggle-btn:hover {
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
-}
-
-/* ── Sidebar — Varsayılan AÇIK, collapsed ile kapanır ── */
+/* ── Sidebar — Her zaman açık, kapatılamaz ── */
 .admin-sidebar {
     position: fixed;
     top: 0;
@@ -30,82 +12,373 @@
     width: 280px;
     background: linear-gradient(160deg, var(--tusas-navy) 0%, #0d1b3e 100%);
     z-index: 1050;
-    transform: translateX(0);
-    /* VARSAYILAN: AÇIK */
-    transition: transform .32s cubic-bezier(.4, 0, .2, 1);
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 20px rgba(0, 0, 0, .15);
 }
 
-.admin-sidebar.collapsed {
-    transform: translateX(-100%);
-    /* hamburger ile kapandığında */
-}
-
-/* İçerik alanı sidebar açıkken sağa itilir */
+/* İçerik alanı sidebar genişliği kadar sağa itilir */
 .sidebar-push-content {
     margin-left: 280px;
-    transition: margin-left .32s cubic-bezier(.4, 0, .2, 1);
-}
-
-.sidebar-push-content.full-width {
-    margin-left: 0;
 }
 
 .sidebar-drawer-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.25rem 1rem;
+    padding: 1.4rem 1.25rem 1.2rem;
     border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .sidebar-drawer-brand {
     display: flex;
     align-items: center;
-    gap: .75rem;
+    gap: .8rem;
     color: #fff;
     text-decoration: none;
+    min-width: 0;
 }
 
 .sidebar-drawer-brand i {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     color: var(--tusas-blue);
     filter: drop-shadow(0 0 6px rgba(0, 163, 224, .5));
+    flex-shrink: 0;
+}
+
+.sidebar-drawer-brand-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .sidebar-drawer-brand-text .brand-main {
     font-family: 'Orbitron', 'Inter', sans-serif;
-    font-size: .9rem;
+    font-size: .92rem;
     font-weight: 900;
     color: #fff;
-    letter-spacing: 2px;
+    letter-spacing: 1.8px;
     display: block;
     line-height: 1.2;
 }
 
 .sidebar-drawer-brand-text .brand-sub {
-    font-size: .63rem;
-    color: rgba(255, 255, 255, .38);
-    letter-spacing: .5px;
+    font-size: .58rem;
+    color: rgba(255, 255, 255, .42);
+    letter-spacing: .35px;
     text-transform: uppercase;
+    line-height: 1.45;
+    margin-top: 4px;
+    font-weight: 500;
 }
 
-.sidebar-close-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, .45);
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: .3rem .5rem;
-    border-radius: 6px;
-    transition: all .2s;
+/* ── Navbar — Page Title + Actions ───────────── */
+.navbar-page-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    color: #fff;
+    text-decoration: none;
+    min-width: 0;
+}
+
+.navbar-page-header:hover {
+    color: #fff;
+}
+
+.navbar-page-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(0, 163, 224, .18);
+    color: var(--tusas-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.navbar-page-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
     line-height: 1;
+    letter-spacing: .2px;
 }
 
-.sidebar-close-btn:hover {
-    background: rgba(255, 255, 255, .1);
+.navbar-page-subtitle {
+    display: none;
+}
+
+.navbar-github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .4rem .85rem;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, .8);
+    font-size: .78rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+    background: rgba(255, 255, 255, .06);
+}
+
+.navbar-github-btn i {
+    font-size: 1.05rem;
+}
+
+.navbar-github-btn:hover {
+    background: rgba(255, 255, 255, .15);
+    color: #fff;
+}
+
+/* ── Navbar — User Avatar Dropdown ───────────── */
+.navbar-user-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a3a6e 0%, #0d1b3e 100%);
+    color: rgba(255, 255, 255, .92);
+    border: 2px solid rgba(255, 255, 255, .12);
+    cursor: pointer;
+    font-size: 1.05rem;
+    transition: all .25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    position: relative;
+    padding: 0;
+    line-height: 1;
+    overflow: visible;
+}
+
+.navbar-user-btn::after {
+    /* Bootstrap dropdown caret'ini gizle */
+    display: none !important;
+}
+
+.navbar-user-btn i {
+    color: rgba(255, 255, 255, .88);
+    transition: color .2s;
+}
+
+.navbar-user-btn:hover,
+.navbar-user-btn:focus,
+.navbar-user-btn[aria-expanded="true"] {
+    transform: translateY(-1px);
+    color: #fff;
+    outline: none;
+}
+
+.navbar-user-btn:hover i,
+.navbar-user-btn:focus i,
+.navbar-user-btn[aria-expanded="true"] i {
+    color: #fff;
+}
+
+/* Sistem durumuna göre kenar glow — aktifse yeşil, hata varsa kırmızı */
+.navbar-user-btn.status-ok {
+    border-color: #10b981;
+    box-shadow:
+        0 0 0 2px rgba(16, 185, 129, .25),
+        0 0 14px rgba(16, 185, 129, .55),
+        0 2px 8px rgba(0, 0, 0, .25);
+    animation: navAvatarPulseOk 2.6s ease-in-out infinite;
+}
+
+.navbar-user-btn.status-err {
+    border-color: #ef4444;
+    box-shadow:
+        0 0 0 2px rgba(239, 68, 68, .25),
+        0 0 14px rgba(239, 68, 68, .55),
+        0 2px 8px rgba(0, 0, 0, .25);
+}
+
+.navbar-user-btn.status-ok:hover,
+.navbar-user-btn.status-ok[aria-expanded="true"] {
+    box-shadow:
+        0 0 0 3px rgba(16, 185, 129, .35),
+        0 0 18px rgba(16, 185, 129, .7),
+        0 4px 12px rgba(0, 0, 0, .35);
+}
+
+.navbar-user-btn.status-err:hover,
+.navbar-user-btn.status-err[aria-expanded="true"] {
+    box-shadow:
+        0 0 0 3px rgba(239, 68, 68, .35),
+        0 0 18px rgba(239, 68, 68, .7),
+        0 4px 12px rgba(0, 0, 0, .35);
+}
+
+@keyframes navAvatarPulseOk {
+    0%, 100% {
+        box-shadow:
+            0 0 0 2px rgba(16, 185, 129, .25),
+            0 0 14px rgba(16, 185, 129, .55),
+            0 2px 8px rgba(0, 0, 0, .25);
+    }
+    50% {
+        box-shadow:
+            0 0 0 2px rgba(16, 185, 129, .35),
+            0 0 18px rgba(16, 185, 129, .7),
+            0 2px 8px rgba(0, 0, 0, .25);
+    }
+}
+
+/* Dropdown menu — koyu tema */
+.navbar-user-menu {
+    background: linear-gradient(165deg, var(--tusas-navy, #1F2D5A) 0%, #0d1b3e 100%);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 14px;
+    box-shadow: 0 14px 44px rgba(0, 0, 0, .42), 0 2px 8px rgba(0, 0, 0, .25);
+    padding: 0;
+    min-width: 280px;
+    margin-top: .65rem !important;
+    overflow: hidden;
+    animation: navUserMenuIn .18s ease-out;
+}
+
+@keyframes navUserMenuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.navbar-user-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    padding: 1.1rem 1.2rem;
+    background: linear-gradient(135deg, rgba(0, 163, 224, .12) 0%, rgba(0, 163, 224, .03) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.navbar-user-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, var(--tusas-blue, #00A3E0) 0%, #0087ba 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0, 163, 224, .45);
+}
+
+.navbar-user-card-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.navbar-user-card-name {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.navbar-user-card-email {
+    font-size: .72rem;
+    color: rgba(255, 255, 255, .5);
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.navbar-user-menu-actions {
+    padding: .55rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.navbar-user-menu-link {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    padding: .65rem .9rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .04);
+    color: rgba(255, 255, 255, .78);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: left;
+    text-decoration: none;
+    letter-spacing: .2px;
+}
+
+.navbar-user-menu-link i {
+    color: rgba(255, 255, 255, .55);
+    font-size: .9rem;
+    width: 16px;
+    text-align: center;
+    transition: color .2s;
+}
+
+.navbar-user-menu-link:hover {
+    background: rgba(0, 163, 224, .15);
+    border-color: rgba(0, 163, 224, .25);
+    color: #fff;
+}
+
+.navbar-user-menu-link:hover i {
+    color: var(--tusas-blue, #00A3E0);
+}
+
+.navbar-user-logout {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    padding: .68rem .9rem;
+    border: 1px solid rgba(227, 6, 19, .25);
+    border-radius: 10px;
+    background: rgba(227, 6, 19, .08);
+    color: rgba(255, 255, 255, .78);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: left;
+    letter-spacing: .2px;
+}
+
+.navbar-user-logout i {
+    color: rgba(227, 6, 19, .85);
+    font-size: .9rem;
+    transition: color .2s;
+}
+
+.navbar-user-logout:hover {
+    background: rgba(227, 6, 19, .2);
+    border-color: rgba(227, 6, 19, .5);
+    color: #fff;
+}
+
+.navbar-user-logout:hover i {
     color: #fff;
 }
 
@@ -180,69 +453,6 @@
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: .4px;
-}
-
-/* Footer */
-.sidebar-drawer-footer {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid rgba(255, 255, 255, .07);
-}
-
-.sidebar-status {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    font-size: .78rem;
-    color: rgba(255, 255, 255, .4);
-}
-
-.sidebar-status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    background: #6b7280;
-    transition: background .3s;
-}
-
-.sidebar-status-dot.ok {
-    background: #10b981;
-    box-shadow: 0 0 6px #10b981;
-    animation: dot-pulse 2s infinite;
-}
-
-.sidebar-status-dot.err {
-    background: #ef4444;
-    box-shadow: 0 0 6px #ef4444;
-}
-
-@keyframes dot-pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-    }
-
-    50% {
-        opacity: .4;
-    }
-}
-
-/* ── Overlay ─────────────────────────────────── */
-.sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .5);
-    backdrop-filter: blur(2px);
-    z-index: 1040;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .32s ease;
-}
-
-.sidebar-overlay.visible {
-    opacity: 1;
-    pointer-events: all;
 }
 
 /* ── Nav badge (eski uyumluluk) ──────────────── */
@@ -606,126 +816,3 @@
     letter-spacing: .5px;
 }
 
-/* ── Sidebar Overlay ─────────────────────────── */
-/* Masaüstünde TAMAMEN GİZLİ — bulanıklık yaratmasın */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .45);
-    backdrop-filter: blur(2px);
-    z-index: 1040;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .28s ease;
-}
-
-/* Sadece mobilde aktif */
-@media (max-width: 768px) {
-    .sidebar-overlay {
-        display: block;
-    }
-
-    .sidebar-overlay.visible {
-        opacity: 1;
-        pointer-events: all;
-    }
-
-    .admin-sidebar {
-        transform: translateX(-100%);
-    }
-
-    /* mobilde kapalı başlar */
-    .admin-sidebar:not(.collapsed) {
-        transform: translateX(0);
-    }
-
-    /* JS .collapsed kaldırınca açılır */
-    .sidebar-push-content {
-        margin-left: 0 !important;
-    }
-}
-
-/* ── Sidebar Kullanıcı Kartı ─────────────────── */
-.sidebar-user-card {
-    display: flex;
-    align-items: center;
-    gap: .65rem;
-    padding: .75rem 1rem;
-    background: rgba(0, 163, 224, .07);
-    border: 1px solid rgba(0, 163, 224, .15);
-    border-radius: 12px;
-    margin-bottom: .85rem;
-}
-
-.sidebar-user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--tusas-blue, #00A3E0) 0%, #0087ba 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .9rem;
-    color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 163, 224, .3);
-}
-
-.sidebar-user-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.sidebar-user-name {
-    font-size: .8rem;
-    font-weight: 700;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-user-email {
-    font-size: .65rem;
-    color: rgba(255, 255, 255, .4);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ── Sidebar Çıkış Butonu ────────────────────── */
-.sidebar-logout-btn {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    width: 100%;
-    margin-top: .75rem;
-    padding: .6rem 1rem;
-    border: 1px solid rgba(227, 6, 19, .25);
-    border-radius: 10px;
-    background: rgba(227, 6, 19, .07);
-    color: rgba(255, 255, 255, .55);
-    font-size: .8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .2s ease;
-    letter-spacing: .3px;
-}
-
-.sidebar-logout-btn i {
-    font-size: .85rem;
-    color: rgba(227, 6, 19, .7);
-    transition: color .2s;
-}
-
-.sidebar-logout-btn:hover {
-    background: rgba(227, 6, 19, .15);
-    border-color: rgba(227, 6, 19, .4);
-    color: #fff;
-}
-
-.sidebar-logout-btn:hover i {
-    color: #E30613;
-}

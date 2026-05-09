@@ -9,8 +9,8 @@ Bu modül tüm iş mantığını barındırır:
 """
 
 from app.core.config import settings
-from app.services.embedding_service import generate_embedding
-from app.db.queries import find_similar_projects
+from app.services.embedding_service import generate_embedding, generate_emrecan_embedding
+from app.db.queries import find_similar_projects, find_emrecan_similarities_by_ids
 from app.schemas.response_schema import AnalyzeResponse, SimilarProject
 
 
@@ -60,13 +60,20 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
     if top_k is None:
         top_k = settings.DEFAULT_TOP_K
 
-    # 1. Embedding uretimi (title + abstract + keywords → combined_text → embedding)
+    # 1. SBERT embedding üretimi
     query_vector = generate_embedding(title, abstract, keywords)
 
-    # 2. Veritabanı sorgusu — en benzer projeler
+    # 2. SBERT ile veritabanı sorgusu — en benzer projeler
     raw_results = find_similar_projects(query_vector, top_k=top_k)
 
-    # 3. Sonuçları şemaya dönüştür — her projeye bireysel sınıflandırma ekle
+    # 3. Emrecan BERT embedding üretimi
+    emrecan_vector = generate_emrecan_embedding(title, abstract, keywords)
+
+    # 4. Aynı projeler için Emrecan benzerlik skorlarını getir
+    project_ids = [r["project_id"] for r in raw_results]
+    emrecan_scores = find_emrecan_similarities_by_ids(project_ids, emrecan_vector)
+
+    # 5. Sonuçları şemaya dönüştür — her projeye bireysel sınıflandırma ve Emrecan skoru ekle
     similar_projects = [
         SimilarProject(
             title=r["title"],
@@ -74,11 +81,16 @@ def analyze_project(title: str, abstract: str, keywords: str, top_k: int | None 
             similarity=r["similarity"],
             year=r["year"],
             classification=classify_similarity(r["similarity"]),
+            emrecan_similarity=(
+                max(0.0, emrecan_scores[r["project_id"]])
+                if r["project_id"] in emrecan_scores
+                else None
+            ),
         )
         for r in raw_results
     ]
 
-    # 4. Genel sınıflandırma — en yüksek skora göre
+    # 6. Genel sınıflandırma — en yüksek skora göre
     max_score = similar_projects[0].similarity if similar_projects else 0.0
     classification = classify_similarity(max_score)
 

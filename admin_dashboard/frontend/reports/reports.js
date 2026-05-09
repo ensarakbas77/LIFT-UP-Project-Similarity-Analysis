@@ -20,7 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let abstractChartInst = null;
 
     // ── Veri çek ─────────────────────────────────────────────────────────────
-    fetch('/api/projects/')
+    const _rToken = localStorage.getItem('lift_admin_token');
+    fetch('/api/projects/', {
+        headers: _rToken ? { 'Authorization': `Bearer ${_rToken}` } : {}
+    })
         .then(res => {
             if (!res.ok) throw new Error('API hatası');
             return res.json();

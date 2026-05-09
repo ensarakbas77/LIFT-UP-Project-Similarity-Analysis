@@ -7,10 +7,12 @@ GET  /admin/download/{job_id}/{filename} → CSV dosyası indirme
 Ana backend'deki health.py route yapısını takip eder.
 """
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 
-from app.core.security import verify_admin_key
+from app.api.auth import get_current_admin
 from app.jobs.job_store import get_job_csv_path
 from app.schemas.admin_schemas import AnalyzeCSVResponse
 from app.services.csv_service import analyze_csv_file
@@ -26,21 +28,11 @@ router = APIRouter(prefix="/admin", tags=["Admin — CSV İşlemleri"])
         "Tamamlanmış bir iş için oluşturulan CSV dosyasını analiz eder. "
         "Temel istatistikler, dil doluluk oranları ve metin uzunlukları döndürülür."
     ),
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def analyze_csv(job_id: str, filename: str) -> AnalyzeCSVResponse:
-    """
-    CSV dosyasını analiz eder ve istatistikleri döndürür.
-
-    Akış:
-      1. job_id ile CSV yolu doğrulanır
-      2. csv_service.analyze_csv_file() çağrılır
-      3. Pydantic şemasına dönüştürülmüş yanıt döndürülür
-
-    Args:
-        job_id:   İş kimliği.
-        filename: CSV dosyasının adı (job durumundan alınır).
-    """
+    if not re.match(r'^[\w][\w\-\.]*\.csv$', filename):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Geçersiz dosya adı.")
     csv_path = get_job_csv_path(job_id, filename)
     if not csv_path:
         raise HTTPException(
@@ -60,18 +52,11 @@ def analyze_csv(job_id: str, filename: str) -> AnalyzeCSVResponse:
     "/download/{job_id}/{filename}",
     summary="CSV Dosyasını İndir",
     description="Tamamlanmış işin CSV çıktısını dosya olarak indirir.",
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def download_csv(job_id: str, filename: str) -> FileResponse:
-    """
-    Oluşturulan CSV dosyasını indirilmeye hazır hale getirir.
-
-    Flask'taki send_file() kullanımının FastAPI FileResponse karşılığı.
-
-    Args:
-        job_id:   İş kimliği.
-        filename: İndirilecek CSV dosyasının adı.
-    """
+    if not re.match(r'^[\w][\w\-\.]*\.csv$', filename):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Geçersiz dosya adı.")
     csv_path = get_job_csv_path(job_id, filename)
     if not csv_path:
         raise HTTPException(

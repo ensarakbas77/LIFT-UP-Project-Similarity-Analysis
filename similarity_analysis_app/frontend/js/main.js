@@ -15,6 +15,14 @@ const API_BASE_URL = "http://localhost:8000";
 const ENDPOINTS = {
     analyze: `${API_BASE_URL}/analyze`,
     health: `${API_BASE_URL}/health`,
+    suggestKeywords: `${API_BASE_URL}/suggest-keywords`,
+    projects: `${API_BASE_URL}/projects/`,
+};
+
+// AI Önerisi davranış sabitleri
+const AI_SUGGEST = {
+    minAbstractLength: 50,   // Bu eşiğin altında özet varsa buton gizli
+    cooldownMs: 8000,        // Tıklamalar arası soğuma süresi (RPM korumasi)
 };
 
 // ─── DOM Elements ──────────────────────────────────────────────
@@ -65,7 +73,33 @@ const DOM = {
     // Status
     statusDot: document.getElementById("status-dot"),
     statusLabel: document.getElementById("status-label"),
+
+    // AI keyword suggestion
+    aiSuggestBtn: document.getElementById("ai-suggest-btn"),
+    aiSuggestContent: document.getElementById("ai-suggest-content"),
+    aiSuggestLoading: document.getElementById("ai-suggest-loading"),
+    aiSuggestMsg: document.getElementById("ai-suggest-msg"),
+
+    // Results toolbar
+    resultsToolbar: document.getElementById("results-toolbar"),
+    resultsTopkInput: document.getElementById("results-topk"),
+    resultsTopkBtn: document.getElementById("results-topk-btn"),
+    resultsTopkBtnContent: document.getElementById("results-topk-btn-content"),
+    resultsTopkBtnLoading: document.getElementById("results-topk-btn-loading"),
+    resultsYear: document.getElementById("results-year"),
+    sortDescBtn: document.getElementById("sort-desc"),
+    sortAscBtn: document.getElementById("sort-asc"),
 };
+
+// ─── Results Toolbar State ─────────────────────────────────────
+// Sonuç ekranındaki filtre/sıralama state'i. Yeni analiz veya
+// top-k güncellemesi sonrası rawResults yeniden doldurulur; yıl
+// filtresi ve sort her render'da yeniden uygulanır.
+let lastQueryPayload = null;   // {title, abstract, keywords} — top-k re-fetch için
+let lastTopK = 5;              // Son kullanılan top_k
+let rawResults = [];           // Backend'den gelen ham sonuç listesi
+let currentSort = "desc";      // "desc" | "asc"
+let currentYearFilter = "";    // "" = tümü
 
 // ─── Classification Config (5 Seviye) ─────────────────────────
 const CLASSIFICATION = {
@@ -148,11 +182,44 @@ const VALIDATION = {
 // ═══════════════════════════════════════════════════════════════
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("home-view");
+    initTheme();
     initCharCounters();
     initFormListeners();
     initActionButtons();
+    initAiSuggest();
+    initResultsToolbar();
+    initNavTabs();
+    initProjectHistory();
     checkSystemHealth();
 });
+
+
+// ═══════════════════════════════════════════════════════════════
+// THEME MANAGEMENT (Dark / Light Mode)
+// ═══════════════════════════════════════════════════════════════
+
+const THEME_KEY = "lift-theme";
+
+function initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = saved || (prefersDark ? "dark" : "light");
+    applyTheme(theme);
+
+    const btn = document.getElementById("theme-toggle");
+    if (btn) {
+        btn.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "light";
+            applyTheme(current === "dark" ? "light" : "dark");
+        });
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+}
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -170,6 +237,7 @@ function initCharCounters() {
     DOM.abstractInput.addEventListener("input", () => {
         DOM.abstractCount.textContent = DOM.abstractInput.value.length;
         clearFieldError("abstract");
+        updateAiSuggestVisibility();
     });
 
     // Keywords counter
@@ -285,12 +353,21 @@ async function handleSubmit(e) {
     setLoadingState(true);
 
     try {
+        const topK = parseInt(DOM.topkInput.value, 10) || 5;
         const payload = {
             title: DOM.titleInput.value.trim(),
             abstract: DOM.abstractInput.value.trim(),
             keywords: DOM.keywordsInput.value.trim(),
-            top_k: parseInt(DOM.topkInput.value, 10) || 5,
+            top_k: topK,
         };
+
+        // Top-K re-fetch için kullanılacak — sadece sorgu içeriği saklanır
+        lastQueryPayload = {
+            title: payload.title,
+            abstract: payload.abstract,
+            keywords: payload.keywords,
+        };
+        lastTopK = topK;
 
         const response = await fetch(ENDPOINTS.analyze, {
             method: "POST",
@@ -307,7 +384,7 @@ async function handleSubmit(e) {
         }
 
         const data = await response.json();
-        renderResults(data);
+        renderResults(data, { resetToolbar: true });
     } catch (error) {
         showError(error);
     } finally {
@@ -327,6 +404,11 @@ function setLoadingState(isLoading) {
     DOM.abstractInput.disabled = isLoading;
     DOM.keywordsInput.disabled = isLoading;
     DOM.topkInput.disabled = isLoading;
+
+    // AI öneri butonu da analiz sırasında devre dışı
+    if (DOM.aiSuggestBtn && !DOM.aiSuggestBtn.hidden) {
+        DOM.aiSuggestBtn.disabled = isLoading || performance.now() < aiCooldownUntil;
+    }
 }
 
 
@@ -337,11 +419,15 @@ function setLoadingState(isLoading) {
 /**
  * API yanıtını parse edip DOM'a render eder.
  * @param {Object} data - AnalyzeResponse nesnesi
+ * @param {Object} [opts]
+ * @param {boolean} [opts.resetToolbar=false] - Yıl filtresi/sıralama varsayılana dönsün mü
  */
-function renderResults(data) {
-    const { similar_projects, classification } = data;
+function renderResults(data, opts = {}) {
+    const { similar_projects } = data;
+    const { resetToolbar = false } = opts;
 
     // Hide form & hero, show results
+    document.body.classList.remove("home-view");
     DOM.heroSection.style.display = "none";
     DOM.formSection.style.display = "none";
     DOM.errorSection.style.display = "none";
@@ -350,11 +436,12 @@ function renderResults(data) {
     // Render query summary (user's input)
     renderQuerySummary();
 
-    // Render project cards
-    renderProjectCards(similar_projects);
+    // Toolbar state senkronizasyonu
+    rawResults = Array.isArray(similar_projects) ? similar_projects : [];
+    syncToolbarAfterFetch({ resetToolbar });
 
-    // Update results count
-    DOM.resultsCount.textContent = `${similar_projects.length} proje bulundu`;
+    // Filtre + sort uygulanmış halini render et
+    applyAndRenderFiltered();
 
     // Smooth scroll to results
     DOM.resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -398,13 +485,17 @@ function renderProjectCards(projects) {
  * @returns {HTMLElement}
  */
 function createProjectCard(project, index) {
-    const { title, abstract, similarity, year, classification } = project;
+    const { title, abstract, similarity, year, classification, emrecan_similarity } = project;
     const percentage = Math.round(similarity * 100);
     const level = classification || getLevel(similarity);
     const classConfig = CLASSIFICATION[level] || CLASSIFICATION.irrelevant;
     const cardId = `project-card-${index}`;
     const abstractId = `abstract-${index}`;
     const toggleId = `toggle-${index}`;
+
+    const emrecanPct    = emrecan_similarity != null ? Math.round(emrecan_similarity * 100) : null;
+    const emrecanLevel  = emrecan_similarity != null ? getLevel(emrecan_similarity) : null;
+    const emrecanConfig = emrecanLevel ? CLASSIFICATION[emrecanLevel] : null;
 
     const card = document.createElement("div");
     card.className = `project-card ${level}`;
@@ -438,6 +529,7 @@ function createProjectCard(project, index) {
         <div class="project-card__footer">
             <div class="project-card__meta">
                 ${year ? `<span class="project-card__year">📅 ${year}</span>` : ""}
+                ${emrecanConfig ? `<span class="project-card__emrecan-badge ${emrecanLevel}">${emrecanConfig.icon} Diğer modelin analiz sonucu: %${emrecanPct} (${emrecanConfig.label})</span>` : ""}
             </div>
             <div class="project-card__similarity-bar">
                 <div class="project-card__similarity-fill ${level}" style="width: 0%;" data-width="${percentage}%"></div>
@@ -496,6 +588,7 @@ function getLevel(score) {
  * @param {Error} error
  */
 function showError(error) {
+    document.body.classList.remove("home-view");
     DOM.heroSection.style.display = "none";
     DOM.formSection.style.display = "none";
     DOM.resultsSection.style.display = "none";
@@ -518,12 +611,164 @@ function showError(error) {
 
 
 // ═══════════════════════════════════════════════════════════════
+// RESULTS TOOLBAR (Top-K re-fetch + Year Filter + Sort)
+// ═══════════════════════════════════════════════════════════════
+
+function initResultsToolbar() {
+    // Top-K Güncelle butonu
+    DOM.resultsTopkBtn.addEventListener("click", handleTopkUpdate);
+    DOM.resultsTopkInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleTopkUpdate();
+        }
+    });
+
+    // Yıl filtresi
+    DOM.resultsYear.addEventListener("change", () => {
+        currentYearFilter = DOM.resultsYear.value;
+        DOM.resultsYear.classList.toggle("active", !!currentYearFilter);
+        applyAndRenderFiltered();
+    });
+
+    // Sıralama butonları
+    DOM.sortDescBtn.addEventListener("click", () => setSortOrder("desc"));
+    DOM.sortAscBtn.addEventListener("click", () => setSortOrder("asc"));
+}
+
+function setSortOrder(order) {
+    if (order === currentSort) return;
+    currentSort = order;
+    DOM.sortDescBtn.classList.toggle("active", order === "desc");
+    DOM.sortAscBtn.classList.toggle("active", order === "asc");
+    DOM.sortDescBtn.setAttribute("aria-pressed", order === "desc");
+    DOM.sortAscBtn.setAttribute("aria-pressed", order === "asc");
+    applyAndRenderFiltered();
+}
+
+/**
+ * Yeni fetch sonrası toolbar UI'sını günceller. resetToolbar true ise
+ * yıl filtresi ve sıralama varsayılana döner; aksi halde mevcut seçimler
+ * korunur (ör. top-k güncellendiğinde).
+ */
+function syncToolbarAfterFetch({ resetToolbar }) {
+    DOM.resultsTopkInput.value = "";
+    DOM.resultsTopkInput.placeholder = String(lastTopK);
+
+    if (resetToolbar) {
+        currentSort = "desc";
+        currentYearFilter = "";
+        DOM.sortDescBtn.classList.add("active");
+        DOM.sortAscBtn.classList.remove("active");
+        DOM.sortDescBtn.setAttribute("aria-pressed", "true");
+        DOM.sortAscBtn.setAttribute("aria-pressed", "false");
+    }
+
+    populateYearFilter();
+}
+
+function populateYearFilter() {
+    const years = [...new Set(rawResults.map(p => p.year).filter(Boolean))]
+        .sort()
+        .reverse();
+
+    const previousValue = currentYearFilter;
+    DOM.resultsYear.innerHTML = '<option value="">Tüm Yıllar</option>' +
+        years.map(y => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join("");
+
+    // Önceki seçim hâlâ geçerliyse koru
+    if (previousValue && years.includes(previousValue)) {
+        DOM.resultsYear.value = previousValue;
+        DOM.resultsYear.classList.add("active");
+    } else {
+        currentYearFilter = "";
+        DOM.resultsYear.value = "";
+        DOM.resultsYear.classList.remove("active");
+    }
+}
+
+/**
+ * rawResults'a yıl filtresi ve sıralama uygulayıp render eder.
+ */
+function applyAndRenderFiltered() {
+    let list = rawResults;
+
+    if (currentYearFilter) {
+        list = list.filter(p => p.year === currentYearFilter);
+    }
+
+    // Backend desc sıralı geliyor; asc istenirse ters çevir
+    if (currentSort === "asc") {
+        list = [...list].reverse();
+    }
+
+    renderProjectCards(list);
+
+    const total = rawResults.length;
+    const shown = list.length;
+    DOM.resultsCount.textContent = (shown === total)
+        ? `${total} proje bulundu`
+        : `${shown} / ${total} proje gösteriliyor`;
+}
+
+/**
+ * Mevcut sorguyu yeni top_k ile yeniden çalıştırır.
+ */
+async function handleTopkUpdate() {
+    if (!lastQueryPayload) return;
+
+    const newTopK = parseInt(DOM.resultsTopkInput.value, 10);
+    if (!Number.isFinite(newTopK) || newTopK < 1 || newTopK > 50) {
+        DOM.resultsTopkInput.focus();
+        DOM.resultsTopkInput.select();
+        return;
+    }
+
+    if (newTopK === lastTopK && rawResults.length > 0) return;
+
+    setTopkLoading(true);
+
+    try {
+        const payload = { ...lastQueryPayload, top_k: newTopK };
+
+        const response = await fetch(ENDPOINTS.analyze, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            const detail = errorData?.detail || `HTTP ${response.status}: Sunucu hatası`;
+            throw new Error(detail);
+        }
+
+        const data = await response.json();
+        lastTopK = newTopK;
+        // Mevcut yıl/sort tercihlerini koru
+        renderResults(data, { resetToolbar: false });
+    } catch (error) {
+        showError(error);
+    } finally {
+        setTopkLoading(false);
+    }
+}
+
+function setTopkLoading(isLoading) {
+    DOM.resultsTopkBtn.disabled = isLoading;
+    DOM.resultsTopkInput.disabled = isLoading;
+    DOM.resultsTopkBtnContent.hidden = isLoading;
+    DOM.resultsTopkBtnLoading.hidden = !isLoading;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
 // ACTION BUTTONS
 // ═══════════════════════════════════════════════════════════════
 
 function initActionButtons() {
     // "Yeni Analiz" button
-    DOM.btnNewAnalysis.addEventListener("click", resetToForm);
+    DOM.btnNewAnalysis.addEventListener("click", () => window.location.reload());
 
     // "Tekrar Dene" button
     DOM.btnRetry.addEventListener("click", resetToForm);
@@ -549,6 +794,7 @@ function resetToForm() {
     DOM.resultsCards.innerHTML = "";
 
     // Show form, hide others
+    document.body.classList.add("home-view");
     DOM.heroSection.style.display = "block";
     DOM.formSection.style.display = "block";
     DOM.resultsSection.style.display = "none";
@@ -607,4 +853,553 @@ function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// AI KEYWORD SUGGESTION (Gemini)
+// ═══════════════════════════════════════════════════════════════
+
+let aiCooldownUntil = 0;       // performance.now() ms — bu ana kadar devre dışı
+let aiCooldownTimer = null;    // Cooldown geri sayım timer'ı
+
+function initAiSuggest() {
+    if (!DOM.aiSuggestBtn) return;
+    DOM.aiSuggestBtn.addEventListener("click", handleAiSuggest);
+    updateAiSuggestVisibility();
+}
+
+/**
+ * Özet uzunluğuna göre butonu gösterip gizler.
+ * Eşik altındaysa hem butonu hem önceki mesajı temizler.
+ */
+function updateAiSuggestVisibility() {
+    if (!DOM.aiSuggestBtn) return;
+    const len = DOM.abstractInput.value.trim().length;
+    const shouldShow = len >= AI_SUGGEST.minAbstractLength;
+
+    DOM.aiSuggestBtn.hidden = !shouldShow;
+    if (!shouldShow) {
+        hideAiMsg();
+    }
+}
+
+async function handleAiSuggest() {
+    const abstract = DOM.abstractInput.value.trim();
+
+    if (abstract.length < AI_SUGGEST.minAbstractLength) {
+        showAiMsg("info", `Özet en az ${AI_SUGGEST.minAbstractLength} karakter olmalı.`);
+        return;
+    }
+
+    // Cooldown kontrolü (frontend tarafı)
+    const now = performance.now();
+    if (now < aiCooldownUntil) {
+        const remaining = Math.ceil((aiCooldownUntil - now) / 1000);
+        showAiMsg("info", `Lütfen ${remaining} saniye bekleyin.`);
+        return;
+    }
+
+    setAiLoading(true);
+    hideAiMsg();
+
+    try {
+        const response = await fetch(ENDPOINTS.suggestKeywords, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ abstract }),
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            const detail = data?.detail || `HTTP ${response.status}`;
+            const msg = mapAiErrorMessage(response.status, detail);
+            showAiMsg("error", msg);
+            return;
+        }
+
+        const keywords = Array.isArray(data?.keywords) ? data.keywords : [];
+        if (keywords.length === 0) {
+            showAiMsg("error", "AI servisi anahtar kelime üretemedi.");
+            return;
+        }
+
+        const joined = keywords.join(", ");
+        DOM.keywordsInput.value = joined;
+        DOM.keywordsCount.textContent = joined.length;
+        clearFieldError("keywords");
+        showAiMsg("success", `${keywords.length} anahtar kelime önerildi. Düzenleyebilirsiniz.`);
+
+    } catch (err) {
+        showAiMsg("error", "Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin.");
+    } finally {
+        setAiLoading(false);
+        startAiCooldown(AI_SUGGEST.cooldownMs);
+    }
+}
+
+/**
+ * HTTP status koduna göre kullanıcı dostu mesaj döndürür.
+ */
+function mapAiErrorMessage(status, detail) {
+    if (status === 429) {
+        return detail || "Şu an yoğunluk var ya da limitimize ulaştık. Lütfen daha sonra tekrar deneyin.";
+    }
+    if (status === 503) {
+        return "AI servisi şu an meşgul. Lütfen biraz sonra tekrar deneyin.";
+    }
+    if (status === 502) {
+        return "AI servisinden geçersiz yanıt geldi. Lütfen tekrar deneyin.";
+    }
+    if (status === 500) {
+        return detail || "AI servisi şu an kullanılamıyor.";
+    }
+    return detail || "Öneri alınamadı.";
+}
+
+function setAiLoading(loading) {
+    DOM.aiSuggestBtn.disabled = loading;
+    DOM.aiSuggestContent.hidden = loading;
+    DOM.aiSuggestLoading.hidden = !loading;
+}
+
+function startAiCooldown(ms) {
+    aiCooldownUntil = performance.now() + ms;
+
+    if (aiCooldownTimer) clearInterval(aiCooldownTimer);
+    DOM.aiSuggestBtn.disabled = true;
+
+    const tick = () => {
+        const remainingMs = aiCooldownUntil - performance.now();
+        if (remainingMs <= 0) {
+            clearInterval(aiCooldownTimer);
+            aiCooldownTimer = null;
+            DOM.aiSuggestBtn.disabled = false;
+            DOM.aiSuggestContent.innerHTML =
+                '<svg class="ai-suggest-btn__icon" width="14" height="14" viewBox="0 0 24 24" ' +
+                'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" ' +
+                'stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/>' +
+                '<path d="M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z"/></svg>AI Önerisi';
+            return;
+        }
+        const sec = Math.ceil(remainingMs / 1000);
+        DOM.aiSuggestContent.textContent = `${sec}s bekle`;
+    };
+    tick();
+    aiCooldownTimer = setInterval(tick, 250);
+}
+
+function showAiMsg(type, text) {
+    if (!DOM.aiSuggestMsg) return;
+    DOM.aiSuggestMsg.textContent = text;
+    DOM.aiSuggestMsg.className = `ai-suggest-msg ${type}`;
+    DOM.aiSuggestMsg.hidden = false;
+}
+
+function hideAiMsg() {
+    if (!DOM.aiSuggestMsg) return;
+    DOM.aiSuggestMsg.hidden = true;
+    DOM.aiSuggestMsg.textContent = "";
+    DOM.aiSuggestMsg.className = "ai-suggest-msg";
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION TABS (Benzerlik Analizi / Proje Geçmişi)
+// ═══════════════════════════════════════════════════════════════
+
+const VIEWS = {
+    analyze: {
+        tabId: "tab-analyze",
+        viewId: "analyze-view",
+    },
+    history: {
+        tabId: "tab-history",
+        viewId: "history-view",
+    },
+};
+
+let currentView = "analyze";
+
+function initNavTabs() {
+    const tabs = document.querySelectorAll(".nav-tab");
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const view = tab.dataset.view;
+            if (view) switchView(view);
+        });
+    });
+}
+
+/**
+ * Aktif sekmeyi değiştirir.
+ * @param {"analyze"|"history"} viewName
+ */
+function switchView(viewName) {
+    if (!VIEWS[viewName] || viewName === currentView) return;
+
+    Object.entries(VIEWS).forEach(([name, cfg]) => {
+        const tab = document.getElementById(cfg.tabId);
+        const view = document.getElementById(cfg.viewId);
+        const isActive = name === viewName;
+
+        if (tab) {
+            tab.classList.toggle("active", isActive);
+            tab.setAttribute("aria-selected", String(isActive));
+        }
+        if (view) {
+            view.classList.toggle("view--active", isActive);
+            view.hidden = !isActive;
+        }
+    });
+
+    currentView = viewName;
+
+    // home-view sınıfı yalnızca analiz formu (giriş ekranı) açıkken aktiftir.
+    // Sonuç ekranı görünüyor olabilir; bu durumda da overflow:hidden istemiyoruz.
+    if (viewName === "history") {
+        document.body.classList.remove("home-view");
+        // İlk açılışta projeleri yükle
+        ensureProjectsLoaded();
+    } else {
+        const resultsVisible = DOM.resultsSection.style.display !== "none";
+        const errorVisible = DOM.errorSection.style.display !== "none";
+        if (!resultsVisible && !errorVisible) {
+            document.body.classList.add("home-view");
+        }
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PROJECT HISTORY (Veri Tabanı Listesi)
+// ═══════════════════════════════════════════════════════════════
+
+const HISTORY = {
+    pageSize: 12,
+};
+
+const HistoryDOM = {
+    cards: null,
+    loading: null,
+    search: null,
+    year: null,
+    clear: null,
+    badge: null,
+    pagination: null,
+    pageInfo: null,
+    pages: null,
+    prev: null,
+    next: null,
+    modal: null,
+    modalBackdrop: null,
+    modalClose: null,
+    modalCloseBtn: null,
+    modalYear: null,
+    modalId: null,
+    modalTitle: null,
+    modalAbstract: null,
+    modalKeywords: null,
+};
+
+let historyState = {
+    loaded: false,
+    loading: false,
+    all: [],
+    filtered: [],
+    page: 1,
+    search: "",
+    year: "",
+};
+
+function initProjectHistory() {
+    HistoryDOM.cards = document.getElementById("history-cards");
+    HistoryDOM.loading = document.getElementById("history-loading");
+    HistoryDOM.search = document.getElementById("history-search");
+    HistoryDOM.year = document.getElementById("history-year");
+    HistoryDOM.clear = document.getElementById("history-clear");
+    HistoryDOM.badge = document.getElementById("history-badge");
+    HistoryDOM.pagination = document.getElementById("history-pagination");
+    HistoryDOM.pageInfo = document.getElementById("history-page-info");
+    HistoryDOM.pages = document.getElementById("history-pages");
+    HistoryDOM.prev = document.getElementById("history-prev");
+    HistoryDOM.next = document.getElementById("history-next");
+    HistoryDOM.modal = document.getElementById("history-modal");
+    HistoryDOM.modalBackdrop = document.getElementById("history-modal-backdrop");
+    HistoryDOM.modalClose = document.getElementById("history-modal-close");
+    HistoryDOM.modalCloseBtn = document.getElementById("history-modal-close-btn");
+    HistoryDOM.modalYear = document.getElementById("history-modal-year");
+    HistoryDOM.modalId = document.getElementById("history-modal-id");
+    HistoryDOM.modalTitle = document.getElementById("history-modal-project-title");
+    HistoryDOM.modalAbstract = document.getElementById("history-modal-abstract");
+    HistoryDOM.modalKeywords = document.getElementById("history-modal-keywords");
+
+    if (!HistoryDOM.cards) return;
+
+    // Filtre olayları
+    HistoryDOM.search.addEventListener("input", () => {
+        historyState.search = HistoryDOM.search.value;
+        historyState.page = 1;
+        applyHistoryFilters();
+    });
+
+    HistoryDOM.year.addEventListener("change", () => {
+        historyState.year = HistoryDOM.year.value;
+        historyState.page = 1;
+        HistoryDOM.year.classList.toggle("active", !!historyState.year);
+        applyHistoryFilters();
+    });
+
+    HistoryDOM.clear.addEventListener("click", () => {
+        historyState.search = "";
+        historyState.year = "";
+        historyState.page = 1;
+        HistoryDOM.search.value = "";
+        HistoryDOM.year.value = "";
+        HistoryDOM.year.classList.remove("active");
+        applyHistoryFilters();
+    });
+
+    // Pagination
+    HistoryDOM.prev.addEventListener("click", () => {
+        if (historyState.page > 1) {
+            historyState.page--;
+            renderHistoryCards();
+        }
+    });
+
+    HistoryDOM.next.addEventListener("click", () => {
+        const totalPages = Math.max(
+            1,
+            Math.ceil(historyState.filtered.length / HISTORY.pageSize)
+        );
+        if (historyState.page < totalPages) {
+            historyState.page++;
+            renderHistoryCards();
+        }
+    });
+
+    // Modal
+    HistoryDOM.modalBackdrop.addEventListener("click", closeHistoryModal);
+    HistoryDOM.modalClose.addEventListener("click", closeHistoryModal);
+    HistoryDOM.modalCloseBtn.addEventListener("click", closeHistoryModal);
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !HistoryDOM.modal.hidden) closeHistoryModal();
+    });
+}
+
+/**
+ * Sekme ilk kez açıldığında projeleri çeker; sonraki açılışlarda no-op.
+ */
+async function ensureProjectsLoaded() {
+    if (historyState.loaded || historyState.loading) return;
+    historyState.loading = true;
+
+    try {
+        const response = await fetch(ENDPOINTS.projects);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        historyState.all = Array.isArray(data) ? data : [];
+        historyState.loaded = true;
+        populateHistoryYearFilter();
+        applyHistoryFilters();
+    } catch (err) {
+        showHistoryError(err);
+    } finally {
+        historyState.loading = false;
+    }
+}
+
+/**
+ * Yıl select'ini benzersiz yıllarla doldurur.
+ */
+function populateHistoryYearFilter() {
+    const years = [
+        ...new Set(historyState.all.map((p) => p.year).filter(Boolean)),
+    ].sort().reverse();
+
+    HistoryDOM.year.innerHTML =
+        '<option value="">Tüm Yıllar</option>' +
+        years
+            .map((y) => `<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`)
+            .join("");
+}
+
+/**
+ * Arama ve yıl filtresini uygulayıp listeyi yeniler.
+ */
+function applyHistoryFilters() {
+    const q = historyState.search.trim().toLowerCase();
+    const y = historyState.year;
+
+    historyState.filtered = historyState.all.filter((p) => {
+        const yearMatch = !y || p.year === y;
+        if (!yearMatch) return false;
+        if (!q) return true;
+        return (
+            (p.title && p.title.toLowerCase().includes(q)) ||
+            (p.abstract && p.abstract.toLowerCase().includes(q)) ||
+            (p.keywords && p.keywords.toLowerCase().includes(q))
+        );
+    });
+
+    updateHistoryToolbarUI();
+    renderHistoryCards();
+}
+
+function updateHistoryToolbarUI() {
+    const isFiltered = !!(historyState.search.trim() || historyState.year);
+    HistoryDOM.clear.disabled = !isFiltered;
+
+    const total = historyState.filtered.length;
+    HistoryDOM.badge.textContent = `${total} proje`;
+    HistoryDOM.badge.classList.toggle("filtered", isFiltered);
+}
+
+/**
+ * Mevcut sayfaya ait kartları render eder.
+ */
+function renderHistoryCards() {
+    HistoryDOM.cards.innerHTML = "";
+
+    if (!historyState.loaded) {
+        HistoryDOM.cards.innerHTML = `
+            <div class="history-loading">
+                <span class="history-loading__spinner"></span>
+                <span class="history-loading__text">Projeler yükleniyor...</span>
+            </div>`;
+        HistoryDOM.pagination.hidden = true;
+        return;
+    }
+
+    if (historyState.filtered.length === 0) {
+        const isFiltered = !!(historyState.search.trim() || historyState.year);
+        HistoryDOM.cards.innerHTML = `
+            <div class="history-empty">
+                <svg class="history-empty__icon" width="40" height="40" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                <span class="history-empty__title">
+                    ${isFiltered ? "Filtreye uygun proje bulunamadı." : "Henüz proje yok."}
+                </span>
+                ${isFiltered ? '<span class="history-empty__hint">Aramayı değiştirin veya filtreleri temizleyin.</span>' : ""}
+            </div>`;
+        HistoryDOM.pagination.hidden = true;
+        return;
+    }
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(historyState.filtered.length / HISTORY.pageSize)
+    );
+    if (historyState.page > totalPages) historyState.page = totalPages;
+
+    const start = (historyState.page - 1) * HISTORY.pageSize;
+    const end = start + HISTORY.pageSize;
+    const slice = historyState.filtered.slice(start, end);
+
+    slice.forEach((project, index) => {
+        const card = createHistoryCard(project, index);
+        HistoryDOM.cards.appendChild(card);
+    });
+
+    // Pagination UI
+    const total = historyState.filtered.length;
+    HistoryDOM.pagination.hidden = total <= HISTORY.pageSize;
+    HistoryDOM.pageInfo.textContent =
+        `Toplam ${total} projeden ${start + 1}–${Math.min(end, total)} arası gösteriliyor`;
+    HistoryDOM.pages.textContent = `${historyState.page} / ${totalPages}`;
+    HistoryDOM.prev.disabled = historyState.page === 1;
+    HistoryDOM.next.disabled = historyState.page === totalPages;
+}
+
+/**
+ * Tek bir history card element'i oluşturur.
+ */
+function createHistoryCard(project, index) {
+    const card = document.createElement("article");
+    card.className = "history-card";
+    card.style.animationDelay = `${Math.min(index, 8) * 0.04}s`;
+
+    const keywords = (project.keywords || "")
+        .split(/[,;]/)
+        .map((k) => k.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+
+    const tagsHtml = keywords
+        .map((k) => `<span class="history-card__tag">${escapeHtml(k)}</span>`)
+        .join("");
+
+    card.innerHTML = `
+        <div class="history-card__header">
+            <span class="history-card__id">#${escapeHtml(String(project.id))}</span>
+            ${project.year ? `<span class="history-card__year">${escapeHtml(project.year)}</span>` : ""}
+        </div>
+        <h3 class="history-card__title">${escapeHtml(project.title || "Başlıksız Proje")}</h3>
+        <div class="history-card__keywords">${tagsHtml}</div>
+        <div class="history-card__footer">
+            <button type="button" class="history-card__detail-btn">
+                Detayları Gör
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+        </div>
+    `;
+
+    card.addEventListener("click", () => openHistoryModal(project));
+    return card;
+}
+
+function showHistoryError(err) {
+    HistoryDOM.cards.innerHTML = `
+        <div class="history-empty">
+            <svg class="history-empty__icon" width="40" height="40" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span class="history-empty__title">Projeler yüklenemedi</span>
+            <span class="history-empty__hint">${escapeHtml(err?.message || "Sunucuya bağlanılamadı.")}</span>
+        </div>`;
+    HistoryDOM.pagination.hidden = true;
+}
+
+
+// ─── History Modal ─────────────────────────────────────────────
+function openHistoryModal(project) {
+    HistoryDOM.modalId.textContent = project.id ?? "—";
+    HistoryDOM.modalYear.textContent = project.year || "—";
+    HistoryDOM.modalTitle.textContent = project.title || "Başlıksız Proje";
+    HistoryDOM.modalAbstract.textContent = project.abstract || "Özet bulunamadı.";
+
+    const keywords = (project.keywords || "")
+        .split(/[,;]/)
+        .map((k) => k.trim())
+        .filter(Boolean);
+
+    HistoryDOM.modalKeywords.innerHTML = keywords.length
+        ? keywords
+              .map((k) => `<span class="history-modal__keyword">${escapeHtml(k)}</span>`)
+              .join("")
+        : '<span class="history-empty__hint">Anahtar kelime bulunamadı.</span>';
+
+    HistoryDOM.modal.hidden = false;
+    document.body.style.overflow = "hidden";
+}
+
+function closeHistoryModal() {
+    HistoryDOM.modal.hidden = true;
+    document.body.style.overflow = "";
 }

@@ -25,6 +25,11 @@ class Settings:
         "MODEL_NAME", "paraphrase-multilingual-MiniLM-L12-v2"
     )
 
+    # Emrecan BERT Model Adı
+    EMRECAN_MODEL_NAME: str = os.getenv(
+        "EMRECAN_MODEL_NAME", "emrecan/bert-base-turkish-cased-mean-nli-stsb-tr"
+    )
+
     # Benzerlik Eşik Değerleri (5 Seviye)
     CRITICAL_THRESHOLD: float = float(os.getenv("CRITICAL_THRESHOLD", "0.90"))
     HIGH_THRESHOLD: float = float(os.getenv("HIGH_THRESHOLD", "0.70"))
@@ -38,6 +43,11 @@ class Settings:
     CORS_ORIGINS: list[str] = os.getenv(
         "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
     ).split(",")
+
+    # Gemini API (anahtar kelime önerisi)
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_KEYWORD_COUNT: int = int(os.getenv("GEMINI_KEYWORD_COUNT", "5"))
 
 
 settings = Settings()

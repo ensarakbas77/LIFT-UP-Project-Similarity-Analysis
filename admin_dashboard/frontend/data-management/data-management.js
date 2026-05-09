@@ -22,21 +22,58 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Veri Çek ─────────────────────────────────────────────────────────────
     fetchProjects();
 
+    function showLoading() {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                    Veriler yükleniyor...
+                </td>
+            </tr>`;
+        resultsBadge.textContent = '— proje';
+        pageInfo.innerText       = 'Gösterilen: 0 proje';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+    }
+
     function fetchProjects() {
-        fetch('/api/projects/')
+        showLoading();
+        const _dmToken = localStorage.getItem('lift_admin_token');
+        fetch('/api/projects/', {
+            headers: _dmToken ? { 'Authorization': `Bearer ${_dmToken}` } : {}
+        })
             .then(res => {
                 if (!res.ok) throw new Error('API Bağlantı Hatası');
                 return res.json();
             })
             .then(data => {
                 allProjects = data;
+                populateYearFilter(allProjects);
                 applyFilters();
             })
             .catch(err => {
                 console.log('Dummy veri ile devam ediliyor:', err);
                 allProjects = generateMockData();
+                populateYearFilter(allProjects);
                 applyFilters();
             });
+    }
+
+    // ── Yıl Filtresi Doldur ───────────────────────────────────────────────────
+    function populateYearFilter(projects) {
+        const years = [...new Set(
+            projects.map(p => p.year).filter(y => y && y.toString().trim() !== '')
+        )].sort();
+
+        const currentVal = yearFilter.value;
+        yearFilter.innerHTML = '<option value="">Tüm Yıllar</option>';
+        years.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            yearFilter.appendChild(opt);
+        });
+        if (years.includes(currentVal)) yearFilter.value = currentVal;
     }
 
     // ── Filtre Uygula ─────────────────────────────────────────────────────────
@@ -45,15 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const yearVal = yearFilter.value;
 
         filteredProjects = allProjects.filter(p => {
-            // Yıl filtresi
             const yearMatch = !yearVal || (p.year && p.year === yearVal);
-
-            // Metin araması (başlık, özet, anahtar kelime)
             const textMatch = !query ||
                 (p.title    && p.title.toLowerCase().includes(query))    ||
                 (p.abstract && p.abstract.toLowerCase().includes(query)) ||
                 (p.keywords && p.keywords.toLowerCase().includes(query));
-
             return yearMatch && textMatch;
         });
 
@@ -180,12 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const project = allProjects.find(p => p.id === projectId);
         if (!project) return;
 
-        document.getElementById('modalId').innerText      = project.id;
-        document.getElementById('modalYear').innerText    = project.year;
-        document.getElementById('modalTitle').innerText   = project.title    || 'Başlık Yok';
+        document.getElementById('modalId').innerText       = project.id;
+        document.getElementById('modalYear').innerText     = project.year;
+        document.getElementById('modalTitle').innerText    = project.title    || 'Başlık Yok';
         document.getElementById('modalAbstract').innerText = project.abstract || 'Özet bulunamadı.';
 
-        const keys   = (project.keywords || '').split(',').map(k => k.trim()).filter(k => k);
+        const keys    = (project.keywords || '').split(/[,;]/).map(k => k.trim()).filter(k => k);
         const keyHtml = keys.map(k =>
             `<span class="badge bg-primary px-3 py-2 fs-6 mb-1 me-1 shadow-sm">${k}</span>`
         ).join('');

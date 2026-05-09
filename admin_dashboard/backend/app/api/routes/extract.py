@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename as _secure_filename
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile, status
 
 from app.core.config import admin_settings
-from app.core.security import verify_admin_key
+from app.api.auth import get_current_admin
 from app.jobs.job_store import create_job, get_job
 from app.schemas.admin_schemas import ExtractResponse, JobStatusResponse
 from app.services.pdf_service import run_pdf_extraction
@@ -43,7 +43,7 @@ def _validate_pdf(file: UploadFile) -> None:
         "LIFT UP bildiri kitabı PDF'ini yükler. "
         "İşlem arka planda başlatılır — sonucu `/admin/jobs/{job_id}` ile takip edin."
     ),
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 async def extract_pdf(
     background_tasks: BackgroundTasks,
@@ -107,7 +107,7 @@ async def extract_pdf(
     response_model=JobStatusResponse,
     summary="İş Durumu Sorgula",
     description="Başlatılan PDF işleme işinin mevcut durumunu döndürür.",
-    dependencies=[Depends(verify_admin_key)],
+    dependencies=[Depends(get_current_admin)],
 )
 def get_job_status(job_id: str) -> JobStatusResponse:
     """

@@ -6,7 +6,6 @@
 // ─── Konfigürasyon ────────────────────────────────────────────────────────────
 // Relative URL kullanıyoruz — 127.0.0.1 vs localhost CORS sorununu önler
 const API_BASE = '';
-const ADMIN_KEY = 'lift-up-admin-secret-2026'; // .env'deki ADMIN_API_KEY ile eşleşmeli
 const POLL_INTERVAL_MS = 2000; // İş durumu sorgulama aralığı
 
 // ─── Global State ─────────────────────────────────────────────────────────────
@@ -39,9 +38,27 @@ const analysisSection = document.getElementById('analysisSection');
 const downloadBtnFromAnalysis = document.getElementById('downloadBtnFromAnalysis');
 const closeAnalysisBtn = document.getElementById('closeAnalysisBtn');
 
+// ─── Year input: clear invalid state on input ─────────────────────────────────
+document.getElementById('year').addEventListener('input', function () {
+    this.classList.remove('is-invalid');
+});
+
+// ─── Auth Guard ───────────────────────────────────────────────────────────────
+(function checkAuth() {
+    const token = localStorage.getItem('lift_admin_token');
+    if (!token) {
+        window.location.replace('/');
+    }
+})();
+
 // ─── API Headers ──────────────────────────────────────────────────────────────
 function getAdminHeaders() {
-    return { 'X-Admin-Key': ADMIN_KEY };
+    const token = localStorage.getItem('lift_admin_token');
+    if (!token) {
+        window.location.replace('/');
+        return {};
+    }
+    return { 'Authorization': `Bearer ${token}` };
 }
 
 // ============================================
@@ -122,6 +139,14 @@ function formatFileSize(bytes) {
 // FORM SUBMISSION — POST /admin/extract
 // ============================================
 
+const YEAR_RE = /^\d{4}-\d{4}$/;
+
+function validateYear(value) {
+    if (!YEAR_RE.test(value)) return false;
+    const [a, b] = value.split('-').map(Number);
+    return b === a + 1;
+}
+
 uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -129,9 +154,23 @@ uploadForm.addEventListener('submit', async (e) => {
         return;
     }
 
+    const yearInput = document.getElementById('year');
+    const yearError = document.getElementById('year-error');
+    const yearValue = yearInput.value.trim();
+
+    if (!validateYear(yearValue)) {
+        yearInput.classList.add('is-invalid');
+        yearError.textContent = yearValue
+            ? `"${yearValue}" geçersiz format. YYYY-YYYY kullanın (örn: 2024-2025).`
+            : 'Yıl bilgisi zorunludur.';
+        yearInput.focus();
+        return;
+    }
+    yearInput.classList.remove('is-invalid');
+
     const formData = new FormData();
     formData.append('pdfFile', selectedFile);
-    formData.append('year', document.getElementById('year').value);
+    formData.append('year', yearValue);
 
     showProgress();
 
@@ -377,7 +416,9 @@ resetBtn.addEventListener('click', () => {
     if (pollTimer) clearInterval(pollTimer);
     cleanupJob();
     resetFileUpload();
-    document.getElementById('year').value = '2021-2022';
+    const yr = document.getElementById('year');
+    yr.value = '';
+    yr.classList.remove('is-invalid');
     currentJobId = null;
     currentFilename = null;
 });

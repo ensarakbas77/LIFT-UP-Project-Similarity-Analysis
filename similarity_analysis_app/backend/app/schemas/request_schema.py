@@ -46,3 +46,14 @@ class AnalyzeRequest(BaseModel):
         description="Dondurilecek benzer proje sayisi (varsayilan: 5)",
         examples=[5, 10, 20],
     )
+
+
+class KeywordSuggestRequest(BaseModel):
+    """POST /suggest-keywords endpoint'i icin istek govdesi."""
+
+    abstract: str = Field(
+        ...,
+        min_length=20,
+        max_length=5000,
+        description="Anahtar kelime onerisi icin proje ozeti",
+    )

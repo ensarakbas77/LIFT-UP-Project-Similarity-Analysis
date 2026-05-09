@@ -314,11 +314,23 @@ h6 {
 
 /* Footer */
 .footer {
-    background-color: var(--tusas-navy) !important;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: auto;
-    border-top: 4px solid var(--tusas-navy);
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
+    background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 100%);
+    flex-shrink: 0;
+}
+
+.footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+
+.footer-copy {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.02em;
+    margin: 0;
 }
 
 /* Animations */
