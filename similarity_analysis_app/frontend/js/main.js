@@ -1329,7 +1329,7 @@ function createHistoryCard(project, index) {
     card.style.animationDelay = `${Math.min(index, 8) * 0.04}s`;
 
     const keywords = (project.keywords || "")
-        .split(",")
+        .split(/[,;]/)
         .map((k) => k.trim())
         .filter(Boolean)
         .slice(0, 4);
@@ -1385,7 +1385,7 @@ function openHistoryModal(project) {
     HistoryDOM.modalAbstract.textContent = project.abstract || "Özet bulunamadı.";
 
     const keywords = (project.keywords || "")
-        .split(",")
+        .split(/[,;]/)
         .map((k) => k.trim())
         .filter(Boolean);
 

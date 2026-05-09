@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modalTitle').innerText    = project.title    || 'Başlık Yok';
         document.getElementById('modalAbstract').innerText = project.abstract || 'Özet bulunamadı.';
 
-        const keys    = (project.keywords || '').split(',').map(k => k.trim()).filter(k => k);
+        const keys    = (project.keywords || '').split(/[,;]/).map(k => k.trim()).filter(k => k);
         const keyHtml = keys.map(k =>
             `<span class="badge bg-primary px-3 py-2 fs-6 mb-1 me-1 shadow-sm">${k}</span>`
         ).join('');
