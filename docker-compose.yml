@@ -1,3 +1,5 @@
+name: liftup
+
 services:
 
   similarity-backend:
@@ -11,8 +13,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
-      # Kod değişikliklerinin rebuild gerektirmeden anında yansıması için:
+      - liftup_model_cache:/root/.cache/huggingface
       - ./similarity_analysis_app/backend/app:/app/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -35,8 +36,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - admin_jobs:/app/backend/jobs
-      # Kod ve frontend değişikliklerinin rebuild gerektirmeden anında yansıması için:
+      - liftup_pdf_jobs:/app/backend/jobs
       - ./admin_dashboard/backend/app:/app/backend/app
       - ./admin_dashboard/frontend:/app/frontend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
@@ -50,7 +50,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - liftup_postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -58,6 +58,9 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
-  huggingface_cache:
-  admin_jobs:
+  liftup_postgres:
+    name: liftup_postgres
+  liftup_model_cache:
+    name: liftup_model_cache
+  liftup_pdf_jobs:
+    name: liftup_pdf_jobs

@@ -1,3 +1,5 @@
+name: liftup
+
 services:
 
   similarity-backend:
@@ -9,7 +11,15 @@ services:
       - ./similarity_analysis_app/backend/.env
     restart: unless-stopped
     volumes:
-      - huggingface_cache:/root/.cache/huggingface
+      - liftup_model_cache:/root/.cache/huggingface
+
+  similarity-frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./similarity_analysis_app/frontend:/usr/share/nginx/html:ro
+    restart: unless-stopped
 
   admin-backend:
     build:
@@ -21,12 +31,14 @@ services:
       - ./admin_dashboard/backend/.env
     restart: unless-stopped
     volumes:
-      - admin_jobs:/app/backend/jobs
+      - liftup_pdf_jobs:/app/backend/jobs
 
   # Production'da 'db' servisi YOK.
   # Her iki backend'in .env dosyasındaki DB_HOST, AWS RDS endpoint'ini gösterir.
   # Örnek: DB_HOST=liftup.xxxxxxxxxxxx.eu-central-1.rds.amazonaws.com
 
 volumes:
-  huggingface_cache:
-  admin_jobs:
+  liftup_model_cache:
+    name: liftup_model_cache
+  liftup_pdf_jobs:
+    name: liftup_pdf_jobs

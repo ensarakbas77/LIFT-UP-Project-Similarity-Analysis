@@ -5,12 +5,12 @@
 Proje klasöründe PowerShell aç:
 
 ```powershell
-docker exec -it liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db
+docker exec -it liftup-db-1 psql -U postgres -d liftup_db
 ```
 
 ## 2. Docker Desktop ile
 
-`liftupprojectsimilarityanalysis-db-1` → **Exec** sekmesi → şunu yaz:
+`liftup-db-1` → **Exec** sekmesi → şunu yaz:
 
 ```bash
 psql -U postgres -d liftup_db

@@ -37,7 +37,7 @@ Copy-Item admin_dashboard\backend\.env.example admin_dashboard\backend\.env
 Kök `.env` dosyasını aç ve `POSTGRES_PASSWORD` değerini belirle:
 
 ```
-POSTGRES_PASSWORD=sifren
+POSTGRES_PASSWORD=senin_şifren
 ```
 
 ### `similarity_analysis_app/backend/.env`
@@ -94,8 +94,9 @@ docker compose ps
 ### Senaryo A — `liftup_backup.sql` dosyası elimde var
 
 ```powershell
-docker cp liftup_backup.sql liftupprojectsimilarityanalysis-db-1:/liftup_backup.sql
-docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -f /liftup_backup.sql
+docker cp liftup_backup.sql liftup-db-1:/liftup_backup.sql
+
+docker exec liftup-db-1 psql -U postgres -d liftup_db -f /liftup_backup.sql
 ```
 
 ---
@@ -125,8 +126,8 @@ docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -
 Dump alındıktan sonra Docker'a yükle:
 
 ```powershell
-docker cp liftup_backup.sql liftupprojectsimilarityanalysis-db-1:/liftup_backup.sql
-docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -f /liftup_backup.sql
+docker cp liftup_backup.sql liftup-db-1:/liftup_backup.sql
+docker exec liftup-db-1 psql -U postgres -d liftup_db -f /liftup_backup.sql
 ```
 
 ---
@@ -134,7 +135,7 @@ docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -
 ### Yükleme Doğrulama
 
 ```powershell
-docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -c "\dt"
+docker exec liftup-db-1 psql -U postgres -d liftup_db -c "\dt"
 ```
 
 Beklenen çıktı:
@@ -147,7 +148,7 @@ Beklenen çıktı:
 ```
 
 ```powershell
-docker exec liftupprojectsimilarityanalysis-db-1 psql -U postgres -d liftup_db -c "SELECT COUNT(*) FROM projects;"
+docker exec liftup-db-1 psql -U postgres -d liftup_db -c "SELECT COUNT(*) FROM projects;"
 # 840 çıkması lazım
 ```
 
