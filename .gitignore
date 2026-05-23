@@ -22,7 +22,10 @@ admin_dashboard/backend/jobs/
 database/*.pkl
 
 # ── Docker ────────────────────────────────────────
-.dockerignore
+
+# Veritabanı yedekleri — hassas veri ve büyük boyut
+*.sql
+*.dump
 
 # ── IDE & OS ──────────────────────────────────────
 .DS_Store

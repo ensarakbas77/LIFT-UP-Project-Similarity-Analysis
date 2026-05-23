@@ -1,0 +1,66 @@
+name: liftup
+
+services:
+
+  similarity-backend:
+    build:
+      context: ./similarity_analysis_app/backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./similarity_analysis_app/backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - liftup_model_cache:/root/.cache/huggingface
+      - ./similarity_analysis_app/backend/app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  similarity-frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./similarity_analysis_app/frontend:/usr/share/nginx/html:ro
+
+  admin-backend:
+    build:
+      context: ./admin_dashboard
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./admin_dashboard/backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - liftup_pdf_jobs:/app/backend/jobs
+      - ./admin_dashboard/backend/app:/app/backend/app
+      - ./admin_dashboard/frontend:/app/frontend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Lutfen root .env dosyasini olusturun (bkz .env.example)}"
+      POSTGRES_DB: liftup_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - liftup_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  liftup_postgres:
+    name: liftup_postgres
+  liftup_model_cache:
+    name: liftup_model_cache
+  liftup_pdf_jobs:
+    name: liftup_pdf_jobs
