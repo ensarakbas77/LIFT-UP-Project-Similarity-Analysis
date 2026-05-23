@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prestige AI - Ayarlar</title>
+    <meta name="description" content="LIFT UP Admin Paneli — Hesap ve profil ayarları.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/shared/style.css">
+    <link rel="stylesheet" href="/static/shared/dashboard.css?v=2">
+    <link rel="icon" type="image/png" href="/static/assets/app_logo.png">
+    <style>
+        /* ── Settings Page Styles ───────────────────────── */
+        .settings-page-header {
+            background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 60%, #1a2d5a 100%);
+            border-radius: 20px;
+            padding: 2.2rem 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(31, 45, 90, .25);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .settings-page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 85% 50%, rgba(0, 163, 224, .18) 0%, transparent 65%);
+        }
+
+        .settings-header-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: rgba(0, 163, 224, .15);
+            border: 1px solid rgba(0, 163, 224, .3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--tusas-blue);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            animation: cog-spin 12s linear infinite;
+        }
+
+        @keyframes cog-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .settings-header-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .settings-header-text h1 {
+            font-family: 'Orbitron', 'Inter', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .3rem;
+        }
+
+        .settings-header-text p {
+            color: rgba(255, 255, 255, .55);
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        /* ── Settings Card ──────────────────────────────── */
+        .settings-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(31, 45, 90, .09);
+            border: 1px solid #edf2f7;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-card-header {
+            padding: 1.4rem 1.8rem;
+            border-bottom: 1px solid #f0f4f8;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .settings-card-header-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .settings-card-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--tusas-navy);
+            margin: 0;
+        }
+
+        .settings-card-header p {
+            font-size: .78rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .settings-card-body {
+            padding: 1.8rem;
+        }
+
+        /* ── Form Fields ────────────────────────────────── */
+        .settings-field-group {
+            margin-bottom: 1.4rem;
+        }
+
+        .settings-field-group label {
+            display: block;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--tusas-navy);
+            margin-bottom: .45rem;
+            letter-spacing: .2px;
+        }
+
+        .settings-field-group label .field-hint {
+            font-weight: 400;
+            color: #94a3b8;
+            font-size: .75rem;
+            margin-left: .4rem;
+        }
+
+        .settings-input-wrap {
+            position: relative;
+        }
+
+        .settings-input-wrap .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: .9rem;
+            pointer-events: none;
+            transition: color .2s;
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: .72rem 1rem .72rem 2.6rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: .88rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--tusas-navy);
+            background: #f8fafc;
+            transition: all .22s ease;
+            outline: none;
+        }
+
+        .settings-input:focus {
+            border-color: var(--tusas-blue);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 163, 224, .12);
+        }
+
+        .settings-input:focus + .input-icon,
+        .settings-input-wrap:focus-within .input-icon {
+            color: var(--tusas-blue);
+        }
+
+        .settings-input::placeholder {
+            color: #cbd5e1;
+        }
+
+        /* Password toggle */
+        .pw-toggle {
+            position: absolute;
+            right: .85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: .2rem;
+            transition: color .2s;
+            line-height: 1;
+            font-size: .9rem;
+        }
+
+        .pw-toggle:hover { color: var(--tusas-navy); }
+
+        .settings-input.has-toggle {
+            padding-right: 2.8rem;
+        }
+
+        /* ── Password strength bar ──────────────────────── */
+        .pw-strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: .5rem;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .pw-strength-fill {
+            height: 100%;
+            border-radius: 2px;
+            width: 0%;
+            transition: width .3s ease, background .3s;
+        }
+
+        .pw-strength-label {
+            font-size: .72rem;
+            margin-top: .3rem;
+            font-weight: 600;
+        }
+
+        /* ── Avatar Display ─────────────────────────────── */
+        .settings-avatar-area {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            background: linear-gradient(135deg, rgba(0, 163, 224, .06) 0%, rgba(31, 45, 90, .04) 100%);
+            border-radius: 14px;
+            border: 1px solid rgba(0, 163, 224, .12);
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-avatar-big {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--tusas-blue) 0%, #0087ba 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 163, 224, .35);
+        }
+
+        .settings-avatar-info h3 {
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--tusas-navy);
+            margin: 0 0 .2rem;
+        }
+
+        .settings-avatar-info p {
+            font-size: .78rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .settings-avatar-badge {
+            margin-left: auto;
+            font-size: .62rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, .12);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, .25);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        /* ── Submit Button ──────────────────────────────── */
+        .btn-settings-save {
+            display: inline-flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .75rem 1.8rem;
+            background: linear-gradient(135deg, var(--tusas-navy) 0%, #162456 100%);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: .88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s ease;
+            letter-spacing: .3px;
+            box-shadow: 0 4px 14px rgba(31, 45, 90, .3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-settings-save::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(0, 163, 224, .15) 100%);
+            opacity: 0;
+            transition: opacity .25s;
+        }
+
+        .btn-settings-save:hover::before { opacity: 1; }
+
+        .btn-settings-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(31, 45, 90, .35);
+        }
+
+        .btn-settings-save:active {
+            transform: translateY(0);
+        }
+
+        .btn-settings-save:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Alert Toast ────────────────────────────────── */
+        .settings-toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            min-width: 320px;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(31, 45, 90, .18);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: .85rem;
+            transform: translateY(120%);
+            opacity: 0;
+            transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), opacity .3s;
+            border: 1px solid #f0f4f8;
+        }
+
+        .settings-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .settings-toast.toast-success { border-left: 4px solid #10b981; }
+        .settings-toast.toast-error   { border-left: 4px solid #ef4444; }
+
+        .toast-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon { background: rgba(16,185,129,.12); color: #10b981; }
+        .toast-error   .toast-icon { background: rgba(239,68,68,.12);   color: #ef4444; }
+
+        .toast-title {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--tusas-navy);
+            margin-bottom: .15rem;
+        }
+
+        .toast-message {
+            font-size: .78rem;
+            color: #64748b;
+            line-height: 1.45;
+        }
+
+        /* ── Divider ────────────────────────────────────── */
+        .settings-divider {
+            border: none;
+            border-top: 1px solid #f0f4f8;
+            margin: 1.5rem 0;
+        }
+
+        /* ── Security info callout ──────────────────────── */
+        .security-callout {
+            background: linear-gradient(135deg, rgba(31,45,90,.04) 0%, rgba(0,163,224,.04) 100%);
+            border: 1px solid rgba(0,163,224,.15);
+            border-left: 3px solid var(--tusas-blue);
+            border-radius: 10px;
+            padding: .9rem 1.1rem;
+            font-size: .8rem;
+            color: #475569;
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
+            margin-top: 1rem;
+        }
+
+        .security-callout i { color: var(--tusas-blue); margin-top: 2px; flex-shrink: 0; }
+
+        /* ── Spinner ────────────────────────────────────── */
+        @keyframes btn-spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: btn-spin .7s linear infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Sidebar (her zaman açık) ─────────────────── -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-drawer-header">
+            <a href="/dashboard" class="sidebar-drawer-brand">
+                <i class="fas fa-fighter-jet"></i>
+                <div class="sidebar-drawer-brand-text">
+                    <span class="brand-main">TUSAŞ LIFT UP</span>
+                    <span class="brand-sub">Sanayi Odaklı Lisans Bitirme Projeleri Programı</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar-drawer-nav">
+            <div class="sidebar-nav-label">Genel</div>
+            <a href="/dashboard" class="sidebar-nav-link">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a>
+
+            <div class="sidebar-nav-label">Araçlar</div>
+            <a href="/pdf-extract" class="sidebar-nav-link">
+                <i class="fas fa-file-pdf"></i><span>PDF Veri Çıkarıcı</span>
+            </a>
+            <a href="/data-management" class="sidebar-nav-link">
+                <i class="fas fa-database"></i><span>Proje Arşivi</span>
+            </a>
+            <a href="/reports" class="sidebar-nav-link">
+                <i class="fas fa-chart-bar"></i><span>Raporlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Yönetim</div>
+            <a href="/data-update" class="sidebar-nav-link">
+                <i class="fas fa-upload"></i><span>Veritabanı Güncelleme</span>
+            </a>
+
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/settings" class="sidebar-nav-link active-link">
+                <i class="fas fa-cog"></i><span>Ayarlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Notebooks</div>
+            <a href="/notebooks" class="sidebar-nav-link">
+                <i class="fas fa-book-open"></i><span>Notebooks</span>
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- ── Push Content Wrapper ──────────────────────── -->
+    <div class="sidebar-push-content" id="pushContent">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark bg-gradient shadow-sm">
+            <div class="container-fluid px-4">
+                <div class="navbar-page-header">
+                    <span class="navbar-page-icon"><i class="fas fa-cog"></i></span>
+                    <div>
+                        <h1 class="navbar-page-title">Ayarlar</h1>
+                        <span class="navbar-page-subtitle">Sistem</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="navbar-clock" id="navClock"></span>
+                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis"
+                        target="_blank" rel="noopener noreferrer" title="GitHub Reposu" class="navbar-github-btn">
+                        <i class="fab fa-github"></i>
+                        <span class="d-none d-md-inline">GitHub</span>
+                    </a>
+                    <div class="dropdown">
+                        <button class="navbar-user-btn" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" aria-label="Hesap menüsü" id="navUserBtn">
+                            <i class="fas fa-user-shield"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end navbar-user-menu" aria-labelledby="navUserBtn">
+                            <div class="navbar-user-card">
+                                <div class="navbar-user-card-avatar"><i class="fas fa-user-shield"></i></div>
+                                <div class="navbar-user-card-info">
+                                    <span class="navbar-user-card-name" id="navUserName">Admin</span>
+                                    <span class="navbar-user-card-email" id="navUserEmail">—</span>
+                                </div>
+                            </div>
+                            <div class="navbar-user-menu-actions">
+                                <a href="/settings" class="navbar-user-menu-link">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Hesap Ayarları</span>
+                                </a>
+                                <button class="navbar-user-logout" id="logoutBtn" type="button">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Çıkış Yap</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid px-4 my-5 page-fade">
+
+            <!-- Page Header -->
+            <div class="settings-page-header mb-4">
+                <div class="settings-header-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="settings-header-text">
+                    <h1>Hesap Ayarları</h1>
+                    <p>Kullanıcı adınızı, e-posta adresinizi ve şifrenizi bu alandan güncelleyebilirsiniz.</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Sol sütun: Profil Bilgileri -->
+                <div class="col-lg-7">
+
+                    <!-- Kullanıcı Profil Kartı -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-header-icon"
+                                style="background:rgba(0,163,224,.1);color:var(--tusas-blue);">
+                                <i class="fas fa-user-edit"></i>
+                            </div>
+                            <div>
+                                <h2>Profil Bilgileri</h2>
+                                <p>Kullanıcı adı ve e-posta adresinizi güncelleyin</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+
+                            <!-- Mevcut kullanıcı bilgisi gösterimi -->
+                            <div class="settings-avatar-area">
+                                <div class="settings-avatar-big">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div class="settings-avatar-info">
+                                    <h3 id="currentDisplayName">—</h3>
+                                    <p id="currentDisplayEmail">—</p>
+                                </div>
+                                <span class="settings-avatar-badge">Admin</span>
+                            </div>
+
+                            <form id="profileForm" novalidate>
+                                <!-- Kullanıcı Adı -->
+                                <div class="settings-field-group">
+                                    <label for="usernameInput">
+                                        Kullanıcı Adı
+                                        <span class="field-hint">— boş bırakılırsa değiştirilmez</span>
+                                    </label>
+                                    <div class="settings-input-wrap">
+                                        <input
+                                            type="text"
+                                            id="usernameInput"
+                                            class="settings-input"
+                                            placeholder="Yeni kullanıcı adı girin"
+                                            autocomplete="username"
+                                            spellcheck="false"
+                                        >
+                                        <i class="fas fa-at input-icon"></i>
+                                    </div>
+                                </div>
+
+                                <!-- E-posta -->
+                                <div class="settings-field-group">
+                                    <label for="emailInput">
+                                        E-posta Adresi
+                                        <span class="field-hint">— boş bırakılırsa değiştirilmez</span>
+                                    </label>
+                                    <div class="settings-input-wrap">
+                                        <input
+                                            type="email"
+                                            id="emailInput"
+                                            class="settings-input"
+                                            placeholder="Yeni e-posta adresinizi girin"
+                                            autocomplete="email"
+                                            spellcheck="false"
+                                        >
+                                        <i class="fas fa-envelope input-icon"></i>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-settings-save" id="profileSaveBtn">
+                                    <i class="fas fa-check"></i>
+                                    Profil Bilgilerini Kaydet
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Şifre Kartı -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-header-icon"
+                                style="background:rgba(227,6,19,.08);color:#E30613;">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div>
+                                <h2>Şifre Değiştir</h2>
+                                <p>Hesap güvenliğiniz için güçlü bir şifre kullanın</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <form id="passwordForm" novalidate>
+                                <!-- Yeni Şifre -->
+                                <div class="settings-field-group">
+                                    <label for="newPasswordInput">Yeni Şifre</label>
+                                    <div class="settings-input-wrap">
+                                        <input
+                                            type="password"
+                                            id="newPasswordInput"
+                                            class="settings-input has-toggle"
+                                            placeholder="En az 6 karakter"
+                                            autocomplete="new-password"
+                                        >
+                                        <i class="fas fa-lock input-icon"></i>
+                                        <button type="button" class="pw-toggle" id="toggleNewPw" tabindex="-1" title="Şifreyi Göster">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Şifre güç göstergesi -->
+                                    <div class="pw-strength-bar">
+                                        <div class="pw-strength-fill" id="pwStrengthFill"></div>
+                                    </div>
+                                    <div class="pw-strength-label" id="pwStrengthLabel" style="color:#94a3b8;"></div>
+                                </div>
+
+                                <!-- Yeni Şifre (Tekrar) -->
+                                <div class="settings-field-group">
+                                    <label for="confirmPasswordInput">Yeni Şifre (Tekrar)</label>
+                                    <div class="settings-input-wrap">
+                                        <input
+                                            type="password"
+                                            id="confirmPasswordInput"
+                                            class="settings-input has-toggle"
+                                            placeholder="Şifrenizi tekrar girin"
+                                            autocomplete="new-password"
+                                        >
+                                        <i class="fas fa-lock-open input-icon"></i>
+                                        <button type="button" class="pw-toggle" id="toggleConfirmPw" tabindex="-1" title="Şifreyi Göster">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="pw-strength-label" id="pwMatchLabel" style="color:#94a3b8;margin-top:.35rem;"></div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="submit" class="btn-settings-save" id="passwordSaveBtn"
+                                        style="background:linear-gradient(135deg,#c7000c 0%,#9b0010 100%);box-shadow:0 4px 14px rgba(227,6,19,.3);">
+                                        <i class="fas fa-key"></i>
+                                        Şifreyi Değiştir
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sağ sütun: Bilgi Paneli -->
+                <div class="col-lg-5">
+
+                    <!-- Oturum Bilgisi -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-header-icon"
+                                style="background:rgba(245,158,11,.1);color:#f59e0b;">
+                                <i class="fas fa-id-badge"></i>
+                            </div>
+                            <div>
+                                <h2>Oturum Bilgileri</h2>
+                                <p>Mevcut token ve kimlik durumu</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <div class="d-flex flex-column gap-3">
+
+                                <div class="d-flex align-items-center justify-content-between py-2"
+                                    style="border-bottom:1px solid #f0f4f8;">
+                                    <span style="font-size:.82rem;color:#64748b;font-weight:500;">Kullanıcı ID</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:var(--tusas-navy);" id="infoUserId">—</span>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between py-2"
+                                    style="border-bottom:1px solid #f0f4f8;">
+                                    <span style="font-size:.82rem;color:#64748b;font-weight:500;">Kullanıcı Adı</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:var(--tusas-navy);" id="infoUsername">—</span>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between py-2"
+                                    style="border-bottom:1px solid #f0f4f8;">
+                                    <span style="font-size:.82rem;color:#64748b;font-weight:500;">E-posta</span>
+                                    <span style="font-size:.82rem;font-weight:700;color:var(--tusas-navy);" id="infoEmail">—</span>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between py-2"
+                                    style="border-bottom:1px solid #f0f4f8;">
+                                    <span style="font-size:.82rem;color:#64748b;font-weight:500;">Token Durumu</span>
+                                    <span class="settings-avatar-badge" id="infoTokenStatus">Aktif</span>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between py-2">
+                                    <span style="font-size:.82rem;color:#64748b;font-weight:500;">Token Bitiş</span>
+                                    <span style="font-size:.78rem;font-weight:600;color:#f59e0b;" id="infoTokenExp">—</span>
+                                </div>
+
+                            </div>
+
+                            <hr class="settings-divider">
+
+                            <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold py-2"
+                                id="logoutBtn2" type="button">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Oturumu Sonlandır</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Güvenlik İpuçları -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-header-icon"
+                                style="background:rgba(16,185,129,.1);color:#10b981;">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h2>Güvenlik İpuçları</h2>
+                                <p>Hesabınızı güvende tutmak için</p>
+                            </div>
+                        </div>
+                        <div class="settings-card-body">
+                            <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.85rem;">
+                                <li style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:#475569;">
+                                    <i class="fas fa-check-circle" style="color:#10b981;margin-top:2px;flex-shrink:0;"></i>
+                                    <span>Şifrenizi <strong>düzenli aralıklarla</strong> değiştirin ve aynı şifreyi birden fazla yerde kullanmayın.</span>
+                                </li>
+                                <li style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:#475569;">
+                                    <i class="fas fa-check-circle" style="color:#10b981;margin-top:2px;flex-shrink:0;"></i>
+                                    <span>En az <strong>8 karakter</strong>, büyük/küçük harf ve rakam içeren şifreler tercih edin.</span>
+                                </li>
+                                <li style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:#475569;">
+                                    <i class="fas fa-check-circle" style="color:#10b981;margin-top:2px;flex-shrink:0;"></i>
+                                    <span>İşiniz bittiğinde <strong>oturumunuzu kapatmayı</strong> unutmayın.</span>
+                                </li>
+                                <li style="display:flex;align-items:flex-start;gap:.7rem;font-size:.82rem;color:#475569;">
+                                    <i class="fas fa-check-circle" style="color:#10b981;margin-top:2px;flex-shrink:0;"></i>
+                                    <span>E-posta adresinizi <strong>güncel tutun</strong> — kritik bildirimleri kaçırmamak için.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+
+    </div><!-- /sidebar-push-content -->
+
+    <!-- Toast Notification -->
+    <div class="settings-toast" id="settingsToast">
+        <div class="toast-icon">
+            <i class="fas fa-check" id="toastIcon"></i>
+        </div>
+        <div>
+            <div class="toast-title" id="toastTitle">İşlem tamamlandı</div>
+            <div class="toast-message" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/shared/dashboard.js?v=3"></script>
+    <script src="/static/settings/settings.js"></script>
+</body>
+
+</html>

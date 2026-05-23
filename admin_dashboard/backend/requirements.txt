@@ -1,0 +1,31 @@
+# ─── Admin Backend Bağımlılıkları ──────────────────────────────────────────────
+# Ana backend (similarity_analysis_app/backend) bağımlılıklarından türetilmiştir.
+
+# Web Framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Dosya yükleme (Werkzeug — secure_filename için)
+werkzeug>=3.0.0
+
+# PDF İşleme (data_extract.py için)
+pymupdf>=1.24.0          # fitz → PyMuPDF
+
+# CSV / Veri Analizi (analysis.py için)
+pandas>=2.2.0
+
+# Ortam Değişkenleri
+python-dotenv>=1.0.0
+
+# Pydantic (FastAPI ile birlikte gelir ama pin edelim)
+pydantic>=2.7.0
+
+# Multipart form desteği (UploadFile için gerekli)
+python-multipart>=0.0.9
+
+# Veritabanı Sürücüsü (PostgreSQL)
+psycopg2-binary>=2.9.0
+
+# Kimlik Doğrulama — JWT + bcrypt (doğrudan, passlib olmadan)
+PyJWT>=2.8.0
+bcrypt>=4.0.0

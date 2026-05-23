@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="LIFT UP Proje Benzerlik Analizi — SBERT ve pgvector tabanlı semantik proje benzerlik analizi sistemi. Proje başlığı ve özetini girerek mevcut projelerle benzerlik analizi yapın.">
+    <meta name="keywords" content="LIFT UP, TÜBİTAK, proje benzerlik analizi, SBERT, semantik analiz, pgvector">
+    <meta name="author" content="LIFT UP Project Team">
+    <title>Prestige AI</title>
+    <link rel="icon" type="image/png" href="assets/app_logo.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Anti-FOUC: set theme before first paint -->
+    <script>
+        (function () {
+            var saved = localStorage.getItem('lift-theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+        })();
+    </script>
+</head>
+
+<body>
+
+    <!-- Decorative background mesh -->
+    <div class="bg-mesh" aria-hidden="true">
+        <div class="bg-mesh__blob bg-mesh__blob--1"></div>
+        <div class="bg-mesh__blob bg-mesh__blob--2"></div>
+        <div class="bg-mesh__blob bg-mesh__blob--3"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- HEADER                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <header class="header" id="header">
+        <div class="header__container">
+            <div class="header__brand">
+                <a href="#" class="header__logo" id="header-logo" aria-label="TUSAŞ Anasayfa">
+                    <img src="assets/tusas_logo.png" alt="Türk Havacılık ve Uzay Sanayii"
+                        class="header__logo-img">
+                </a>
+                <div class="header__divider" aria-hidden="true"></div>
+                <div class="header__text">
+                    <h1 class="header__title">
+                        <span class="header__title-tusas">TUSAŞ</span>
+                        <span class="header__title-lift">LIFT UP</span>
+                    </h1>
+                    <p class="header__subtitle">Sanayi Odaklı Lisans Bitirme Projeleri Programı</p>
+                </div>
+            </div>
+
+            <!-- Right side: nav tabs + theme toggle -->
+            <div class="header__right">
+                <nav class="header__nav" id="header-nav" role="tablist" aria-label="Sayfa seçimi">
+                    <button type="button" class="nav-tab active" id="tab-analyze"
+                        data-view="analyze" role="tab" aria-selected="true" aria-controls="analyze-view">
+                        <span class="nav-tab__label">Benzerlik Analizi</span>
+                    </button>
+                    <button type="button" class="nav-tab" id="tab-history"
+                        data-view="history" role="tab" aria-selected="false" aria-controls="history-view">
+                        <span class="nav-tab__label">Proje Geçmişi</span>
+                    </button>
+                    <a href="https://liftup.tusas.com/" target="_blank" rel="noopener noreferrer"
+                        class="nav-tab nav-tab--link">
+                        <span class="nav-tab__label">Program</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                    </a>
+                </nav>
+
+                <div class="header__sep" aria-hidden="true"></div>
+
+                <button class="theme-toggle" id="theme-toggle" aria-label="Karanlık modu aç/kapat" title="Karanlık mod">
+                    <svg class="theme-toggle__icon theme-toggle__moon" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <svg class="theme-toggle__icon theme-toggle__sun" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT                                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <main class="main" id="main-content">
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- VIEW: BENZERLİK ANALİZİ (DEFAULT)                          -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div class="view view--active" id="analyze-view" role="tabpanel" aria-labelledby="tab-analyze">
+
+        <!-- ─── Hero + Form ─────────────────────────────────────── -->
+        <section class="content-grid" id="content-section">
+            <div class="content-grid__container">
+
+                <!-- Compact Hero with brand text -->
+                <div class="hero" id="hero">
+                    <h2 class="hero__title">
+                        <span class="hero__title-main">LIFT UP</span>
+                        <span class="hero__title-accent">Proje Benzerlik Analizi</span>
+                    </h2>
+                    <p class="hero__desc">
+                        Proje başlığı, özeti ve anahtar kelimelerinizi girin — yapay zeka
+                        destekli sistemimiz mevcut projelerle anlamsal benzerlik analizi yapsın.
+                    </p>
+                </div>
+
+                <!-- Analysis Form -->
+                <div class="form-panel" id="form-section">
+                    <div class="form-panel__header">
+                        <div class="form-panel__icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="form-panel__title">Proje Analiz Formu</h3>
+                            <p class="form-panel__subtitle">Analiz etmek istediğiniz projenin bilgilerini girin</p>
+                        </div>
+                    </div>
+
+                    <form class="form" id="analyze-form" novalidate>
+                        <!-- Proje Başlığı -->
+                        <div class="form__group form__group--full" id="group-title">
+                            <label class="form__label" for="project-title">
+                                <span class="form__label-icon">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+                                    </svg>
+                                </span>
+                                Proje Başlığı
+                                <span class="form__label-required">*</span>
+                            </label>
+                            <input type="text" class="form__input" id="project-title" name="title"
+                                placeholder="Ör: Hava Muharebesinde Otonom Savunma Algoritmasının Geliştirilmesi"
+                                minlength="3" maxlength="500" required autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="title-error"></span>
+                                <span class="form__counter"><span id="title-count">0</span>/500</span>
+                            </div>
+                        </div>
+
+                        <!-- Proje Özeti -->
+                        <div class="form__group form__group--full" id="group-abstract">
+                            <label class="form__label" for="project-abstract">
+                                <span class="form__label-icon">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+                                    </svg>
+                                </span>
+                                Proje Özeti
+                                <span class="form__label-required">*</span>
+                            </label>
+                            <textarea class="form__textarea" id="project-abstract" name="abstract"
+                                placeholder="Projenizin ayrıntılı özetini buraya yazın..." minlength="10"
+                                maxlength="5000" required rows="4"></textarea>
+                            <div class="form__meta">
+                                <span class="form__error" id="abstract-error"></span>
+                                <span class="form__counter"><span id="abstract-count">0</span>/5000</span>
+                            </div>
+                        </div>
+
+                        <!-- Anahtar Kelimeler -->
+                        <div class="form__group" id="group-keywords">
+                            <div class="form__label-row">
+                                <label class="form__label" for="project-keywords">
+                                    <span class="form__label-icon">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+                                        </svg>
+                                    </span>
+                                    Anahtar Kelimeler
+                                    <span class="form__label-required">*</span>
+                                </label>
+                                <button type="button" class="ai-suggest-btn" id="ai-suggest-btn" hidden
+                                    aria-label="AI ile anahtar kelime öner">
+                                    <span class="ai-suggest-btn__content" id="ai-suggest-content">
+                                        <svg class="ai-suggest-btn__icon" width="14" height="14" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" />
+                                            <path d="M19 14l.7 2.1L22 17l-2.3.9L19 20l-.7-2.1L16 17l2.3-.9L19 14z" />
+                                        </svg>
+                                        AI Önerisi
+                                    </span>
+                                    <span class="ai-suggest-btn__loading" id="ai-suggest-loading" hidden>
+                                        <span class="ai-suggest-btn__spinner"></span>
+                                        Öneri alınıyor...
+                                    </span>
+                                </button>
+                            </div>
+                            <input type="text" class="form__input" id="project-keywords" name="keywords"
+                                placeholder="Ör: bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları"
+                                minlength="3" maxlength="1000" required autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="keywords-error"></span>
+                                <span class="form__counter"><span id="keywords-count">0</span>/1000</span>
+                            </div>
+                            <div class="ai-suggest-msg" id="ai-suggest-msg" hidden></div>
+                        </div>
+
+                        <!-- Sonuç Sayısı (top_k) -->
+                        <div class="form__group" id="group-topk">
+                            <label class="form__label" for="project-topk">
+                                <span class="form__label-icon">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+                                    </svg>
+                                </span>
+                                Sonuç Sayısı
+                            </label>
+                            <input type="number" class="form__input" id="project-topk" name="top_k"
+                                placeholder="10" min="1" max="50" autocomplete="off">
+                            <div class="form__meta">
+                                <span class="form__error" id="topk-error"></span>
+                                <span class="form__counter form__counter--hint">1 – 50 arası bir değer</span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="form__submit-wrap">
+                            <button type="submit" class="form__submit" id="submit-btn">
+                                <span class="form__submit-content" id="submit-content">
+                                    <svg class="form__submit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.35-4.35" />
+                                    </svg>
+                                    Analiz Et
+                                </span>
+                                <span class="form__submit-loading" id="submit-loading">
+                                    <span class="spinner"></span>
+                                    Analiz Ediliyor...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ─── Results Section ──────────────────────────────── -->
+        <section class="results-section" id="results-section" style="display: none;">
+            <div class="results-section__container">
+
+                <!-- Query Summary -->
+                <div class="query-summary" id="query-summary">
+                    <h3 class="query-summary__heading">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                        Analiz Edilen Proje
+                    </h3>
+                    <div class="query-summary__fields">
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+                                </svg>
+                                Başlık
+                            </span>
+                            <p class="query-summary__value" id="query-title"></p>
+                        </div>
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+                                </svg>
+                                Özet
+                            </span>
+                            <p class="query-summary__value query-summary__value--abstract" id="query-abstract"></p>
+                        </div>
+                        <div class="query-summary__field">
+                            <span class="query-summary__label">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+                                </svg>
+                                Anahtar Kelimeler
+                            </span>
+                            <p class="query-summary__value" id="query-keywords"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Toolbar: Top-K Re-query + Year Filter + Sort Order -->
+                <div class="results-toolbar" id="results-toolbar">
+                    <!-- Top-K -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label" for="results-topk">
+                            <span class="results-toolbar__label-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
+                                </svg>
+                            </span>
+                            Sonuç Sayısı
+                        </label>
+                        <div class="results-toolbar__input-group">
+                            <input type="number" id="results-topk" class="results-toolbar__input" min="1" max="50"
+                                placeholder="5">
+                            <button type="button" id="results-topk-btn" class="results-toolbar__btn"
+                                title="Sonuç sayısını güncelle" aria-label="Sonuç sayısını güncelle">
+                                <span class="results-toolbar__btn-content" id="results-topk-btn-content">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 2v6h-6" />
+                                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                                        <path d="M3 22v-6h6" />
+                                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                                    </svg>
+                                </span>
+                                <span class="results-toolbar__btn-loading" id="results-topk-btn-loading" hidden>
+                                    <span class="results-toolbar__spinner"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Year Filter -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label" for="results-year">
+                            <span class="results-toolbar__label-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </span>
+                            Yıl Filtresi
+                        </label>
+                        <select id="results-year" class="results-toolbar__select">
+                            <option value="">Tüm Yıllar</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="results-toolbar__field">
+                        <label class="results-toolbar__label">
+                            <span class="results-toolbar__label-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>
+                                </svg>
+                            </span>
+                            Sıralama
+                        </label>
+                        <div class="results-toolbar__sort" role="group" aria-label="Sıralama yönü">
+                            <button type="button" class="results-toolbar__sort-btn active" id="sort-desc"
+                                data-sort="desc" aria-pressed="true">
+                                ↓ En Benzer Önce
+                            </button>
+                            <button type="button" class="results-toolbar__sort-btn" id="sort-asc" data-sort="asc"
+                                aria-pressed="false">
+                                ↑ En Az Benzer Önce
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Header -->
+                <div class="results__header">
+                    <h3 class="results__title">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                        </svg>
+                        Benzer Projeler
+                    </h3>
+                    <span class="results__count" id="results-count"></span>
+                </div>
+
+                <!-- Project Cards Container -->
+                <div class="results__cards" id="results-cards">
+                    <!-- Cards will be dynamically rendered here -->
+                </div>
+
+                <!-- New Analysis Button -->
+                <div class="results__actions">
+                    <button type="button" class="btn-new-analysis" id="btn-new-analysis">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        Yeni Analiz
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── Error Section ────────────────────────────────── -->
+        <section class="error-section" id="error-section" style="display: none;">
+            <div class="error-section__container">
+                <div class="error__icon">⚠️</div>
+                <h3 class="error__title" id="error-title">Bir Hata Oluştu</h3>
+                <p class="error__message" id="error-message"></p>
+                <button type="button" class="btn-retry" id="btn-retry">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2v6h-6" />
+                        <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                        <path d="M3 22v-6h6" />
+                        <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                    </svg>
+                    Tekrar Dene
+                </button>
+            </div>
+        </section>
+
+        </div><!-- /#analyze-view -->
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- VIEW: PROJE GEÇMİŞİ                                        -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div class="view" id="history-view" role="tabpanel" aria-labelledby="tab-history" hidden>
+
+            <section class="history-section">
+                <div class="history-section__container">
+
+                    <!-- Hero -->
+                    <div class="history-hero">
+                        <h2 class="history-hero__title">
+                            <span class="history-hero__title-main">Proje</span>
+                            <span class="history-hero__title-accent">Geçmişi</span>
+                        </h2>
+                        <p class="history-hero__desc">
+                            LIFT UP programındaki tüm projeleri görüntüleyin, arama yapın ve detayları inceleyin.
+                        </p>
+                    </div>
+
+                    <!-- Filter Toolbar -->
+                    <div class="history-toolbar" id="history-toolbar">
+
+                        <!-- Search -->
+                        <div class="history-toolbar__field history-toolbar__field--search">
+                            <label class="history-toolbar__label" for="history-search">
+                                <span class="history-toolbar__label-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"/>
+                                        <path d="m21 21-4.35-4.35"/>
+                                    </svg>
+                                </span>
+                                Ara
+                            </label>
+                            <div class="history-search">
+                                <svg class="history-search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.35-4.35"/>
+                                </svg>
+                                <input type="text" class="history-search__input" id="history-search"
+                                    placeholder="Başlık, özet veya anahtar kelime ile ara..."
+                                    autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Year Filter -->
+                        <div class="history-toolbar__field">
+                            <label class="history-toolbar__label" for="history-year">
+                                <span class="history-toolbar__label-icon">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                </span>
+                                Yıl
+                            </label>
+                            <select id="history-year" class="history-toolbar__select">
+                                <option value="">Tüm Yıllar</option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters -->
+                        <div class="history-toolbar__field history-toolbar__field--actions">
+                            <span class="history-toolbar__label">&nbsp;</span>
+                            <button type="button" class="history-clear-btn" id="history-clear" disabled
+                                title="Filtreleri temizle">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                                Temizle
+                            </button>
+                        </div>
+
+                        <!-- Results Badge -->
+                        <span class="history-toolbar__badge" id="history-badge">— proje</span>
+                    </div>
+
+                    <!-- Cards Container -->
+                    <div class="history-cards" id="history-cards">
+                        <!-- Loading state -->
+                        <div class="history-loading" id="history-loading">
+                            <span class="history-loading__spinner"></span>
+                            <span class="history-loading__text">Projeler yükleniyor...</span>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="history-pagination" id="history-pagination" hidden>
+                        <span class="history-pagination__info" id="history-page-info">—</span>
+                        <div class="history-pagination__btns">
+                            <button type="button" class="history-page-btn" id="history-prev" disabled>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"/>
+                                </svg>
+                                Önceki
+                            </button>
+                            <span class="history-pagination__pages" id="history-pages"></span>
+                            <button type="button" class="history-page-btn" id="history-next" disabled>
+                                Sonraki
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Project Detail Modal -->
+            <div class="history-modal" id="history-modal" hidden role="dialog"
+                aria-labelledby="history-modal-title" aria-modal="true">
+                <div class="history-modal__backdrop" id="history-modal-backdrop"></div>
+                <div class="history-modal__dialog" role="document">
+                    <div class="history-modal__header">
+                        <div class="history-modal__heading">
+                            <span class="history-modal__icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </span>
+                            <h3 class="history-modal__title" id="history-modal-title">Proje Detayları</h3>
+                        </div>
+                        <button type="button" class="history-modal__close" id="history-modal-close"
+                            aria-label="Kapat">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="history-modal__body">
+                        <div class="history-modal__meta">
+                            <span class="history-modal__year" id="history-modal-year"></span>
+                            <span class="history-modal__id">Proje ID: <strong id="history-modal-id"></strong></span>
+                        </div>
+
+                        <h4 class="history-modal__project-title" id="history-modal-project-title"></h4>
+
+                        <section class="history-modal__section">
+                            <h5 class="history-modal__section-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="17" y1="10" x2="3" y2="10"/>
+                                    <line x1="21" y1="6" x2="3" y2="6"/>
+                                    <line x1="21" y1="14" x2="3" y2="14"/>
+                                    <line x1="17" y1="18" x2="3" y2="18"/>
+                                </svg>
+                                Özet
+                            </h5>
+                            <p class="history-modal__abstract" id="history-modal-abstract"></p>
+                        </section>
+
+                        <section class="history-modal__section">
+                            <h5 class="history-modal__section-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                                </svg>
+                                Anahtar Kelimeler
+                            </h5>
+                            <div class="history-modal__keywords" id="history-modal-keywords"></div>
+                        </section>
+                    </div>
+
+                    <div class="history-modal__footer">
+                        <button type="button" class="history-modal__btn" id="history-modal-close-btn">Kapat</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#history-view -->
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- FOOTER                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <footer class="footer" id="footer">
+        <div class="footer__container">
+
+            <!-- ─── Main Grid ───────────────────────────── -->
+            <div class="footer__grid">
+
+                <!-- Brand Column -->
+                <div class="footer__col footer__col--brand">
+                    <div class="footer__logo-wrap">
+                        <img src="assets/app_logo.png" alt="Prestige AI Logosu" class="footer__logo-img">
+                    </div>
+                    <p class="footer__brand-name">Prestige AI</p>
+                    <p class="footer__brand-desc">
+                        TUSAŞ iş birliğiyle geliştirilen yapay zeka destekli proje benzerlik analizi sistemi.
+                    </p>
+                </div>
+
+                <!-- System Column -->
+                <div class="footer__col">
+                    <h4 class="footer__col-title">Özellikler</h4>
+                    <ul class="footer__list">
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Anlamsal Benzerlik Analizi
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Proje Geçmişi &amp; Arama
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            AI Anahtar Kelime Önerisi
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Çoklu Model Karşılaştırma
+                        </li>
+                        <li class="footer__list-item">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            5 Seviyeli Sınıflandırma
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Column -->
+                <div class="footer__col">
+                    <h4 class="footer__col-title">İletişim</h4>
+                    <ul class="footer__list">
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </span>
+                            <a href="mailto:tusas.prestigeai@gmail.com" class="footer__contact-link">
+                                tusas.prestigeai@gmail.com
+                            </a>
+                        </li>
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                            </span>
+                            <a href="mailto:liftup@tai.com.tr" class="footer__contact-link">
+                                liftup@tai.com.tr
+                            </a>
+                        </li>
+                        <li class="footer__contact-item">
+                            <span class="footer__contact-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                            </span>
+                            <span class="footer__contact-nowrap">TUSAŞ — Türk Havacılık ve Uzay Sanayii A.Ş.</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div><!-- /.footer__grid -->
+
+            <!-- ─── Bottom Bar ──────────────────────────── -->
+            <div class="footer__bottom">
+                <p class="footer__copyright footer__copyright--center">
+                    &copy; 2026 TUSAŞ LIFT UP | Prestige AI Ekibi. Tüm hakları saklıdır.
+                </p>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>

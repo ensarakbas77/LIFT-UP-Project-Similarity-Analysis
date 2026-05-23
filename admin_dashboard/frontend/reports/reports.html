@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prestige AI - Raporlar & İstatistikler</title>
+    <meta name="description" content="LIFT UP Admin Paneli detaylı istatistikler ve raporlama aracı.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/shared/style.css">
+    <link rel="stylesheet" href="/static/shared/dashboard.css?v=2">
+    <link rel="icon" type="image/png" href="/static/assets/app_logo.png">
+    <style>
+        /* ── Page Header ────────────────────────────── */
+        .reports-page-header {
+            background: linear-gradient(135deg, var(--tusas-navy) 0%, #0d1b3e 60%, #1a2d5a 100%);
+            border-radius: 20px;
+            padding: 2.2rem 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(31, 45, 90, .25);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .reports-page-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 85% 50%, rgba(0, 163, 224, .18) 0%, transparent 65%);
+        }
+
+        .reports-header-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            background: rgba(0, 163, 224, .15);
+            border: 1px solid rgba(0, 163, 224, .3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            color: var(--tusas-blue);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .reports-header-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .reports-header-text h1 {
+            font-family: 'Orbitron', 'Inter', sans-serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .3rem;
+        }
+
+        .reports-header-text p {
+            color: rgba(255, 255, 255, .55);
+            font-size: .88rem;
+            margin: 0;
+        }
+
+        /* ── Stat Cards ─────────────────────────────── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        @media (max-width: 992px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 576px) { .stat-row { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.4rem 1.6rem;
+            box-shadow: 0 4px 20px rgba(31, 45, 90, .08);
+            border: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            transition: all .25s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(31, 45, 90, .14);
+        }
+
+        .stat-card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--tusas-navy);
+            line-height: 1;
+        }
+
+        .stat-card-label {
+            font-size: .72rem;
+            color: #94a3b8;
+            margin-top: .25rem;
+            font-weight: 500;
+        }
+
+        /* ── Report Cards ───────────────────────────── */
+        .report-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(31, 45, 90, .07);
+            border: 1px solid #edf2f7;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .report-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.3rem 1.6rem;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        .report-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--tusas-navy);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .report-card-body {
+            padding: 1.4rem 1.6rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .report-chart-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 280px;
+        }
+
+        /* ── Download Btn ───────────────────────────── */
+        .btn-dl {
+            font-size: .75rem;
+            font-weight: 600;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            padding: .3rem .8rem;
+            border-radius: 8px;
+            transition: all .2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .btn-dl:hover {
+            background: var(--tusas-gray);
+            color: var(--tusas-navy);
+            border-color: #cbd5e1;
+        }
+
+        /* ── Keyword bars ───────────────────────────── */
+        .kw-bar-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .65rem;
+        }
+
+        .kw-bar-label {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--tusas-navy);
+            min-width: 130px;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        .kw-bar-track {
+            flex: 1;
+            height: 10px;
+            background: #f0f4f8;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .kw-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--tusas-blue) 0%, #00c6ff 100%);
+            width: 0%;
+            transition: width .8s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .kw-bar-count {
+            font-size: .72rem;
+            font-weight: 700;
+            color: #64748b;
+            min-width: 28px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* ── Loading skeleton ───────────────────────── */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to   { background-position: -200% 0; }
+        }
+
+        /* ── Data source badge ──────────────────────── */
+        .data-source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .68rem;
+            font-weight: 600;
+            padding: .25rem .65rem;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, .1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, .2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar (her zaman açık) -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-drawer-header">
+            <a href="/dashboard" class="sidebar-drawer-brand">
+                <i class="fas fa-fighter-jet"></i>
+                <div class="sidebar-drawer-brand-text">
+                    <span class="brand-main">TUSAŞ LIFT UP</span>
+                    <span class="brand-sub">Sanayi Odaklı Lisans Bitirme Projeleri Programı</span>
+                </div>
+            </a>
+        </div>
+        <nav class="sidebar-drawer-nav">
+            <div class="sidebar-nav-label">Genel</div>
+            <a href="/dashboard" class="sidebar-nav-link">
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+            </a>
+            <div class="sidebar-nav-label">Araçlar</div>
+            <a href="/pdf-extract" class="sidebar-nav-link">
+                <i class="fas fa-file-pdf"></i><span>PDF Veri Çıkarıcı</span>
+            </a>
+            <a href="/data-management" class="sidebar-nav-link">
+                <i class="fas fa-database"></i><span>Proje Arşivi</span>
+            </a>
+            <a href="/reports" class="sidebar-nav-link active-link">
+                <i class="fas fa-chart-bar"></i><span>Raporlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Yönetim</div>
+            <a href="/data-update" class="sidebar-nav-link">
+                <i class="fas fa-upload"></i><span>Veritabanı Güncelleme</span>
+            </a>
+
+            <div class="sidebar-nav-label">Sistem</div>
+            <a href="/settings" class="sidebar-nav-link">
+                <i class="fas fa-cog"></i><span>Ayarlar</span>
+            </a>
+
+            <div class="sidebar-nav-label">Notebooks</div>
+            <a href="/notebooks" class="sidebar-nav-link">
+                <i class="fas fa-book-open"></i><span>Notebooks</span>
+            </a>
+
+        </nav>
+    </aside>
+
+    <!-- Push Content -->
+    <div class="sidebar-push-content" id="pushContent">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark bg-gradient shadow-sm">
+            <div class="container-fluid px-4">
+                <div class="navbar-page-header">
+                    <span class="navbar-page-icon"><i class="fas fa-chart-bar"></i></span>
+                    <div>
+                        <h1 class="navbar-page-title">Raporlar &amp; İstatistikler</h1>
+                        <span class="navbar-page-subtitle">Araçlar</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="navbar-clock" id="navClock"></span>
+                    <a href="https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis"
+                        target="_blank" rel="noopener noreferrer" title="GitHub Reposu" class="navbar-github-btn">
+                        <i class="fab fa-github"></i>
+                        <span class="d-none d-md-inline">GitHub</span>
+                    </a>
+                    <div class="dropdown">
+                        <button class="navbar-user-btn" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" aria-label="Hesap menüsü" id="navUserBtn">
+                            <i class="fas fa-user-shield"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end navbar-user-menu" aria-labelledby="navUserBtn">
+                            <div class="navbar-user-card">
+                                <div class="navbar-user-card-avatar"><i class="fas fa-user-shield"></i></div>
+                                <div class="navbar-user-card-info">
+                                    <span class="navbar-user-card-name" id="navUserName">Admin</span>
+                                    <span class="navbar-user-card-email" id="navUserEmail">—</span>
+                                </div>
+                            </div>
+                            <div class="navbar-user-menu-actions">
+                                <a href="/settings" class="navbar-user-menu-link">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Hesap Ayarları</span>
+                                </a>
+                                <button class="navbar-user-logout" id="logoutBtn" type="button">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Çıkış Yap</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container-fluid px-4 my-5 page-fade">
+
+            <!-- Page Header -->
+            <div class="reports-page-header">
+                <div class="reports-header-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="reports-header-text">
+                    <h1>Raporlar &amp; İstatistikler</h1>
+                    <p>Veritabanındaki proje verileri üzerinden hesaplanan gerçek zamanlı analizler.</p>
+                </div>
+            </div>
+
+            <!-- ── Stat Cards ─────────────────────────────────── -->
+            <div class="stat-row mb-4">
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(0,163,224,.1);color:var(--tusas-blue);">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statTotal">—</div>
+                        <div class="stat-card-label">Toplam Proje</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(245,158,11,.1);color:#f59e0b;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statYears">—</div>
+                        <div class="stat-card-label">Dönem (Yıl)</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(16,185,129,.1);color:#10b981;">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statKeywords">—</div>
+                        <div class="stat-card-label">Benzersiz Anahtar Kelime</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon" style="background:rgba(139,92,246,.1);color:#8b5cf6;">
+                        <i class="fas fa-align-left"></i>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" id="statAvgAbstract">—</div>
+                        <div class="stat-card-label">Ort. Özet Uzunluğu (kelime)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Grafik Satırı 1 ─────────────────────────── -->
+            <div class="row g-4 mb-4">
+
+                <!-- Bar Chart: Yıllara Göre Makale Sayısı -->
+                <div class="col-lg-8">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-chart-bar" style="color:var(--tusas-blue);"></i>
+                                Yıllara Göre Proje Sayısı
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('yearlyChart')">
+                                <i class="fas fa-download"></i> PNG
+                            </button>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="yearlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donut Chart: Yıl Bazlı Dağılım -->
+                <div class="col-lg-4">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-chart-pie" style="color:#f59e0b;"></i>
+                                Yıl Bazlı Dağılım
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('donutChart')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="donutChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Grafik Satırı 2 ─────────────────────────── -->
+            <div class="row g-4 mb-4">
+
+                <!-- Top Keywords -->
+                <div class="col-lg-7">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-tags" style="color:#10b981;"></i>
+                                En Sık Geçen Anahtar Kelimeler <small style="font-weight:500;color:#94a3b8;font-size:.75rem;">(İlk 15)</small>
+                            </h3>
+                        </div>
+                        <div class="report-card-body" id="keywordBarsContainer">
+                            <!-- JS ile doldurulur -->
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:85%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:70%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:90%;"></div>
+                            <div class="skeleton" style="height:14px;margin-bottom:12px;width:60%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Özet Uzunluğu Dağılımı (histogram benzeri) -->
+                <div class="col-lg-5">
+                    <div class="report-card">
+                        <div class="report-card-header">
+                            <h3 class="report-card-title">
+                                <i class="fas fa-align-left" style="color:#8b5cf6;"></i>
+                                Özet Uzunluğu Dağılımı
+                            </h3>
+                            <button class="btn-dl" onclick="downloadChart('abstractChart')">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        <div class="report-card-body">
+                            <div class="report-chart-wrapper">
+                                <canvas id="abstractChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div><!-- /sidebar-push-content -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/shared/dashboard.js?v=3"></script>
+    <script src="/static/reports/reports.js?v=2"></script>
+</body>
+
+</html>
