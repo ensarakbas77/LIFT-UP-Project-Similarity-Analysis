@@ -1,69 +1,89 @@
-# 🗄️ Database Modülü — LIFT UP Proje Benzerlik Analizi
+# Veritabanı Modülü — LIFT UP Proje Benzerlik Analizi
 
 Bu modül, **LIFT UP** programı kapsamında üretilmiş proje verilerinin bir **PostgreSQL + pgvector** veritabanında saklanmasını ve bu veriler üzerinde **semantik (vektör tabanlı) benzerlik araması** yapılmasını sağlar.
 
 ---
 
-## 📁 Dosya Yapısı
+## Dosya Yapısı
 
 | Dosya | Açıklama |
 |---|---|
-| `main.py` | Pickle dosyasındaki embedding verilerini PostgreSQL veritabanına toplu aktaran (migration) script. |
-| `terminal_similarity_example.py` | Terminal üzerinden çalışan, kullanıcıdan alınan proje bilgisiyle veritabanında benzerlik araması yapan örnek script. |
-| `example_scripts.sql` | Veritabanı ve tablo oluşturma, pgvector extension kurulumu ve temel sorguları içeren SQL referans dosyası. |
-| `install_guideline.md` | Windows üzerinde PostgreSQL 18 için pgvector 0.8.1 eklentisinin adım adım kurulum rehberi. |
-| `tusas_liftup_embeddings.pkl` | LIFT UP projelerine ait önceden hesaplanmış embedding vektörlerini içeren Pickle (pandas DataFrame) dosyası. |
-| `.env` | Veritabanı bağlantı bilgilerini içeren ortam değişkenleri dosyası.|
-| `.env.example` | `.env` dosyasının şablon hali. Yeni geliştiriciler bu dosyayı kopyalayarak kendi `.env` dosyasını oluşturmalıdır. |
+| `main.py` | Pickle dosyasındaki embedding verilerini PostgreSQL'e toplu aktaran migration scripti |
+| `terminal_similarity_example.py` | Terminal üzerinden benzerlik araması yapan örnek script |
+| `example_scripts.sql` | Veritabanı kurulum ve temel sorgu referansları |
+| `install_guideline.md` | Windows'ta PostgreSQL 18 üzerine pgvector 0.8.1 kurulum rehberi |
+| `tusas_liftup_embeddings.pkl` | Önceden hesaplanmış embedding vektörlerini içeren Pickle (pandas DataFrame) dosyası (~3.7 MB, 666 proje) |
+| `.env.example` | Ortam değişkenleri şablonu |
 
 ---
 
-## ⚙️ Gereksinimler
+## Veritabanı Şeması
 
-### Sistem Gereksinimleri
+### `projects` Tablosu
 
-- **PostgreSQL 18** (veya uyumlu sürüm)
-- **pgvector 0.8.1** extension'ı (kurulum için bkz. [`install_guideline.md`](./install_guideline.md))
+| Kolon | Tip | Açıklama |
+|---|---|---|
+| `id` | `SERIAL PRIMARY KEY` | Otomatik artan benzersiz kimlik |
+| `year` | `VARCHAR(20)` | Projenin yılı |
+| `title_tr` | `TEXT` | Proje başlığı (Türkçe) |
+| `abstract_tr` | `TEXT` | Proje özeti (Türkçe) |
+| `keywords_tr` | `TEXT` | Anahtar kelimeler (Türkçe) |
+| `combined_text` | `TEXT` | Embedding üretiminde kullanılan birleştirilmiş metin |
+| `embedding` | `vector(384)` | 384 boyutlu SBERT vektör temsili |
 
-### Python Bağımlılıkları
+### `admin_users` Tablosu
 
-| Paket | Kullanım Amacı |
-|---|---|
-| `psycopg2` | PostgreSQL veritabanı bağlantısı ve sorgu çalıştırma |
-| `python-dotenv` | `.env` dosyasından ortam değişkenlerini yükleme |
-| `numpy` | Embedding vektör dönüşümleri |
-| `pandas` | Pickle dosyasından DataFrame okuma |
-| `sentence-transformers` | Kullanıcı sorgusunu vektöre dönüştürme (yalnızca `terminal_similarity_example.py` için) |
+Admin Dashboard kimlik doğrulama sistemi için kullanılır. `admin_dashboard` modülü tarafından yönetilir.
+
+| Kolon | Tip | Açıklama |
+|---|---|---|
+| `id` | `SERIAL PRIMARY KEY` | Otomatik artan benzersiz kimlik |
+| `username` | `TEXT` | Kullanıcı adı |
+| `email` | `TEXT` | E-posta adresi |
+| `full_name` | `TEXT` | Ad soyad |
+| `password_hash` | `TEXT` | bcrypt hashlenmiş şifre |
+| `is_active` | `BOOLEAN` | Hesap aktiflik durumu |
+| `last_login` | `TIMESTAMP` | Son giriş zamanı |
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma Adımları
+## Kurulum ve Kullanım
 
-### 1. pgvector Kurulumu
+Veritabanı iki farklı yöntemle kurulabilir. Docker önerilir; yerel kurulum ise geliştirme ortamı veya Docker kullanılamayan senaryolar için geçerlidir.
 
-pgvector extension'ı PostgreSQL ile birlikte gelmez, manuel olarak kurulması gerekir. Detaylı adımlar için:
+### Docker ile (Önerilen)
 
-👉 [`install_guideline.md`](./install_guideline.md)
+Docker kurulumunda **pgvector manuel olarak kurulmaz** — kullanılan `pgvector/pgvector:pg17` imajı pgvector'ü yerleşik olarak içerir. Veritabanı `liftup_backup.sql` ile restore edilir; migration scriptlerine gerek kalmaz.
 
-### 2. Veritabanı Oluşturma
+Tüm adımlar için:  
+**[DOCKER_SETUP.md](../DOCKER_SETUP.md)**
 
-PostgreSQL üzerinde `liftup_db` adında bir veritabanı oluşturun (DBeaver, pgAdmin veya psql üzerinden):
+---
+
+### Yerel Kurulum (Docker Olmadan)
+
+Aşağıdaki adımlar Docker kullanmadan, PostgreSQL'i doğrudan bilgisayarınıza kurduğunuz senaryo içindir.
+
+#### 1. pgvector Kurulumu
+
+pgvector PostgreSQL ile birlikte gelmez, manuel kurulum gerekir. Adımlar için:  
+**[install_guideline.md](./install_guideline.md)**
+
+#### 2. Veritabanı Oluşturma
 
 ```sql
 CREATE DATABASE liftup_db;
 ```
 
-### 3. pgvector Extension'ını Aktif Etme
-
-Oluşturulan veritabanına bağlanarak aşağıdaki SQL'i çalıştırın:
+#### 3. pgvector Extension'ını Aktif Etme
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-### 4. Tabloyu Oluşturma
+#### 4. Tabloyu Oluşturma
 
-`example_scripts.sql` dosyasındaki `CREATE TABLE` sorgusunu çalıştırarak `projects` tablosunu oluşturun:
+`example_scripts.sql` içindeki `CREATE TABLE` sorgusunu çalıştırın:
 
 ```sql
 CREATE TABLE projects (
@@ -77,101 +97,90 @@ CREATE TABLE projects (
 );
 ```
 
-### 5. Ortam Değişkenlerini Ayarlama
+#### 5. Ortam Değişkenlerini Ayarlama
 
-`.env.example` dosyasını `.env` olarak kopyalayıp kendi veritabanı bilgilerinizi girin:
-
+```powershell
+Copy-Item .env.example .env
 ```
+
+`.env` dosyasını açıp doldurun:
+
+```env
 DB_NAME=liftup_db
 DB_USER=postgres
-DB_PASSWORD=your_secure_password
+DB_PASSWORD=veritabani_sifresi
 DB_HOST=localhost
 DB_PORT=5432
 ```
 
-> ⚠️ **Güvenlik:** `.env` dosyasını **asla** versiyon kontrolüne (Git) eklemeyin.
+> `.env` dosyasını asla versiyon kontrolüne eklemeyin.
 
-### 6. Veri Aktarımı (Migration)
+#### 6. Veri Aktarımı (Migration)
 
-Pickle dosyasındaki embedding verilerini veritabanına aktarmak için:
+Pickle dosyasındaki 666 proje kaydını veritabanına aktarmak için projenin **kök dizininden** çalıştırın:
 
 ```bash
-python main.py
+python database/main.py
 ```
 
-> ℹ️ Bu script, `tusas_liftup_embeddings.pkl` dosyasındaki **666 adet** proje kaydını `projects` tablosuna toplu (batch) olarak ekler.
+> Script `database/tusas_liftup_embeddings.pkl` dosyasını relatif yol ile okur, bu nedenle kök dizinden çalıştırılmalıdır.
 
-### 7. Benzerlik Araması (Opsiyonel — Test)
+> Migration birden fazla çalıştırılırsa veriler tekrar eklenir. Gerekirse önce temizleyin:
+> ```sql
+> TRUNCATE TABLE projects RESTART IDENTITY;
+> ```
 
-Terminal üzerinden örnek bir benzerlik araması yapmak için:
+#### 7. Benzerlik Araması (Opsiyonel — Test)
 
 ```bash
+cd database
 python terminal_similarity_example.py
 ```
 
-Bu script:
-- `paraphrase-multilingual-MiniLM-L12-v2` modeli ile sorgu metnini vektöre çevirir.
-- pgvector'ün `<=>` (Cosine Distance) operatörünü kullanarak veritabanında arama yapar.
-- **En benzer 5** ve **en az benzer 5** projeyi benzerlik yüzdesiyle birlikte listeler.
+Bu script `paraphrase-multilingual-MiniLM-L12-v2` modeliyle sorgu metnini vektöre çevirir ve pgvector'ün `<=>` operatörü ile en benzer / en az benzer 5 projeyi listeler.
 
 ---
 
-## 🏗️ Veritabanı Şeması
+## Python Bağımlılıkları
 
-### `projects` Tablosu
+Aşağıdaki paketler **yerel kurulum** ve script kullanımı içindir. Docker kurulumunda bağımlılıklar ilgili container'ın `requirements.txt` dosyasından otomatik yüklenir.
 
-| Kolon | Tip | Açıklama |
-|---|---|---|
-| `id` | `SERIAL PRIMARY KEY` | Otomatik artan benzersiz kimlik |
-| `year` | `VARCHAR(20)` | Projenin yılı |
-| `title_tr` | `TEXT` | Proje başlığı (Türkçe) |
-| `abstract_tr` | `TEXT` | Proje özeti (Türkçe) |
-| `keywords_tr` | `TEXT` | Anahtar kelimeler (Türkçe) |
-| `combined_text` | `TEXT` | Embedding üretiminde kullanılan birleştirilmiş metin |
-| `embedding` | `vector(384)` | Projeye ait 384 boyutlu SBERT vektör temsili |
+| Paket | Kullanım Amacı |
+|---|---|
+| `psycopg2` | PostgreSQL bağlantısı ve sorgu çalıştırma |
+| `python-dotenv` | `.env` dosyasından ortam değişkenlerini yükleme |
+| `numpy` | Embedding vektör dönüşümleri |
+| `pandas` | Pickle dosyasından DataFrame okuma |
+| `sentence-transformers` | Sorgu metnini vektöre dönüştürme (yalnızca `terminal_similarity_example.py`) |
 
 ---
 
-## 🔍 Kullanılan Teknolojiler ve Yaklaşım
+## Kullanılan Teknolojiler
 
 ### Embedding Modeli
 
 - **Model:** `paraphrase-multilingual-MiniLM-L12-v2` (Sentence-Transformers)
 - **Boyut:** 384 boyutlu vektör
-- **Özellik:** Çok dilli destek — Türkçe metinlerle doğrudan çalışabilir.
+- **Özellik:** Çok dilli destek — Türkçe metinlerle doğrudan çalışır
 
 ### Benzerlik Metriği
 
-- **Cosine Similarity** kullanılır.
-- pgvector'ün `<=>` operatörü **Cosine Distance** hesaplar.
-- Benzerlik skoru şu formülle elde edilir: `1 - (embedding <=> query_vector)`
-- Sonuç **0 ile 1** arasında bir değerdir; 1'e yakınlık yüksek benzerliği ifade eder.
+- **Cosine Similarity** kullanılır
+- pgvector `<=>` operatörü Cosine Distance hesaplar
+- Benzerlik skoru: `1 - (embedding <=> query_vector)` → 0 ile 1 arasında, 1'e yakınlık yüksek benzerliği ifade eder
 
 ### Metin Ön İşleme
 
-Benzerlik aramasından önce metinlere aşağıdaki ön işleme adımları uygulanır:
 1. Küçük harfe dönüştürme
 2. Fazla boşlukları temizleme
 3. Özel karakterlerin (`#`, `%`, `&`, `*`, `_`, `=`, `+`, `<`, `>`) kaldırılması
 
 ---
 
-## 📌 Önemli Notlar
-
-- `main.py` scripti **proje kök dizininden** çalıştırılmalıdır, çünkü Pickle dosya yolu `database/tusas_liftup_embeddings.pkl` şeklinde relatif olarak tanımlanmıştır.
-- `terminal_similarity_example.py` scripti ise `.env` dosyasını **bulunduğu dizinden** yükler; bu nedenle `database/` klasörü içinden çalıştırılmalı veya `.env` yolu güncellenmelidir.
-- `tusas_liftup_embeddings.pkl` dosyası yaklaşık **3.7 MB** boyutundadır ve 666 adet projenin embedding verilerini içerir.
-- Migration işlemi (`main.py`) birden fazla kez çalıştırılırsa veriler **tekrar eklenir** (duplicate oluşur). Gerekirse tabloyu öncesinde temizleyin:
-  ```sql
-  TRUNCATE TABLE projects RESTART IDENTITY;
-  ```
-
----
-
-## 🔗 Kaynaklar
+## Kaynaklar
 
 - [pgvector — GitHub](https://github.com/pgvector/pgvector)
 - [pgvector Windows Build](https://github.com/andreiramani/pgvector_pgsql_windows)
-- [Sentence-Transformers Dökümantasyonu](https://www.sbert.net/)
+- [Sentence-Transformers Dokümantasyonu](https://www.sbert.net/)
 - [paraphrase-multilingual-MiniLM-L12-v2 — HuggingFace](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)
-- [psycopg2 Dökümantasyonu](https://www.psycopg.org/docs/)
+- [psycopg2 Dokümantasyonu](https://www.psycopg.org/docs/)

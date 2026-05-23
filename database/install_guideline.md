@@ -1,5 +1,9 @@
 # PostgreSQL pgvector Kurulum Rehberi (Windows)
 
+> **Bu rehber yalnızca yerel PostgreSQL kurulumu içindir.**  
+> Projeyi Docker ile çalıştırıyorsanız pgvector, kullanılan `pgvector/pgvector:pg17` imajında yerleşik olarak gelir — bu adımlara gerek yoktur.  
+> Docker kurulumu için bkz. [DOCKER_SETUP.md](../DOCKER_SETUP.md)
+
 Bu doküman, **PostgreSQL 18 (Windows)** üzerinde **pgvector 0.8.1** eklentisinin manuel kurulumunu adım adım anlatır. Kurulum tamamlandığında PostgreSQL, vektör tabanlı (embedding / semantik) arama ve analiz işlemlerini destekler hale gelir.
 
 ---

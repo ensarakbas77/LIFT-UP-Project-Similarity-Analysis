@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🚀 LIFT UP — Proje Benzerlik Analizi Sistemi
+# LIFT UP — Proje Benzerlik Analizi Sistemi
 
-**Anlamsal Proje Benzerlik Analizi | SBERT + PostgreSQL + pgvector**
+**Anlamsal Proje Benzerlik Analizi | SBERT + Emrecan BERT + PostgreSQL + pgvector**
 
 Kullanıcının girdiği proje fikrini, TUSAŞ LIFT UP programı kapsamındaki mevcut projelerle  
 **yapay zeka tabanlı** semantik benzerlik analizi ile karşılaştıran tam yığın (full-stack) web uygulaması.
@@ -10,395 +10,379 @@ Kullanıcının girdiği proje fikrini, TUSAŞ LIFT UP programı kapsamındaki m
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
 ---
 
-[Özellikler](#-özellikler) •
-[Mimari](#-mimari-yapı) •
-[Kurulum](#-kurulum) •
-[Çalıştırma](#-çalıştırma) •
-[Kullanım](#-kullanım)
+[Özellikler](#özellikler) •
+[Mimari](#mimari-yapı) •
+[Proje Yapısı](#proje-yapısı) •
+[Kurulum](#kurulum) •
+[Kullanım](#kullanım) •
+[API](#api-referansı)
 
 </div>
 
 ---
 
-## 📋 Özellikler
+## Özellikler
 
-- 🔍 **Semantik Benzerlik Analizi** — SBERT dil modeli ile metin tabanlı vektörel karşılaştırma
-- 🧠 **Çok Dilli Model** — `paraphrase-multilingual-MiniLM-L12-v2` modeli ile Türkçe metin desteği
-- 🗄️ **pgvector Entegrasyonu** — PostgreSQL üzerinde yüksek performanslı vektör benzerlik sorgusu
-- 📊 **Otomatik Sınıflandırma** — Benzerlik skoruna göre beş seviyeli renk kodlu sınıflandırma
-- 🎨 **Modern Arayüz** — Glassmorphism efektli, responsive ve animasyonlu SPA tasarım
-- ❤️ **Sağlık Kontrolü** — Backend bağlantı durumunu canlı izleyen sistem göstergesi
-- 📓 **Deney Notebookları** — BERTurk, DistilBERT, SBERT model karşılaştırma notebookları
+**Benzerlik Analizi Uygulaması**
+- Çift model analizi — SBERT (birincil) ve Emrecan BERT (Türkçe özelleşmiş, ikincil doğrulama) ile karşılaştırmalı skor
+- 5 seviyeli otomatik sınıflandırma — Kritik / Yüksek / Orta / Düşük / Alakasız
+- Ağırlıklı embedding — Başlık %20, Özet %70, Anahtar Kelimeler %10
+- Gemini AI ile Türkçe anahtar kelime önerisi (opsiyonel)
+- Yıl filtresi, skor sıralaması ve top-k güncelleme
+- Veritabanındaki tüm projeleri arayabilen geçmiş görünümü
+- Dark mode, responsive tasarım
 
----
+**Admin Dashboard**
+- JWT + bcrypt tabanlı güvenli yönetici girişi
+- Akademik bildiri kitaplarından (PDF) otomatik makale ve meta-veri çıkarma
+- Pickle ile toplu proje veri güncelleme
+- Dashboard istatistikleri ve raporlar
 
-## 🏗️ Mimari Yapı
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      KULLANICI  (Tarayıcı)                          │
-│                    http://127.0.0.1:3000                             │
-│                                                                     │
-│    Proje başlığı, özeti ve anahtar kelimeleri girer                  │
-│    "Analiz Et" butonuna tıklar                                      │
-└─────────────────────────────┬───────────────────────────────────────┘
-                              │
-                              │  POST /analyze
-                              │  {title, abstract, keywords}
-                              ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   BACKEND  (FastAPI — :8000)                         │
-│                                                                     │
-│   1. Metni temizler (küçük harf, özel karakter)                     │
-│   2. SBERT modeli ile 384 boyutlu vektör üretir                     │
-│   3. pgvector ile veritabanında cosine similarity sorgusu yapar      │
-│   4. En benzer 5 projeyi sınıflandırıp JSON olarak döndürür         │
-└─────────────────────────────┬───────────────────────────────────────┘
-                              │
-                              │  SQL: embedding <=> query_vector
-                              ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              POSTGRESQL + pgvector  (Veritabanı — :5432)             │
-│                                                                     │
-│   666 adet LIFT UP projesi + 384 boyutlu SBERT embedding vektörleri  │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-**Sınıflandırma Renk Kodları:**
-
-| Seviye | Koşul | Renk |
-|:---|:---|:---|
-| 🔴 **Çok Yüksek** | >= %90 | Kırmızı |
-| 🟠 **Yüksek** | >= %70 | Turuncu |
-| 🟡 **Orta** | >= %50 | Sarı |
-| 🟢 **Düşük** | >= %25 | Yeşil |
-| ⚪ **Alakasız** | < %25 | Gri |
+**Altyapı**
+- Docker Compose ile tek komutta 4 servis ayağa kaldırma
+- pgvector ile PostgreSQL üzerinde yüksek performanslı vektör benzerlik sorgusu
+- Model önbellekleme — SBERT ve Emrecan BERT yalnızca bir kez yüklenir
 
 ---
 
-## 📂 Proje Yapısı
+## Mimari Yapı
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         KULLANICI  (Tarayıcı)                           │
+│                                                                         │
+│         Benzerlik Uygulaması          Admin Paneli                      │
+│         http://localhost:3000         http://localhost:8001              │
+└──────────────┬────────────────────────────────┬────────────────────────┘
+               │                                │
+               ▼                                ▼
+┌──────────────────────────┐     ┌──────────────────────────────────────┐
+│  similarity-frontend     │     │  admin-backend                       │
+│  Nginx — :3000           │     │  FastAPI — :8001                     │
+│                          │     │                                      │
+│  Statik HTML/JS/CSS      │     │  PDF işleme (PyMuPDF)                │
+│  sunar                   │     │  Proje yönetimi                      │
+└──────────────┬───────────┘     │  Frontend + API tek sunucuda         │
+               │                 └──────────────────┬───────────────────┘
+               │ JS → API çağrısı                   │
+               │ POST /analyze                      │
+               │ GET  /projects/                    │
+               │ POST /suggest-keywords             │
+               ▼                                    │
+┌──────────────────────────┐                        │
+│  similarity-backend      │                        │
+│  FastAPI — :8000         │                        │
+│                          │                        │
+│  SBERT (384 boyut)       │                        │
+│  Emrecan BERT (768 boyut)│                        │
+│  Gemini API              │                        │
+└──────────────┬───────────┘                        │
+               │                                    │
+               └─────────────────┬──────────────────┘
+                                 │  SQL + pgvector
+                                 ▼
+               ┌─────────────────────────────────────┐
+               │  db (pgvector/pgvector:pg17) — :5432 │
+               │                                     │
+               │  projects       (840 proje)          │
+               │  sbert_projects (SBERT vektörleri)   │
+               │  emrecan_projects (BERT vektörleri)  │
+               │  admin_users                         │
+               └─────────────────────────────────────┘
+```
+
+### Benzerlik Seviyeleri
+
+| Seviye | Skor Aralığı | Anlam |
+|---|---|---|
+| Kritik | ≥ 0.90 | Potansiyel mükerrer kayıt |
+| Yüksek | 0.70 – 0.89 | Yakın tematik bağlantı |
+| Orta | 0.50 – 0.69 | Disiplin paralelliği |
+| Düşük | 0.25 – 0.49 | Uzak tematik ilişki |
+| Alakasız | < 0.25 | Anlamlı bağlantı yok |
+
+---
+
+## Proje Yapısı
 
 ```
 LIFT UP Project Similarity Analysis/
 │
 ├── README.md                              # Bu dosya
-├── requirements.txt                       # Kök seviye Python bağımlılıkları
-├── .gitignore                             # Git ignore kuralları
+├── docker-compose.yml                     # 4 servisin Docker tanımı
+├── docker-compose.prod.yml                # Production Docker konfigürasyonu
+├── DOCKER_SETUP.md                        # Docker kurulum rehberi (başlangıç noktası)
+├── .env.example                           # Kök ortam değişkenleri şablonu
+├── .gitignore
 │
-├── database/                              # Veritabanı modülü
-│   ├── main.py                            # Pickle → PostgreSQL veri aktarım scripti
-│   ├── terminal_similarity_example.py     # Terminal üzerinden benzerlik araması örneği
-│   ├── example_scripts.sql                # Veritabanı oluşturma SQL referansı
-│   ├── install_guideline.md               # pgvector kurulum rehberi (Windows)
-│   ├── tusas_liftup_embeddings.pkl        # Önceden hesaplanmış embedding verileri (~3.7 MB)
-│   ├── .env.example                       # Ortam değişkenleri şablonu
-│   └── README.md                          # Database modülü detaylı dokümanı
+├── similarity_analysis_app/               # Benzerlik analizi uygulaması
+│   ├── README.md
+│   ├── backend/
+│   │   ├── app/
+│   │   │   ├── main.py                    # FastAPI giriş noktası
+│   │   │   ├── api/routes/                # analyze, health, keywords, projects
+│   │   │   ├── core/config.py             # Ayarlar ve eşik değerleri
+│   │   │   ├── db/                        # Bağlantı havuzu + pgvector sorguları
+│   │   │   ├── ml/model_loader.py         # SBERT ve Emrecan BERT singleton'ları
+│   │   │   ├── services/                  # embedding, similarity, keyword servisleri
+│   │   │   └── schemas/                   # Pydantic istek/yanıt modelleri
+│   │   ├── .env.example
+│   │   ├── requirements.txt
+│   │   ├── Dockerfile
+│   │   └── README.md                      # Backend developer rehberi
+│   │
+│   └── frontend/
+│       ├── index.html                     # SPA — tek sayfalı uygulama
+│       ├── js/main.js                     # Fetch API, state yönetimi, validasyon
+│       └── css/styles.css                 # Design system, dark mode
 │
-├── notebooks/                             # Model deneme ve karşılaştırma notebookları
-│   ├── SBERT.ipynb                        # ✅ Seçilen model — paraphrase-multilingual-MiniLM-L12-v2
-│   ├── BERTurk.ipynb                      # BERTurk model denemeleri
-│   ├── DistilBERT.ipynb                   # DistilBERT model denemeleri
-│   └── Emrecan_BERT.ipynb                 # Emrecan BERT model denemeleri
+├── admin_dashboard/                       # Admin yönetim paneli
+│   ├── README.md
+│   ├── backend/
+│   │   ├── app/
+│   │   │   ├── main.py                    # FastAPI + statik dosya sunumu
+│   │   │   ├── api/                       # auth, projects, admin, data route'ları
+│   │   │   ├── services/                  # PDF parsing, CSV analizi
+│   │   │   └── schemas/
+│   │   ├── .env.example
+│   │   ├── requirements.txt
+│   │   └── Dockerfile
+│   │
+│   └── frontend/
+│       ├── login/                         # JWT tabanlı giriş
+│       ├── dashboard/                     # Ana kontrol paneli
+│       ├── pdf-extract/                   # PDF → CSV çıkarıcı
+│       ├── data-management/               # Proje arşivi
+│       ├── data-update/                   # Pickle ile toplu güncelleme
+│       ├── reports/                       # İstatistikler
+│       └── shared/                        # Auth Guard, ortak CSS/JS
 │
-└── similarity_analysis_app/               # Ana uygulama (Full-Stack)
-    │
-    ├── backend/                           # FastAPI API Sunucusu
-    │   ├── .env                           # Veritabanı ve model ayarları
-    │   ├── .env.example                   # Ortam değişkenleri şablonu
-    │   ├── README.md                      # Backend teknik dokümanı
-    │   └── app/
-    │       ├── main.py                    # Uygulama giriş noktası (startup/shutdown)
-    │       ├── api/routes/                # API endpoint'leri (analyze, health)
-    │       ├── core/config.py             # .env ayar yönetimi
-    │       ├── db/                        # PostgreSQL bağlantı havuzu + sorgu katmanı
-    │       ├── services/                  # İş mantığı (embedding üretimi + benzerlik analizi)
-    │       ├── schemas/                   # Pydantic istek/yanıt şemaları
-    │       └── ml/model_loader.py         # SBERT model yükleme ve önbellekleme
-    │
-    └── frontend/                          # Kullanıcı Arayüzü (SPA)
-        ├── index.html                     # Ana sayfa
-        ├── frontend_guideline.md          # Frontend teknik dokümanı
-        ├── css/styles.css                 # Design system + tüm bileşen stilleri
-        ├── js/main.js                     # API iletişimi + DOM yönetimi + validasyon
-        └── assets/                        # Görsel materyaller
+├── database/                              # Veritabanı araçları ve migration
+│   ├── main.py                            # Pickle → PostgreSQL migration scripti
+│   ├── terminal_similarity_example.py     # Terminal benzerlik araması örneği
+│   ├── example_scripts.sql                # Tablo oluşturma SQL referansı
+│   ├── install_guideline.md               # Yerel pgvector kurulumu (Docker dışı)
+│   ├── tusas_liftup_embeddings.pkl        # Önceden hesaplanmış embedding verileri
+│   ├── .env.example
+│   └── README.md
+│
+└── notebooks/                             # Model karşılaştırma deneyleri
+    ├── SBERT.ipynb                        # ✅ Seçilen model
+    ├── Emrecan_BERT.ipynb                 # Türkçe BERT (production'da ikincil model)
+    ├── BERTurk.ipynb
+    └── DistilBERT.ipynb
 ```
 
 ---
 
-## ⚙️ Gereksinimler
+## Kurulum
 
-Sistemi çalıştırmadan önce aşağıdakilerin kurulu olması gerekir:
+### Docker ile (Önerilen)
 
-| Araç | Versiyon | Açıklama |
-|:---|:---|:---|
-| **Python** | 3.10+ | Backend API ve embedding işlemleri |
-| **PostgreSQL** | 18+ | Veritabanı sunucusu |
-| **pgvector** | 0.8.1+ | PostgreSQL vektör benzerlik eklentisi |
-| **Node.js + npm** | — | Frontend geliştirme sunucusu (`npx`) |
+Tüm kurulum adımları için:
 
-> 📖 pgvector kurulumu için: [`database/install_guideline.md`](database/install_guideline.md)
+**[DOCKER_SETUP.md](./DOCKER_SETUP.md)**
+
+Kısaca:
+```powershell
+# 1. .env dosyalarını oluştur
+Copy-Item .env.example .env
+Copy-Item similarity_analysis_app\backend\.env.example similarity_analysis_app\backend\.env
+Copy-Item admin_dashboard\backend\.env.example admin_dashboard\backend\.env
+
+# 2. Servisleri derle ve başlat
+docker compose up --build
+```
+
+İlk başlatmada SBERT ve Emrecan BERT modelleri HuggingFace'ten indirilir (~500 MB), 5–10 dakika sürebilir. Sonraki başlatmalarda modeller önbellekten yüklenir.
 
 ---
 
-## 🛠️ Kurulum
+### Yerel Kurulum (Docker Olmadan)
 
-### 1. Repoyu Klonlayın
+Önkoşullar: Python 3.10+, PostgreSQL 18+, pgvector 0.8.1+
+
+> pgvector kurulumu için: [database/install_guideline.md](database/install_guideline.md)
+
+#### 1. Repoyu Klonlayın
 
 ```bash
 git clone https://github.com/ensarakbas77/LIFT-UP-Project-Similarity-Analysis.git
 cd LIFT-UP-Project-Similarity-Analysis
 ```
 
-### 2. Python Sanal Ortamını Oluşturun
-
-```powershell
-python -m venv .venv
-```
-
-### 3. Sanal Ortamı Aktif Edin
-
-**Windows (PowerShell):**
-```powershell
-.venv\Scripts\Activate
-```
-
-**Windows (CMD):**
-```cmd
-.venv\Scripts\activate.bat
-```
-
-**macOS / Linux:**
-```bash
-source .venv/bin/activate
-```
-
-> ✅ Terminal satırının başında `(.venv)` ifadesini görüyorsanız sanal ortam aktif demektir.
-
-### 4. Bağımlılıkları Yükleyin
-
-```powershell
-pip install -r requirements.txt
-```
-
-### 5. Veritabanını Hazırlayın
-
-#### 5.1 — Veritabanını Oluşturun
-
-PostgreSQL üzerinde (DBeaver, pgAdmin veya psql ile):
+#### 2. Veritabanını Hazırlayın
 
 ```sql
 CREATE DATABASE liftup_db;
-```
-
-#### 5.2 — pgvector Extension'ını Aktif Edin
-
-Oluşturulan veritabanına bağlanıp:
-
-```sql
+-- liftup_db'ye bağlanın
 CREATE EXTENSION IF NOT EXISTS vector;
 ```
 
-#### 5.3 — Tabloyu Oluşturun
-
-```sql
-CREATE TABLE projects (
-    id SERIAL PRIMARY KEY,
-    year VARCHAR(20),
-    title_tr TEXT,
-    abstract_tr TEXT,
-    keywords_tr TEXT,
-    combined_text TEXT,
-    embedding vector(384)
-);
-```
-
-#### 5.4 — Ortam Değişkenlerini Ayarlayın
-
-`database/.env.example` dosyasını `database/.env` olarak kopyalayın ve kendi bilgilerinizi girin:
-
-```bash
-cp database/.env.example database/.env
-```
-
-```env
-DB_NAME=liftup_db
-DB_USER=postgres
-DB_PASSWORD=your_secure_password
-DB_HOST=localhost
-DB_PORT=5432
-```
-
-Aynı şekilde backend için de:
-
-```bash
-cp similarity_analysis_app/backend/.env.example similarity_analysis_app/backend/.env
-```
-
-> ⚠️ **Güvenlik:** `.env` dosyalarını asla Git'e eklemeyin. `.gitignore` dosyasında zaten tanımlıdır.
-
-#### 5.5 — Verileri Aktarın (Migration)
+Ardından migration scriptini çalıştırın (proje kök dizininden):
 
 ```powershell
-cd database
-python main.py
+python database/main.py
 ```
 
-Bu script, `tusas_liftup_embeddings.pkl` dosyasındaki **666 adet** proje kaydını `projects` tablosuna toplu olarak yükler.
+#### 3. Ortam Değişkenlerini Ayarlayın
 
-> ⚠️ Script birden fazla çalıştırılırsa veriler tekrar eklenir. Gerekirse öncesinde:
-> ```sql
-> TRUNCATE TABLE projects RESTART IDENTITY;
-> ```
+```powershell
+Copy-Item similarity_analysis_app\backend\.env.example similarity_analysis_app\backend\.env
+```
 
----
+`.env` dosyasını açıp `DB_PASSWORD` değerini girin. `GEMINI_API_KEY` opsiyoneldir.
 
-## 🚀 Çalıştırma
-
-> **ÖNEMLİ:** Backend ve frontend birer terminal sürecidir. Her kullanımda aşağıdaki iki adımı tekrar çalıştırmanız gerekir. Her iki terminal de açık kaldığı sürece sistem çalışmaya devam eder.
-
-### 1. Backend'i Başlatın (Terminal 1)
+#### 4. Backend'i Başlatın (Terminal 1)
 
 ```powershell
 cd similarity_analysis_app\backend
-.venv\Scripts\Activate           # Sanal ortam aktif değilse
-pip install -r requirements.txt  # İlk seferde veya yeni paket eklendiğinde
+python -m venv .venv
+.venv\Scripts\Activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Terminalde aşağıdaki çıktıyı görmelisiniz:
+Hazır olduğunda terminalde şunu görmelisiniz:
 
 ```
-SBERT modeli yukleniyor: paraphrase-multilingual-MiniLM-L12-v2
-Model basariyla yuklendi.
-PostgreSQL baglanti havuzu olusturuldu.
 Sistem hazir!
-
 INFO:     Uvicorn running on http://127.0.0.1:8000
 ```
 
-> 💡 İlk çalıştırmada SBERT modeli indirilir (~120 MB), bu birkaç dakika sürebilir. Sonraki çalıştırmalarda önbellekten yüklenir.
-
-**Doğrulama:** Tarayıcıda [http://localhost:8000/docs](http://localhost:8000/docs) açıldığında Swagger UI görüntülenmelidir.
-
-### 2. Frontend'i Başlatın (Terminal 2)
-
-Yeni bir terminal açın (backend terminalini **kapatmayın**):
+#### 5. Frontend'i Başlatın (Terminal 2)
 
 ```powershell
 cd similarity_analysis_app\frontend
 npx -y http-server ./ -p 3000 -c-1 --cors
 ```
 
-Terminalde aşağıdaki çıktıyı görmelisiniz:
+---
 
-```
-Starting up http-server, serving ./
-Available on:
-  http://127.0.0.1:3000
-```
+## Erişim Adresleri
+
+| Servis | URL |
+|---|---|
+| Benzerlik Uygulaması | http://localhost:3000 |
+| Admin Paneli | http://localhost:8001 |
+| Similarity API Docs | http://localhost:8000/docs |
+| Similarity API Health | http://localhost:8000/health |
+| Admin API Docs | http://localhost:8001/docs |
 
 ---
 
-## 💻 Kullanım
+## Kullanım
 
-**Tarayıcıda açın:** [http://127.0.0.1:3000](http://127.0.0.1:3000)
+### Benzerlik Analizi
 
-1. Sağ üst köşede **"Sistem hazır"** (yeşil nokta) yazısını doğrulayın
-2. **Proje Başlığı** alanına projenizin başlığını yazın
-3. **Proje Özeti** alanına projenizin özetini yazın
-4. **Anahtar Kelimeler** alanına virgülle ayrılmış anahtar kelimeleri yazın
-5. **"Analiz Et"** butonuna tıklayın
-6. Sonuçlar kart yapısında, benzerlik skorlarıyla birlikte listelenecektir
+1. http://localhost:3000 adresini açın
+2. Sağ üst köşede **"Sistem hazır"** (yeşil nokta) yazısını doğrulayın
+3. Proje başlığı, özeti ve anahtar kelimeleri girin
+4. **"Analiz Et"** butonuna tıklayın
+5. Sonuçlar benzerlik skoru ve sınıflandırmasıyla birlikte listelenir
 
-### Örnek Test Verisi
+**Örnek Test Verisi:**
 
 | Alan | Değer |
-|:---|:---|
-| **Başlık** | Hava Muharebesinde Otonom Savunma Algoritmasının Geliştirilmesi |
-| **Özet** | Bu çalışma kapsamında, temel hava muharebesi manevraları kullanılarak birebir muharebeler için otonom savunma algoritması geliştirilmiştir. Algoritma, hedef hava aracı ile beklenmedik bir şekilde karşılaşıldığı durumlarda saldırı üstünlüğünün sağlanması için en uygun muharebe manevrasını seçmeyi sağlamaktadır. |
-| **Anahtar Kelimeler** | bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları |
+|---|---|
+| Başlık | Hava Muharebesinde Otonom Savunma Algoritmasının Geliştirilmesi |
+| Özet | Bu çalışma kapsamında, temel hava muharebesi manevraları kullanılarak birebir muharebeler için otonom savunma algoritması geliştirilmiştir. Algoritma, hedef hava aracı ile beklenmedik bir şekilde karşılaşıldığı durumlarda saldırı üstünlüğünün sağlanması için en uygun muharebe manevrasını seçmeyi sağlamaktadır. |
+| Anahtar Kelimeler | bire-bir hava muharebesi, kural tabanlı yöntem, temel hava muharebe manevraları |
+
+### Admin Paneli
+
+http://localhost:8001 adresine giriş yapın. Admin kimlik bilgileri veritabanındaki `admin_users` tablosunda saklanır.
 
 ---
 
-## 🔌 API Referansı
+## API Referansı
 
-| Endpoint | Method | İstek Gövdesi | Yanıt |
-|:---|:---|:---|:---|
-| `/analyze` | `POST` | `{ title, abstract, keywords }` | `{ similar_projects[], classification }` |
-| `/health` | `GET` | — | `{ status, model_loaded, database_connected }` |
+### Benzerlik API (`:8000`)
 
-**Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+| Yöntem | Yol | Açıklama |
+|---|---|---|
+| POST | `/analyze` | `{title, abstract, keywords, top_k?}` → benzerlik analizi |
+| POST | `/suggest-keywords` | `{abstract}` → Gemini ile anahtar kelime önerisi |
+| GET | `/projects/` | Tüm projeleri listele |
+| GET | `/health` | Model ve veritabanı durum kontrolü |
 
----
+### Admin API (`:8001`)
 
-## 🔧 Port Özeti
-
-| Port | Servis | Adres |
-|:---|:---|:---|
-| `3000` | Frontend Arayüz | [http://127.0.0.1:3000](http://127.0.0.1:3000) |
-| `8000` | Backend API (FastAPI) | [http://localhost:8000](http://localhost:8000) |
-| `8000/docs` | Swagger UI (API Test) | [http://localhost:8000/docs](http://localhost:8000/docs) |
-| `5432` | PostgreSQL Veritabanı | Sadece backend erişir |
-
----
-
-## 🧰 Teknoloji Yığını
-
-| Katman | Teknoloji | Açıklama |
-|:---|:---|:---|
-| **Frontend** | HTML5 + CSS3 + Vanilla JS | SPA, Fetch API ile backend iletişimi |
-| **Backend** | FastAPI (Python) | Async REST API sunucusu |
-| **AI Modeli** | Sentence-Transformers (SBERT) | `paraphrase-multilingual-MiniLM-L12-v2` — 384 boyutlu vektör |
-| **Veritabanı** | PostgreSQL + pgvector | Cosine similarity ile vektörel arama |
-| **Veri** | TUSAŞ LIFT UP Bildiri Kitapları | Önceden hesaplanmış embedding vektörleri |
+| Yöntem | Yol | Açıklama |
+|---|---|---|
+| POST | `/auth/login` | JWT token al |
+| POST | `/admin/extract` | PDF yükle, arka planda makale çıkar |
+| GET | `/admin/jobs/{job_id}` | Arka plan iş durumunu sorgula |
+| GET | `/admin/download/{job_id}/{filename}` | CSV çıktısını indir |
+| POST | `/data/upload-pkl` | Pickle ile toplu proje ekle |
+| GET | `/api/projects/stats` | Dashboard istatistikleri |
 
 ---
 
-## ❓ Sık Karşılaşılan Sorunlar
+## Teknoloji Yığını
+
+| Katman | Teknoloji |
+|---|---|
+| Deployment | Docker Compose (4 servis) |
+| Similarity Backend | FastAPI + Uvicorn (Python 3.10+) |
+| Admin Backend | FastAPI + Uvicorn (Python 3.10+) |
+| Birincil Model | SBERT `paraphrase-multilingual-MiniLM-L12-v2` — 384 boyut |
+| İkincil Model | `emrecan/bert-base-turkish-cased-mean-nli-stsb-tr` — 768 boyut |
+| AI Özelliği | Google Gemini API (anahtar kelime önerisi) |
+| PDF İşleme | PyMuPDF |
+| Veritabanı | PostgreSQL + pgvector (cosine similarity) |
+| Similarity Frontend | Nginx + HTML5 + Vanilla JS + CSS3 |
+| Admin Frontend | FastAPI static files + HTML5 + Bootstrap 5 + Vanilla JS |
+
+---
+
+## Sık Karşılaşılan Sorunlar
 
 | Sorun | Çözüm |
-|:---|:---|
-| Sağ üstte **"Bağlantı yok"** yazıyor | Backend çalışmıyor. Backend terminalini kontrol edin. |
-| "Analiz Et" sonrası hata çıkıyor | PostgreSQL servisi çalışıyor mu? `.env` bilgileri doğru mu? |
-| `npx` komutu bulunamıyor | Node.js kurulu değil. [nodejs.org](https://nodejs.org) adresinden indirin. |
-| Frontend sayfası açılmıyor | `http://127.0.0.1:3000` adresini kontrol edin. Port farklı olabilir. |
-| SBERT modeli indirme hatası | İnternet bağlantınızı kontrol edin. İlk çalıştırmada model ~120 MB indirilir. |
-| Migration'da duplicate veri oluştu | `TRUNCATE TABLE projects RESTART IDENTITY;` ile tabloyu temizleyin. |
-| `(.venv)` terminal başında görünmüyor | Sanal ortam aktif değil. `.venv\Scripts\Activate` komutunu çalıştırın. |
+|---|---|
+| "Sistem hazır" yerine "Bağlantı yok" | similarity-backend çalışmıyor, `docker compose logs similarity-backend` inceleyin |
+| Analiz sonrası 500 hatası | PostgreSQL bağlantısını ve `.env` bilgilerini kontrol edin |
+| İlk başlatma çok uzun sürüyor | Normal — SBERT ve Emrecan BERT modelleri (~500 MB) indiriliyor |
+| Model indirme hatası | İnternet bağlantısını kontrol edin; Docker ağ kısıtlaması olabilir |
+| Migration'da duplicate veri oluştu | `TRUNCATE TABLE projects RESTART IDENTITY;` ile tabloyu temizleyin |
+| Admin paneline giriş yapılamıyor | `admin_users` tablosunda kayıt var mı? Veritabanı restore edildi mi? |
+| Docker volume bozuldu | `docker compose down -v && docker compose up --build` (veriler silinir) |
 
 ---
 
-## 📓 Notebooklar
+## Notebooklar
 
-`notebooks/` klasöründe farklı dil modellerinin karşılaştırma deneyleri bulunur:
+`notebooks/` klasöründe farklı dil modellerinin karşılaştırma deneyleri yer alır:
 
-| Notebook | Model | Açıklama |
-|:---|:---|:---|
-| `SBERT.ipynb` | paraphrase-multilingual-MiniLM-L12-v2 | ✅ **Seçilen model** — En iyi Türkçe performans |
-| `BERTurk.ipynb` | BERTurk | Türkçe odaklı BERT varyantı |
-| `DistilBERT.ipynb` | DistilBERT | Hafif BERT modeli |
-| `Emrecan_BERT.ipynb` | Emrecan BERT | Alternatif Türkçe BERT modeli |
+| Notebook | Model | Durum |
+|---|---|---|
+| `SBERT.ipynb` | paraphrase-multilingual-MiniLM-L12-v2 | Seçilen birincil model |
+| `Emrecan_BERT.ipynb` | emrecan/bert-base-turkish-cased-mean-nli-stsb-tr | Production'da ikincil model |
+| `BERTurk.ipynb` | BERTurk | Deneme |
+| `DistilBERT.ipynb` | DistilBERT | Deneme |
 
 ---
 
-## 🔗 Kaynaklar
+## Kaynaklar
 
 - [pgvector — GitHub](https://github.com/pgvector/pgvector)
-- [Sentence-Transformers Dökümantasyonu](https://www.sbert.net/)
-- [paraphrase-multilingual-MiniLM-L12-v2 — Hugging Face](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)
-- [FastAPI Dökümantasyonu](https://fastapi.tiangolo.com/)
-- [PostgreSQL Dökümantasyonu](https://www.postgresql.org/docs/)
+- [Sentence-Transformers Dokümantasyonu](https://www.sbert.net/)
+- [paraphrase-multilingual-MiniLM-L12-v2 — HuggingFace](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)
+- [emrecan/bert-base-turkish-cased-mean-nli-stsb-tr — HuggingFace](https://huggingface.co/emrecan/bert-base-turkish-cased-mean-nli-stsb-tr)
+- [FastAPI Dokümantasyonu](https://fastapi.tiangolo.com/)
+- [Google Gemini API](https://aistudio.google.com)
+- [PostgreSQL Dokümantasyonu](https://www.postgresql.org/docs/)
 
 ---
 
 <div align="center">
 
-**LIFT UP** — Semantik Proje Benzerlik Analizi Sistemi
+**LIFT UP** — TUSAŞ & Prestige AI | Semantik Proje Benzerlik Analizi Sistemi
 
 </div>
