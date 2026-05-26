@@ -13,7 +13,7 @@
 // ─── Configuration ─────────────────────────────────────────────
 const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:8000"
-    : `${window.location.protocol}//${window.location.hostname}:8000`;
+    : "https://api.prestigeai.com.tr";
 const ENDPOINTS = {
     analyze: `${API_BASE_URL}/analyze`,
     health: `${API_BASE_URL}/health`,
