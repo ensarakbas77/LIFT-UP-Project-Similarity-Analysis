@@ -14,7 +14,8 @@ def get_db_connection():
             user=admin_settings.DB_USER,
             password=admin_settings.DB_PASSWORD,
             host=admin_settings.DB_HOST,
-            port=admin_settings.DB_PORT
+            port=admin_settings.DB_PORT,
+            sslmode=admin_settings.DB_SSLMODE,
         )
         return conn
     except Exception as e:

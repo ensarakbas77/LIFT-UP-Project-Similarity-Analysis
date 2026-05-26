@@ -19,6 +19,7 @@ class AdminSettings:
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_PORT: str = os.getenv("DB_PORT", "5432")
+    DB_SSLMODE: str = os.getenv("DB_SSLMODE", "prefer")
 
     # Admin API Güvenlik Anahtarı
     ADMIN_API_KEY: str = os.getenv("ADMIN_API_KEY", "")

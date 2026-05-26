@@ -8,7 +8,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./similarity_analysis_app/backend/.env
+      - ./similarity_analysis_app/backend/.env.prod
     restart: unless-stopped
     volumes:
       - liftup_model_cache:/root/.cache/huggingface
@@ -28,13 +28,13 @@ services:
     ports:
       - "8001:8001"
     env_file:
-      - ./admin_dashboard/backend/.env
+      - ./admin_dashboard/backend/.env.prod
     restart: unless-stopped
     volumes:
       - liftup_pdf_jobs:/app/backend/jobs
 
   # Production'da 'db' servisi YOK.
-  # Her iki backend'in .env dosyasındaki DB_HOST, AWS RDS endpoint'ini gösterir.
+  # Her iki backend'in .env.prod dosyasındaki DB_HOST, AWS RDS endpoint'ini gösterir.
   # Örnek: DB_HOST=liftup.xxxxxxxxxxxx.eu-central-1.rds.amazonaws.com
 
 volumes:

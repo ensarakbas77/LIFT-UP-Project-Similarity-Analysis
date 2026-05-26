@@ -26,6 +26,7 @@ class DatabaseSession:
                 password=settings.DB_PASSWORD,
                 host=settings.DB_HOST,
                 port=settings.DB_PORT,
+                sslmode=settings.DB_SSLMODE,
             )
             print("PostgreSQL baglanti havuzu olusturuldu.")
 
