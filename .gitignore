@@ -12,6 +12,7 @@ build/
 # ── Environment & Secrets ─────────────────────────
 .env
 *.env
+*.env.prod
 !*.env.example
 
 # ── Proje Spesifik ────────────────────────────────

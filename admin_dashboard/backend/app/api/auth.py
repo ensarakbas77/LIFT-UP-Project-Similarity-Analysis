@@ -83,6 +83,7 @@ def get_db():
         password=admin_settings.DB_PASSWORD,
         host=admin_settings.DB_HOST,
         port=admin_settings.DB_PORT,
+        sslmode=admin_settings.DB_SSLMODE,
     )
 
 
