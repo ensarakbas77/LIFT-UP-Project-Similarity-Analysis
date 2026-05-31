@@ -278,6 +278,10 @@ button {
     width: auto;
     object-fit: contain;
     display: block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: transparent;
+    transition: background var(--transition-base);
 }
 
 .header__divider {
@@ -2997,6 +3001,12 @@ body,
 [data-theme="dark"] .header {
     background: rgba(10, 14, 26, 0.88);
     border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .header__logo-img {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 6px;
+    padding: 4px 8px;
 }
 
 [data-theme="dark"] .header__title-tusas {
