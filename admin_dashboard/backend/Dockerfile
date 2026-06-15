@@ -6,6 +6,11 @@ FROM python:3.11-slim
 
 WORKDIR /app/backend
 
+# CPU-only torch — CUDA sürümünden (~2GB) kaçınmak için önce ayrıca kurulur.
+# Bu satır olmazsa pip, sentence-transformers için torch'u CUDA ile kurar.
+RUN pip install --no-cache-dir torch==2.10.0 \
+    --index-url https://download.pytorch.org/whl/cpu
+
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

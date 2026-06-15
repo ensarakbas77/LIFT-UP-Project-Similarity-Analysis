@@ -39,6 +39,8 @@ services:
       - liftup_pdf_jobs:/app/backend/jobs
       - ./admin_dashboard/backend/app:/app/backend/app
       - ./admin_dashboard/frontend:/app/frontend
+      # SBERT/Emrecan modelleri similarity-backend ile paylaşılır → tekrar inmez.
+      - liftup_model_cache:/root/.cache/huggingface
     command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
   db:

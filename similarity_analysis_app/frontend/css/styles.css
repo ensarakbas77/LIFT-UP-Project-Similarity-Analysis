@@ -2768,12 +2768,14 @@ button {
 @media (max-width: 600px) {
     :root {
         --container-max: 100%;
-        --header-height: 64px;
+        --header-height: 104px;
     }
 
+    /* Brand + toggle pinned to the top row; nav pill sits in the lower row */
     .header__container {
-        padding: 0 var(--space-4);
-        gap: var(--space-3);
+        padding: 12px var(--space-4) 0;
+        gap: var(--space-2);
+        align-items: flex-start;
     }
 
     .header__divider,
@@ -2793,16 +2795,31 @@ button {
         display: none;
     }
 
-    .nav-tab {
-        padding: 6px 10px;
-        font-size: var(--font-size-xs);
+    /* Keep the floating pill, but anchor it to the bottom of the taller
+       header instead of letting it overflow below into the hero.
+       Cap its width to the viewport and scroll horizontally as a safety
+       net so the layout can never break on very narrow devices. */
+    .header__nav {
+        top: auto;
+        bottom: 12px;
+        width: max-content;
+        max-width: calc(100vw - var(--space-6));
+        justify-content: center;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
-    .nav-tab__label {
+    .header__nav::-webkit-scrollbar {
         display: none;
     }
 
-    .nav-tab.active .nav-tab__label {
+    .nav-tab {
+        padding: 5px 9px;
+        font-size: var(--font-size-xs);
+    }
+
+    /* Show every tab label on mobile, not just the active one */
+    .nav-tab__label {
         display: inline;
     }
 
@@ -2842,6 +2859,9 @@ button {
     }
 
     .hero__title {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
         font-size: 1.75rem;
         letter-spacing: 1px;
     }

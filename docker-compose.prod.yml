@@ -32,6 +32,8 @@ services:
     restart: unless-stopped
     volumes:
       - liftup_pdf_jobs:/app/backend/jobs
+      # SBERT/Emrecan modelleri similarity-backend ile paylaşılır → tekrar inmez.
+      - liftup_model_cache:/root/.cache/huggingface
 
   # Production'da 'db' servisi YOK.
   # Her iki backend'in .env.prod dosyasındaki DB_HOST, AWS RDS endpoint'ini gösterir.

@@ -24,6 +24,17 @@ class AdminSettings:
     # Admin API Güvenlik Anahtarı
     ADMIN_API_KEY: str = os.getenv("ADMIN_API_KEY", "")
 
+    # ── Embedding Modelleri ───────────────────────────────────────────────────
+    # CSV → embedding üretimi için (notebook + similarity_analysis_app ile AYNI).
+    # Bu değerler değişirse embedding'ler tutarsız olur; similarity backend ile
+    # birebir aynı kalmalıdır.
+    MODEL_NAME: str = os.getenv(
+        "MODEL_NAME", "paraphrase-multilingual-MiniLM-L12-v2"
+    )
+    EMRECAN_MODEL_NAME: str = os.getenv(
+        "EMRECAN_MODEL_NAME", "emrecan/bert-base-turkish-cased-mean-nli-stsb-tr"
+    )
+
     # Geçici Dosya Dizini (PDF yükleme işleri için)
     JOBS_DIR: str = os.getenv("JOBS_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "jobs"))
 
