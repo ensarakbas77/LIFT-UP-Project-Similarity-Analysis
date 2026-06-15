@@ -29,3 +29,12 @@ psycopg2-binary>=2.9.0
 # Kimlik Doğrulama — JWT + bcrypt (doğrudan, passlib olmadan)
 PyJWT>=2.8.0
 bcrypt>=4.0.0
+
+# ─── Embedding Üretimi (CSV → vektör) ──────────────────────────────────────────
+# CSV yolunda SBERT + Emrecan embedding üretmek için.
+# Sürümler similarity_analysis_app/backend ile AYNI pinlenir; aksi halde aynı
+# metin için farklı vektör üretilebilir (notebook ile tutarsızlık).
+# torch burada YOK; Dockerfile'da CPU-only sürüm ayrıca kurulur (imaj ~2GB → ~300MB).
+sentence-transformers==3.0.1
+transformers==4.57.6
+numpy==1.26.4
