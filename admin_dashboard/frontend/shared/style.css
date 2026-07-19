@@ -408,22 +408,33 @@ h6 {
     }
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling — ince, saydam, temaya uyumlu */
 ::-webkit-scrollbar {
-    width: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--tusas-navy) 0%, var(--tusas-blue) 100%);
-    border-radius: 5px;
+    background: rgba(31, 45, 90, .28);
+    border-radius: 8px;
+    /* Kenarlardan içeri boşluk bırakır, çubuğu daha ince gösterir */
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--tusas-blue) 0%, var(--tusas-navy) 100%);
+    background: rgba(0, 163, 224, .55);
+    background-clip: padding-box;
+}
+
+/* Firefox */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(31, 45, 90, .35) transparent;
 }
 
 /* Analysis Section Styles */

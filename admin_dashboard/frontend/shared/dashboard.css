@@ -20,6 +20,15 @@
 /* İçerik alanı sidebar genişliği kadar sağa itilir */
 .sidebar-push-content {
     margin-left: 280px;
+    /* Sticky-footer zinciri: footer'ı viewport'un en altına yapıştırır */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sayfa içeriği büyüyerek footer'ı aşağı iter */
+.sidebar-push-content > .container-fluid {
+    flex: 1 0 auto;
 }
 
 .sidebar-drawer-header {
